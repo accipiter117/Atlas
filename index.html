@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Atlas</title>
+  <meta name="description" content="A hex-based strategy game you can reskin and re-rule with stackable mods.">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9.5v13L16 30 3 22.5v-13z' fill='%238a2b1d'/%3E%3C/svg%3E">
+</head>
+<body>
+  <main id="title" class="screen" aria-labelledby="title-heading">
+    <div class="card">
+      <h1 id="title-heading" class="title">Atlas</h1>
+      <p class="subtitle">Build an empire, one hex at a time.</p>
+      <ul class="menu" role="list" data-menu>
+        <li><button class="btn" type="button" data-action="continue" disabled title="No saved game yet">Continue</button></li>
+        <li><button class="btn primary" type="button" data-action="new">New game</button></li>
+        <li><button class="btn" type="button" data-action="load" data-say="Loading saved games arrives in phase 9.">Load</button></li>
+        <li><button class="btn" type="button" data-action="mods" data-say="The mod manager arrives in phase 2.">Mods</button></li>
+        <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
+      </ul>
+      <p class="footnote">Phase 1: the engine runs, the world is still empty.</p>
+    </div>
+  </main>
+
+  <main id="bench" class="screen bench" hidden aria-labelledby="bench-heading"
+        data-you="You" data-rival="Rival" data-human="human" data-ai="computer"
+        data-ai-pass="The computer players pass (no AI yet).">
+    <div class="card">
+      <h2 id="bench-heading">Turn <span data-field="turn">1</span></h2>
+      <p class="status">Seat order is drawn from the game's seed.</p>
+      <ol class="seats" data-field="seats" aria-label="Seat order"></ol>
+      <div class="row">
+        <button class="btn" type="button" data-action="back">Title screen</button>
+        <button class="btn primary" type="button" data-action="end-turn" title="End turn (Enter)">End turn</button>
+      </div>
+      <p class="fingerprint">Seed <span data-field="seed"></span> · fingerprint <span data-field="fingerprint"></span></p>
+    </div>
+  </main>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

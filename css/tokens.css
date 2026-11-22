@@ -1,0 +1,50 @@
+/* Design tokens: every colour, size and timing the interface uses.
+   Skins (phase 6 onwards) override these, so nothing else hard-codes a colour. */
+
+:root {
+  color-scheme: light dark;
+
+  --ink: #1f2430;
+  --ink-soft: #4a5263;
+  --paper: #f4ecd8;
+  --paper-deep: #e7dcc0;
+  --panel: rgba(255, 250, 238, 0.92);
+  --line: #c9b98f;
+  --accent: #8a2b1d;
+  --accent-ink: #fff7ea;
+  --accent-hover: #a5382a;
+  --focus: #1f6fd1;
+  --muted: #9a917c;
+  --hex-line: rgba(80, 64, 32, 0.10);
+
+  --font-display: "Cinzel", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius: 10px;
+  --gap: 12px;
+  --target: 44px;          /* minimum size of anything you can click or tap */
+  --shadow: 0 10px 30px rgba(40, 28, 10, 0.18);
+  --speed: 160ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #ece4d2;
+    --ink-soft: #b9b09c;
+    --paper: #141821;
+    --paper-deep: #0d1017;
+    --panel: rgba(28, 33, 45, 0.92);
+    --line: #3a4256;
+    --accent: #c4553f;
+    --accent-ink: #fff7ea;
+    --accent-hover: #d9684f;
+    --focus: #6aa8ff;
+    --muted: #7d8496;
+    --hex-line: rgba(236, 228, 210, 0.06);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --speed: 0ms; }
+}

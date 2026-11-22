@@ -1,0 +1,24 @@
+{
+  "name": "atlas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A hex-based, Civilization-style strategy engine for the browser, reskinned and re-ruled by stacking data mods.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test \"test/**/*.test.js\"",
+    "check": "node tools/check-boundaries.mjs && node tools/check-text.mjs && node tools/check-size.mjs && eslint . --max-warnings 0 && npm test",
+    "smoke": "playwright test --trace off",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.63.0",
+    "eslint": "9.39.5",
+    "globals": "15.15.0"
+  }
+}
