@@ -9,6 +9,10 @@ export { applyCommand, COMMANDS } from './commands.js';
 export { currentFactionId, getFaction, livingSeats } from './queries.js';
 export { generateMap, MapgenError, resourceAllowed, tileFood } from './mapgen.js';
 export { tileIndex, tileHex, neighbourTiles } from './map.js';
+export { view } from './view.js';
+export { findPath, enterCost } from './movement.js';
+export { idleUnits, slotOf, unitsAt } from './units.js';
+export { UNEXPLORED, EXPLORED, VISIBLE } from './visibility.js';
 
 /**
  * A short hash of the whole state. Two games with the same fingerprint are

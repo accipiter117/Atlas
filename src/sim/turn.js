@@ -5,9 +5,11 @@
 // startFactionTurn as those systems arrive in later phases.
 
 import { currentFactionId, getFaction } from './queries.js';
+import { startUnitsTurn } from './unitCommands.js';
 
-function startFactionTurn(state, factionId, events) {
+function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
+  if (state.units) startUnitsTurn(state, ruleset, factionId, events);
 }
 
 function startRound(state, events) {
@@ -24,7 +26,7 @@ export const endTurn = {
     }
     return null;
   },
-  apply(state, cmd, events) {
+  apply(state, cmd, events, ruleset) {
     events.push({ type: 'turnEnded', turn: state.turn, faction: cmd.faction });
     // Skip seats whose faction has been knocked out.
     let guard = state.seatOrder.length;
@@ -33,6 +35,6 @@ export const endTurn = {
       if (state.seatIndex >= state.seatOrder.length) startRound(state, events);
       guard -= 1;
     } while (!getFaction(state, currentFactionId(state)).alive && guard > 0);
-    startFactionTurn(state, currentFactionId(state), events);
+    startFactionTurn(state, currentFactionId(state), events, ruleset);
   },
 };

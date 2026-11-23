@@ -8,6 +8,8 @@ import { normaliseSeed, fork } from '../core/rng.js';
 import { hashValue } from '../core/hash.js';
 import { clone, deepFreeze } from '../core/clone.js';
 import { generateMap } from './mapgen.js';
+import { placeStartingUnits } from './units.js';
+import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
 export const ENGINE_VERSION = '0.1.0';
@@ -65,6 +67,10 @@ export function createGame(ruleset, setup) {
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {
     state.map = generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
+    state.map.road = new Array(state.map.width * state.map.height).fill(0);
+    state.units = {};
+    placeStartingUnits(state, ruleset);
+    updateAllVisibility(state, ruleset);
   }
   return state;
 }

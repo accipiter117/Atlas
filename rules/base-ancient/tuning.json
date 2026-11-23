@@ -60,7 +60,9 @@
     },
     "movement": {
       "roadCost": 0.5,
-      "minimumOneTile": true
+      "hillsExtraCost": 1,
+      "minimumOneTile": true,
+      "riverCrossingEndsMove": true
     },
     "stacking": {
       "combatPerTile": 1,

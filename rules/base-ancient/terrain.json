@@ -9,6 +9,6 @@
     {"id": "coast", "nameKey": "terrain.coast.name", "yields": {"food": 1, "gold": 1}, "moveCost": 1, "water": true, "art": "terrain.coast", "mapgen": {"role": "coast"}},
     {"id": "ocean", "nameKey": "terrain.ocean.name", "yields": {"food": 1}, "moveCost": 1, "water": true, "art": "terrain.ocean", "mapgen": {"role": "ocean"}},
     {"id": "lake", "nameKey": "terrain.lake.name", "yields": {"food": 1, "gold": 1}, "moveCost": 1, "water": true, "art": "terrain.lake", "mapgen": {"role": "lake"}},
-    {"id": "mountain", "nameKey": "terrain.mountain.name", "yields": {}, "moveCost": 99, "impassable": true, "art": "terrain.mountain", "mapgen": {"role": "mountain"}}
+    {"id": "mountain", "nameKey": "terrain.mountain.name", "yields": {}, "moveCost": 99, "impassable": true, "blocksSight": true, "art": "terrain.mountain", "mapgen": {"role": "mountain"}}
   ]
 }

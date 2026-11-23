@@ -44,3 +44,15 @@ export function isWater(map, ruleset, i) {
 export function hasRiver(map, i) {
   return map.river[i] !== 0;
 }
+
+const NEIGHBOURS = new Map();
+
+/** Neighbour lists for every tile, cached per map size (they depend only on width and height). */
+export function neighbourCache(map) {
+  const key = `${map.width}x${map.height}`;
+  if (!NEIGHBOURS.has(key)) {
+    const n = map.width * map.height;
+    NEIGHBOURS.set(key, Array.from({ length: n }, (_, i) => neighbourTiles(map, i)));
+  }
+  return NEIGHBOURS.get(key);
+}

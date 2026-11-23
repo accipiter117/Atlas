@@ -7,6 +7,7 @@ export const terrain = entryType('terrain', {
   moveCost: req(int(1, 99)),
   impassable: bool(),
   water: bool(),
+  blocksSight: bool(),
   defence: int(-20, 20),
   allowsHills: bool(),
   art: str(),
