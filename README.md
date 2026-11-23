@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 1 of 22 (foundations). The engine starts a game and passes turns between seats, with the full check pipeline running on every push. There is no map yet. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 2 of 22 (foundations). Rules now load from stackable data mods with a plain-English report, viewable on the Mods screen. There is no map yet. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

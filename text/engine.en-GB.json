@@ -70,8 +70,8 @@
     "mods.warnings": "Warnings ({n})",
     "mods.info": "Info ({n})",
     "mods.none": "Nothing to report.",
-    "mods.ready": "Ready to play: {n} mods, rules fingerprint {hash}.",
-    "mods.blocked": "Fix the errors before starting: {n} errors.",
+    "mods.ready": "Ready to play. Nothing blocks this combination.",
+    "mods.blocked": "Fix the errors below before this combination can be played.",
     "mods.loading": "Loading mods...",
     "mods.loadFailed": "The mod list could not be loaded: {problem}"
   }

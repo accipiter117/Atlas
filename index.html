@@ -18,10 +18,10 @@
         <li><button class="btn" type="button" data-action="continue" disabled title="No saved game yet">Continue</button></li>
         <li><button class="btn primary" type="button" data-action="new">New game</button></li>
         <li><button class="btn" type="button" data-action="load" data-say="Loading saved games arrives in phase 9.">Load</button></li>
-        <li><button class="btn" type="button" data-action="mods" data-say="The mod manager arrives in phase 2.">Mods</button></li>
+        <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 1: the engine runs, the world is still empty.</p>
+      <p class="footnote">Phase 2: rules load from mods. The world is still empty.</p>
     </div>
   </main>
 
@@ -37,6 +37,25 @@
         <button class="btn primary" type="button" data-action="end-turn" title="End turn (Enter)">End turn</button>
       </div>
       <p class="fingerprint">Seed <span data-field="seed"></span> · fingerprint <span data-field="fingerprint"></span></p>
+    </div>
+  </main>
+
+
+  <main id="mods" class="screen" hidden aria-labelledby="mods-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="mods-heading">Mods</h2>
+        <button class="btn back" type="button" data-action="back">Title screen</button>
+      </div>
+      <p class="mods-intro">Tick the mods to play with. They load top to bottom, so a later mod wins when two change the same thing. Use the arrows to reorder.</p>
+      <div class="mods-layout">
+        <ol class="mod-list" data-field="mod-list" aria-label="Available mods"></ol>
+        <div class="report" aria-live="polite">
+          <p class="mods-status" data-field="status">Loading mods...</p>
+          <div data-field="report"></div>
+          <p class="fingerprint">Rules fingerprint <span data-field="hash"></span></p>
+        </div>
+      </div>
     </div>
   </main>
 

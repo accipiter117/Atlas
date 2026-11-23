@@ -1,10 +1,11 @@
-// The title screen and the phase 1 test bench.
+// The title screen, the Mods screen and the phase 1 test bench.
 //
-// All words the player reads live in index.html (data attributes and
-// markup), so this file only moves screens around and fills in numbers.
-// From phase 2 player text moves to rules/<mod>/text/en-GB.json.
+// Words on fixed screens live in index.html markup; words built on the fly
+// (the mod report, button labels for screen readers) come from
+// text/engine.en-GB.json, so this file holds no player-facing sentences.
 
 import { createGame, applyCommand, currentFactionId, getFaction, fingerprint } from '../sim/index.js';
+import { createModManager } from './modManager.js';
 
 let toastTimer = 0;
 
@@ -58,9 +59,11 @@ function passComputerSeats(state) {
   return s;
 }
 
-export function startApp(doc) {
+export function startApp(doc, { loadModSources } = {}) {
   const bench = doc.getElementById('bench');
+  const modsScreen = doc.getElementById('mods');
   let state = null;
+  let modManager = null;
 
   const actions = {
     new() {
@@ -83,6 +86,18 @@ export function startApp(doc) {
       renderBench(doc, state);
       toast(doc, bench.dataset.aiPass);
     },
+    async mods() {
+      show(doc, 'mods');
+      if (!modManager) {
+        try {
+          modManager = createModManager(doc, modsScreen, await loadModSources());
+        } catch (e) {
+          modsScreen.querySelector('[data-field="status"]').textContent = String(e.message ?? e);
+          return;
+        }
+      }
+      modManager.render();
+    },
     back() { show(doc, 'title'); },
   };
 
@@ -102,7 +117,7 @@ export function startApp(doc) {
       const next = buttons[(i + (e.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length];
       next.focus();
       e.preventDefault();
-    } else if (!bench.hidden && e.key === 'Escape') {
+    } else if ((!bench.hidden || !modsScreen.hidden) && e.key === 'Escape') {
       actions.back();
     } else if (!bench.hidden && e.key === 'Enter' && !e.target.closest?.('button')) {
       actions['end-turn']();

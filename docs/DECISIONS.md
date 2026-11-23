@@ -17,6 +17,22 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The touch smoke run uses an 820x1180 tablet with mobile emulation**, which is what makes Playwright refuse hover and use real taps.
 - **PLAN.md is a Markdown export of the Claude Docs plan.** Its two diagrams (module boundaries, roadmap) export as placeholders; the tables and text carry the same information.
 
+## Phase 2
+
+- **Engine text lives in `text/engine.en-GB.json`.** The report and Mods screen need words even when no mod loads (for example "No ruleset is ticked"), so they cannot live inside `base-ancient`. Report messages are stored as codes with parameters and worded from this file. Fixed screen labels stay as HTML markup.
+- **Editing a content type nothing defines yet is a warning, not an error.** Section 4.3 makes `change` on a missing id an error, but lock-era edits techs, civics and wonders before any exist, and the plan expects warnings there. So: an edit aimed at a whole content type no loaded mod defines gives a warning ("no loaded mod defines techs yet"); an edit aimed at a missing id in a type that exists is still an error. References into a type nobody defines are warnings for the same reason.
+- **Three cascade rules, set per reference in the schemas.** "remove" drops whatever needed the removed entry (a unit requiring a removed tech, a tech requiring a removed tech, a leader of a removed faction); "prune" takes it out of a list (a faction's unique units, a resource's valid terrain); "clear" drops an optional link (a unit's upgradesTo, a faction's city names). Inside effects, an effect pointing at a removed entry is dropped from its list.
+- **Options are substituted as each mod loads**, not after all mods (section 4.4 step 6), because `where` selectors such as `"$opt:era.index"` need their values at the moment they run.
+- **"Last one wins" warns only when two or more mods besides the ruleset write the same field.** A conversion overriding the base game's text or numbers is the point of a conversion, not a clash.
+- **Tuning `set` paths must already exist**, so a misspelt setting is an error rather than a silent new key. Only the ruleset may define tuning wholesale (`values`).
+- **base-ancient has a few more files than the phase 2 list**: eras (units have an era, and lock-era's option reads them), unit classes (units refer to them), leaders and city names (factions refer to them) and victories (so no-religious-victory has something to switch off).
+- **Combat and amenity numbers sit in `tuning.json`** (under `combat` and `amenities`) rather than separate `combat.json` and `amenities.json` files mentioned in section 3, keeping every global number in one place.
+- **Resources do not name a revealing tech or improvement yet**; those fields return when techs (phase 8) and improvements (phase 6) exist, so base-ancient loads with zero warnings.
+- **Egypt's test leader is Hatshepsut.** Rome and Egypt are placeholder test factions; the final base-ancient faction list is still an open question in the plan.
+- **lock-era lists a text file** for its option label, as well as `rules.json`.
+- **Test mods are flagged `dev`** in `rules/index.json` and shown as "Test mod" on the Mods screen. They can be hidden from players later.
+- **`buildCharge` is not an effect.** The plan's legionary example uses it, but it is not in the 24-effect vocabulary of section 4.7, so the loader refuses it. If wanted, it should be added to the vocabulary when builders arrive (phase 6).
+
 ## Later
 
 - Nothing yet.

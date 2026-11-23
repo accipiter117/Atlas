@@ -1,5 +1,17 @@
 # Changelog
 
+## Phase 2: Rules as data and the mod loader
+
+What you can try: open Mods from the title screen. Tick and untick mods and watch the report on the right update. Tick Lock to one era without Ancient world to see a red error naming the missing mod. Tick both test scout mods and use the arrows to swap their order: the "Last one wins" line flips between 2 and 4.
+
+- The mod loader (`src/data`): load order from mod types, dependencies and your order; add, replace, change and remove with `where` selectors and cascade; `$opt:` options; schemas for all 31 content types and the 24 effects; reference and text checks; a frozen ruleset with a stable fingerprint (the same in the browser as in Node).
+- A plain-English report of everything each mod did, with errors (block play), warnings and info. Its wording lives in `text/engine.en-GB.json`.
+- `base-ancient` ruleset data: tuning with every number from the plan's section 3, eras, terrain, features, resources, map sizes and types, unit classes, 6 units, Rome and Egypt as test factions with leaders and city names, victories, text and skin.
+- `lock-era` and `no-religious-victory` tweaks (section 4.9). Lock to one era shows three warnings until techs, civics and wonders exist; that is expected.
+- Two test mods (swift and slow scouts) that clash on purpose, to show load order at work.
+- Mods screen: tick, reorder with arrow buttons (44px, touch-friendly), live report.
+- `tools/check-data.mjs` loads every mod and standard stack on each check and regenerates `CREDITS.md`. Fixture mods produce every report message; 58 unit tests and smoke tests on all three screen sizes.
+
 ## Phase 1: Repo, rules of the road and the empty engine
 
 What you can try: open the GitHub Pages link, see the title screen, press New game and end a few turns. The seat order changes every game (it comes from the seed), and computer seats pass instantly because there is no AI yet.

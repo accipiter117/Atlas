@@ -24,8 +24,8 @@ test('title screen: five buttons, no console errors, big enough to tap, engine e
   const touch = info.project.use.hasTouch;
   const press = (name) => (touch ? page.getByRole('button', { name, exact: true }).tap() : page.getByRole('button', { name, exact: true }).click());
 
-  await press('Mods');
-  await expect(page.locator('[data-toast]')).toHaveText(/phase 2/);
+  await press('Load');
+  await expect(page.locator('[data-toast]')).toHaveText(/phase 9/);
 
   await press('New game');
   await expect(page.locator('#bench')).toBeVisible();
