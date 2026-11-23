@@ -1,0 +1,22 @@
+{
+  "contentType": "factions",
+  "entries": [
+    {
+      "id": "fxrome",
+      "nameKey": "faction.fxrome",
+      "colours": {
+        "primary": "#8c1c13",
+        "secondary": "#e8c36a"
+      },
+      "leaders": [
+        "fxcaesar"
+      ],
+      "uniqueUnits": [
+        "legionary"
+      ],
+      "tags": [
+        "historical"
+      ]
+    }
+  ]
+}

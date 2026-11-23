@@ -1,0 +1,10 @@
+{
+  "contentType": "leaders",
+  "entries": [
+    {
+      "id": "fxcaesar",
+      "faction": "fxrome",
+      "nameKey": "leader.fxcaesar"
+    }
+  ]
+}

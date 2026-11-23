@@ -1,0 +1,24 @@
+{
+  "id": "fx-lock",
+  "name": "fx-lock",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [
+    "rules.json",
+    "text.json"
+  ],
+  "credits": "Test fixture.",
+  "options": [
+    {
+      "id": "era",
+      "labelKey": "opt.era",
+      "type": "choice",
+      "source": "eras",
+      "default": "classical"
+    }
+  ]
+}

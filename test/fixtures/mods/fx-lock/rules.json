@@ -1,0 +1,58 @@
+{
+  "blocks": [
+    {
+      "contentType": "techs",
+      "entries": [
+        {
+          "op": "remove",
+          "where": {
+            "eraIndex": {
+              "gt": "$opt:era.index"
+            }
+          },
+          "cascade": true
+        }
+      ]
+    },
+    {
+      "contentType": "wonders",
+      "entries": [
+        {
+          "op": "remove",
+          "where": {
+            "eraIndex": {
+              "gt": "$opt:era.index"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "contentType": "victories",
+      "entries": [
+        {
+          "op": "change",
+          "id": "science",
+          "set": {
+            "enabled": false
+          }
+        },
+        {
+          "op": "change",
+          "id": "score",
+          "set": {
+            "params.turnLimit": null
+          }
+        }
+      ]
+    },
+    {
+      "contentType": "tuning",
+      "set": {
+        "start.era": "$opt:era",
+        "start.grantErasBefore": "$opt:era",
+        "ai.lateGameMode": "sandbox"
+      }
+    }
+  ]
+}

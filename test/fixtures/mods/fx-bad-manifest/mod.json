@@ -1,0 +1,11 @@
+{
+  "id": "fx-bad-manifest",
+  "name": "fx-bad-manifest",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": []
+}

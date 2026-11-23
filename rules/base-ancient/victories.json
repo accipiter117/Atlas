@@ -1,0 +1,10 @@
+{
+  "contentType": "victories",
+  "entries": [
+    { "id": "conquest", "nameKey": "victory.conquest.name", "module": "conquest", "enabled": true, "params": {} },
+    { "id": "science", "nameKey": "victory.science.name", "module": "science", "enabled": true, "params": { "projects": 3 } },
+    { "id": "culture", "nameKey": "victory.culture.name", "module": "culture", "enabled": true, "params": {} },
+    { "id": "religious", "nameKey": "victory.religious.name", "module": "religious", "enabled": true, "params": { "shareOfCities": 0.5 } },
+    { "id": "score", "nameKey": "victory.score.name", "module": "score", "enabled": true, "params": { "turnLimit": 330 } }
+  ]
+}

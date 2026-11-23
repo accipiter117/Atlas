@@ -1,0 +1,17 @@
+{
+  "contentType": "wonders",
+  "entries": [
+    {
+      "id": "pyramids",
+      "era": "ancient",
+      "cost": 180,
+      "nameKey": "wonder.pyramids"
+    },
+    {
+      "id": "cathedral",
+      "era": "medieval",
+      "cost": 400,
+      "nameKey": "wonder.cathedral"
+    }
+  ]
+}

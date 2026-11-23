@@ -1,0 +1,14 @@
+{
+  "contentType": "terrain",
+  "entries": [
+    { "id": "grassland", "nameKey": "terrain.grassland.name", "yields": { "food": 2 }, "moveCost": 1, "defence": 0, "allowsHills": true, "art": "terrain.grassland" },
+    { "id": "plains", "nameKey": "terrain.plains.name", "yields": { "food": 1, "production": 1 }, "moveCost": 1, "defence": 0, "allowsHills": true, "art": "terrain.plains" },
+    { "id": "desert", "nameKey": "terrain.desert.name", "yields": {}, "moveCost": 1, "defence": 0, "allowsHills": true, "art": "terrain.desert" },
+    { "id": "tundra", "nameKey": "terrain.tundra.name", "yields": { "food": 1 }, "moveCost": 1, "defence": 0, "allowsHills": true, "art": "terrain.tundra" },
+    { "id": "snow", "nameKey": "terrain.snow.name", "yields": {}, "moveCost": 1, "defence": 0, "allowsHills": true, "art": "terrain.snow" },
+    { "id": "coast", "nameKey": "terrain.coast.name", "yields": { "food": 1, "gold": 1 }, "moveCost": 1, "water": true, "art": "terrain.coast" },
+    { "id": "ocean", "nameKey": "terrain.ocean.name", "yields": { "food": 1 }, "moveCost": 1, "water": true, "art": "terrain.ocean" },
+    { "id": "lake", "nameKey": "terrain.lake.name", "yields": { "food": 1, "gold": 1 }, "moveCost": 1, "water": true, "art": "terrain.lake" },
+    { "id": "mountain", "nameKey": "terrain.mountain.name", "yields": {}, "moveCost": 99, "impassable": true, "art": "terrain.mountain" }
+  ]
+}

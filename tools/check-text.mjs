@@ -34,7 +34,7 @@ const AMERICAN = {
 const AMERICAN_RE = new RegExp(`\\b(${Object.keys(AMERICAN).join('|')})\\b`, 'gi');
 
 function isPlayerText(file) {
-  return /^rules\/[^/]+\/text\/.+\.json$/.test(file) || file === 'index.html';
+  return /^rules\/[^/]+\/text\/.+\.json$/.test(file) || /^text\/.+\.json$/.test(file) || file === 'index.html';
 }
 
 /** The words a player can actually read in an HTML file (no tags, attributes, styles or scripts). */

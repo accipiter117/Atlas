@@ -1,0 +1,11 @@
+{
+  "contentType": "features",
+  "entries": [
+    { "id": "forest", "nameKey": "feature.forest.name", "yields": { "production": 1 }, "moveCost": 2, "defence": 3, "blocksSight": true, "validTerrain": ["grassland", "plains", "tundra"], "removable": true, "art": "feature.forest" },
+    { "id": "jungle", "nameKey": "feature.jungle.name", "yields": { "food": 1 }, "moveCost": 2, "defence": 3, "blocksSight": true, "validTerrain": ["grassland", "plains"], "removable": true, "art": "feature.jungle" },
+    { "id": "marsh", "nameKey": "feature.marsh.name", "yields": { "food": 1 }, "moveCost": 2, "defence": -2, "validTerrain": ["grassland"], "removable": true, "art": "feature.marsh" },
+    { "id": "floodplain", "nameKey": "feature.floodplain.name", "yields": { "food": 1 }, "moveCost": 1, "defence": -2, "validTerrain": ["desert", "plains", "grassland"], "art": "feature.floodplain" },
+    { "id": "oasis", "nameKey": "feature.oasis.name", "yields": { "food": 3, "gold": 1 }, "moveCost": 1, "validTerrain": ["desert"], "art": "feature.oasis" },
+    { "id": "reef", "nameKey": "feature.reef.name", "yields": { "food": 1, "production": 1 }, "moveCost": 2, "validTerrain": ["coast"], "art": "feature.reef" }
+  ]
+}

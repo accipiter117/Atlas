@@ -1,0 +1,13 @@
+{
+  "id": "fx-dep-failed",
+  "name": "fx-dep-failed",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base",
+    "fx-engine"
+  ],
+  "files": [],
+  "credits": "Test fixture."
+}

@@ -1,0 +1,24 @@
+{
+  "contentType": "unitClasses",
+  "entries": [
+    {
+      "id": "melee",
+      "domain": "land",
+      "combat": "melee",
+      "nameKey": "class.melee"
+    },
+    {
+      "id": "ranged",
+      "domain": "land",
+      "combat": "ranged",
+      "nameKey": "class.ranged"
+    },
+    {
+      "id": "cavalry",
+      "domain": "land",
+      "combat": "melee",
+      "ignoresZoc": true,
+      "nameKey": "class.cavalry"
+    }
+  ]
+}

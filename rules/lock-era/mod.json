@@ -1,0 +1,14 @@
+{
+  "id": "lock-era",
+  "name": "Lock to one era",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "description": "An endless sandbox in one era: later techs and civics disappear, science victory and the turn limit switch off.",
+  "dependsOn": ["base-ancient"],
+  "options": [
+    { "id": "era", "labelKey": "opt.lockEra.era", "type": "choice", "source": "eras", "default": "classical" }
+  ],
+  "files": ["rules.json", "text/en-GB.json"],
+  "credits": "Original Atlas content, MIT licence."
+}

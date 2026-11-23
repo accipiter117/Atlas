@@ -1,0 +1,10 @@
+{
+  "contentType": "mapTypes",
+  "entries": [
+    { "id": "continents", "nameKey": "mapType.continents.name", "descriptionKey": "mapType.continents.text", "recipe": { "landShare": 0.32, "landmasses": 2, "mountainShare": 0.06, "hillShare": 0.18, "rivers": 14 }, "default": true },
+    { "id": "pangaea", "nameKey": "mapType.pangaea.name", "descriptionKey": "mapType.pangaea.text", "recipe": { "landShare": 0.36, "landmasses": 1, "mountainShare": 0.07, "hillShare": 0.18, "rivers": 16 } },
+    { "id": "islands", "nameKey": "mapType.islands.name", "descriptionKey": "mapType.islands.text", "recipe": { "landShare": 0.26, "landmasses": 9, "mountainShare": 0.04, "hillShare": 0.15, "rivers": 8 } },
+    { "id": "inland_sea", "nameKey": "mapType.inland_sea.name", "descriptionKey": "mapType.inland_sea.text", "recipe": { "landShare": 0.55, "landmasses": 1, "mountainShare": 0.06, "hillShare": 0.18, "rivers": 18, "inlandSea": true } },
+    { "id": "highlands", "nameKey": "mapType.highlands.name", "descriptionKey": "mapType.highlands.text", "recipe": { "landShare": 0.38, "landmasses": 2, "mountainShare": 0.14, "hillShare": 0.4, "rivers": 20 } }
+  ]
+}

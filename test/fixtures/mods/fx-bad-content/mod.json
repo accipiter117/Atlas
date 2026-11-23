@@ -1,0 +1,14 @@
+{
+  "id": "fx-bad-content",
+  "name": "fx-bad-content",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [
+    "units.json"
+  ],
+  "credits": "Test fixture."
+}

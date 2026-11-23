@@ -1,0 +1,12 @@
+{
+  "contentType": "religions",
+  "entries": [
+    {
+      "op": "change",
+      "id": "christianity",
+      "set": {
+        "colour": "#ffffff"
+      }
+    }
+  ]
+}

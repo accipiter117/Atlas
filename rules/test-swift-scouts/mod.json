@@ -1,0 +1,12 @@
+{
+  "id": "test-swift-scouts",
+  "name": "Test: swift scouts",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "description": "Scouts move 4 hexes a turn. For testing load order with test-slow-scouts.",
+  "dependsOn": ["base-ancient"],
+  "files": ["units.json"],
+  "credits": "Original Atlas content, MIT licence.",
+  "dev": true
+}

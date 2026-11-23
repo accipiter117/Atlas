@@ -1,0 +1,34 @@
+{
+  "contentType": "factions",
+  "entries": [
+    {
+      "id": "rome",
+      "nameKey": "faction.rome.name",
+      "adjectiveKey": "faction.rome.adj",
+      "colours": { "primary": "#8c1c13", "secondary": "#e8c36a" },
+      "leaders": ["trajan"],
+      "startBias": { "terrain": ["plains", "grassland"], "avoid": ["tundra"] },
+      "trait": { "id": "all_roads", "effects": [
+        { "effect": "autoRoad", "scope": "cityToCapital" },
+        { "effect": "yieldBonus", "yield": "production", "amount": 1, "scope": "capital" }
+      ]},
+      "uniqueUnits": [],
+      "cityNames": "rome",
+      "tags": ["historical", "mediterranean", "test"]
+    },
+    {
+      "id": "egypt",
+      "nameKey": "faction.egypt.name",
+      "adjectiveKey": "faction.egypt.adj",
+      "colours": { "primary": "#1f5fa8", "secondary": "#e6c34a" },
+      "leaders": ["hatshepsut"],
+      "startBias": { "terrain": ["desert", "plains"], "avoid": ["tundra", "snow"] },
+      "trait": { "id": "gifts_of_the_river", "effects": [
+        { "effect": "tileYield", "yield": "food", "amount": 1, "feature": "floodplain" }
+      ]},
+      "uniqueUnits": [],
+      "cityNames": "egypt",
+      "tags": ["historical", "mediterranean", "test"]
+    }
+  ]
+}

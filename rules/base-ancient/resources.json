@@ -1,0 +1,14 @@
+{
+  "contentType": "resources",
+  "entries": [
+    { "id": "wheat", "nameKey": "resource.wheat.name", "class": "bonus", "yields": { "food": 1 }, "validTerrain": ["plains", "grassland"], "validFeatures": ["floodplain"], "frequency": 1.0, "art": "resource.wheat" },
+    { "id": "cattle", "nameKey": "resource.cattle.name", "class": "bonus", "yields": { "food": 1 }, "validTerrain": ["grassland"], "frequency": 1.0, "art": "resource.cattle" },
+    { "id": "stone", "nameKey": "resource.stone.name", "class": "bonus", "yields": { "production": 1 }, "validTerrain": ["grassland", "plains", "desert"], "frequency": 0.8, "art": "resource.stone" },
+    { "id": "fish", "nameKey": "resource.fish.name", "class": "bonus", "yields": { "food": 1 }, "validTerrain": ["coast", "lake"], "frequency": 1.0, "art": "resource.fish" },
+    { "id": "wine", "nameKey": "resource.wine.name", "class": "luxury", "yields": { "food": 1, "gold": 1 }, "validTerrain": ["plains", "grassland"], "frequency": 0.6, "amenities": 1, "art": "resource.wine" },
+    { "id": "silk", "nameKey": "resource.silk.name", "class": "luxury", "yields": { "culture": 1 }, "validTerrain": ["grassland", "plains"], "validFeatures": ["forest"], "frequency": 0.5, "amenities": 1, "art": "resource.silk" },
+    { "id": "incense", "nameKey": "resource.incense.name", "class": "luxury", "yields": { "faith": 1 }, "validTerrain": ["desert", "plains"], "frequency": 0.5, "amenities": 1, "art": "resource.incense" },
+    { "id": "horses", "nameKey": "resource.horses.name", "class": "strategic", "yields": { "food": 1, "production": 1 }, "validTerrain": ["grassland", "plains"], "frequency": 0.8, "art": "resource.horses" },
+    { "id": "iron", "nameKey": "resource.iron.name", "class": "strategic", "yields": { "production": 1 }, "validTerrain": ["plains", "grassland", "desert", "tundra"], "frequency": 0.8, "art": "resource.iron" }
+  ]
+}

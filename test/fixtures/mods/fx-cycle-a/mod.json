@@ -1,0 +1,15 @@
+{
+  "id": "fx-cycle-a",
+  "name": "fx-cycle-a",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture.",
+  "loadAfter": [
+    "fx-cycle-b"
+  ]
+}

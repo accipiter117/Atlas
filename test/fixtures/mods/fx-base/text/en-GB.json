@@ -1,0 +1,28 @@
+{
+  "contentType": "text",
+  "strings": {
+    "era.ancient": "era.ancient",
+    "era.classical": "era.classical",
+    "era.medieval": "era.medieval",
+    "tech.bronze": "tech.bronze",
+    "tech.iron": "tech.iron",
+    "tech.steel": "tech.steel",
+    "unit.warrior": "unit.warrior",
+    "unit.archer": "unit.archer",
+    "unit.chariot": "unit.chariot",
+    "unit.legionary": "unit.legionary",
+    "unit.knight": "unit.knight",
+    "unit.war_elephant": "unit.war_elephant",
+    "building.barracks": "building.barracks",
+    "building.armoury": "building.armoury",
+    "wonder.pyramids": "wonder.pyramids",
+    "wonder.cathedral": "wonder.cathedral",
+    "faction.fxrome": "faction.fxrome",
+    "leader.fxcaesar": "leader.fxcaesar",
+    "class.melee": "class.melee",
+    "class.ranged": "class.ranged",
+    "class.cavalry": "class.cavalry",
+    "victory.science": "victory.science",
+    "victory.score": "victory.score"
+  }
+}

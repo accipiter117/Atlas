@@ -1,0 +1,14 @@
+{
+  "contentType": "unitClasses",
+  "entries": [
+    { "id": "melee", "nameKey": "unitClass.melee.name", "domain": "land", "combat": "melee", "promotionTree": "melee" },
+    { "id": "ranged", "nameKey": "unitClass.ranged.name", "domain": "land", "combat": "ranged", "promotionTree": "ranged" },
+    { "id": "anti_cavalry", "nameKey": "unitClass.anti_cavalry.name", "domain": "land", "combat": "melee", "promotionTree": "anti_cavalry" },
+    { "id": "cavalry", "nameKey": "unitClass.cavalry.name", "domain": "land", "combat": "melee", "ignoresZoc": true, "promotionTree": "cavalry" },
+    { "id": "siege", "nameKey": "unitClass.siege.name", "domain": "land", "combat": "ranged", "promotionTree": "siege" },
+    { "id": "recon", "nameKey": "unitClass.recon.name", "domain": "land", "combat": "melee", "promotionTree": "recon" },
+    { "id": "naval_melee", "nameKey": "unitClass.naval_melee.name", "domain": "sea", "combat": "melee", "promotionTree": "naval_melee" },
+    { "id": "naval_ranged", "nameKey": "unitClass.naval_ranged.name", "domain": "sea", "combat": "ranged", "promotionTree": "naval_ranged" },
+    { "id": "civilian", "nameKey": "unitClass.civilian.name", "domain": "land", "combat": "none", "civilian": true }
+  ]
+}

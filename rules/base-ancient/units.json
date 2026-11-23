@@ -1,0 +1,11 @@
+{
+  "contentType": "units",
+  "entries": [
+    { "id": "settler", "nameKey": "unit.settler.name", "class": "civilian", "domain": "land", "era": "ancient", "strength": 0, "moves": 2, "sight": 3, "cost": 80, "upkeep": 0, "sprite": "unit.settler", "tags": ["founder"] },
+    { "id": "builder", "nameKey": "unit.builder.name", "class": "civilian", "domain": "land", "era": "ancient", "strength": 0, "moves": 2, "sight": 2, "cost": 50, "upkeep": 0, "sprite": "unit.builder", "tags": ["worker"] },
+    { "id": "warrior", "nameKey": "unit.warrior.name", "class": "melee", "domain": "land", "era": "ancient", "strength": 20, "moves": 2, "sight": 2, "cost": 40, "upkeep": 1, "upgradesTo": "spearman", "sprite": "unit.warrior", "tags": ["infantry"] },
+    { "id": "scout", "nameKey": "unit.scout.name", "class": "recon", "domain": "land", "era": "ancient", "strength": 10, "moves": 3, "sight": 3, "cost": 30, "upkeep": 0, "sprite": "unit.scout", "tags": ["infantry"] },
+    { "id": "slinger", "nameKey": "unit.slinger.name", "class": "ranged", "domain": "land", "era": "ancient", "strength": 5, "rangedStrength": 15, "range": 1, "moves": 2, "sight": 2, "cost": 35, "upkeep": 1, "sprite": "unit.slinger", "tags": ["infantry"] },
+    { "id": "spearman", "nameKey": "unit.spearman.name", "class": "anti_cavalry", "domain": "land", "era": "ancient", "strength": 25, "moves": 2, "sight": 2, "cost": 65, "upkeep": 1, "abilities": [{ "effect": "combatBonus", "amount": 10, "vs": { "class": "cavalry" } }], "sprite": "unit.spearman", "tags": ["infantry"] }
+  ]
+}

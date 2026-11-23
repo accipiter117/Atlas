@@ -1,0 +1,15 @@
+{
+  "contentType": "tuning",
+  "values": {
+    "combat": {
+      "flankingBonus": 2
+    },
+    "start": {
+      "era": "ancient",
+      "grantErasBefore": null
+    },
+    "ai": {
+      "lateGameMode": "normal"
+    }
+  }
+}

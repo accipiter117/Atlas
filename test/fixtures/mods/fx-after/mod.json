@@ -1,0 +1,15 @@
+{
+  "id": "fx-after",
+  "name": "fx-after",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture.",
+  "loadAfter": [
+    "fx-ops"
+  ]
+}

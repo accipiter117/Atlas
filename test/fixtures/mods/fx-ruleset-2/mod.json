@@ -1,0 +1,10 @@
+{
+  "id": "fx-ruleset-2",
+  "name": "fx-ruleset-2",
+  "version": "1.0.0",
+  "type": "ruleset",
+  "engine": ">=0.1.0",
+  "dependsOn": [],
+  "files": [],
+  "credits": "Test fixture."
+}

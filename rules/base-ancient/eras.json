@@ -1,0 +1,9 @@
+{
+  "contentType": "eras",
+  "entries": [
+    { "id": "ancient", "index": 0, "nameKey": "era.ancient.name", "costMultiplier": 1.0, "startUnits": ["settler", "warrior", "builder"] },
+    { "id": "classical", "index": 1, "nameKey": "era.classical.name", "costMultiplier": 1.0, "startUnits": ["settler", "warrior", "builder"] },
+    { "id": "medieval", "index": 2, "nameKey": "era.medieval.name", "costMultiplier": 1.0, "startUnits": ["settler", "settler", "spearman", "builder"] },
+    { "id": "renaissance", "index": 3, "nameKey": "era.renaissance.name", "costMultiplier": 1.0, "startUnits": ["settler", "settler", "spearman", "builder"] }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "fx-base",
+  "name": "fx-base",
+  "version": "1.0.0",
+  "type": "ruleset",
+  "engine": ">=0.1.0",
+  "dependsOn": [],
+  "files": [
+    "tuning.json",
+    "eras.json",
+    "techs.json",
+    "unitClasses.json",
+    "units.json",
+    "buildings.json",
+    "wonders.json",
+    "factions.json",
+    "leaders.json",
+    "victories.json",
+    "text/en-GB.json"
+  ],
+  "credits": "Test fixture."
+}

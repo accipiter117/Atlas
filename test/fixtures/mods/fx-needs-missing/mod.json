@@ -1,0 +1,13 @@
+{
+  "id": "fx-needs-missing",
+  "name": "fx-needs-missing",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base",
+    "fx-nowhere"
+  ],
+  "files": [],
+  "credits": "Test fixture."
+}

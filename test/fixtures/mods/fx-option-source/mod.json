@@ -1,0 +1,20 @@
+{
+  "id": "fx-option-source",
+  "name": "fx-option-source",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture.",
+  "options": [
+    {
+      "id": "faith",
+      "type": "choice",
+      "source": "religions",
+      "default": "sun"
+    }
+  ]
+}

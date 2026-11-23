@@ -1,0 +1,12 @@
+{
+  "id": "fx-conv-b",
+  "name": "fx-conv-b",
+  "version": "1.0.0",
+  "type": "conversion",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture."
+}

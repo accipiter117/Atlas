@@ -1,0 +1,12 @@
+{
+  "id": "fx-engine",
+  "name": "fx-engine",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=99.0.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture."
+}

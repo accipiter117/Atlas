@@ -1,0 +1,20 @@
+{
+  "contentType": "eras",
+  "entries": [
+    {
+      "id": "ancient",
+      "index": 0,
+      "nameKey": "era.ancient"
+    },
+    {
+      "id": "classical",
+      "index": 1,
+      "nameKey": "era.classical"
+    },
+    {
+      "id": "medieval",
+      "index": 2,
+      "nameKey": "era.medieval"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "contentType": "units",
+  "entries": [
+    {
+      "id": "slinger",
+      "class": "ranged",
+      "era": "ancient",
+      "strength": 5,
+      "rangedStrength": 15,
+      "range": 1,
+      "moves": 2,
+      "cost": 35
+    },
+    {
+      "id": "warrior",
+      "class": "melee",
+      "strength": 21,
+      "moves": 2,
+      "cost": 40
+    },
+    {
+      "op": "replace",
+      "id": "chariot",
+      "class": "cavalry",
+      "era": "ancient",
+      "strength": 30,
+      "moves": 3,
+      "cost": 90
+    },
+    {
+      "op": "replace",
+      "id": "hoplite",
+      "class": "melee",
+      "strength": 30,
+      "moves": 2,
+      "cost": 90
+    },
+    {
+      "op": "change",
+      "id": "archer",
+      "set": {
+        "rangedStrength": 27
+      },
+      "add": {
+        "tags": [
+          "volley"
+        ]
+      },
+      "remove": {
+        "tags": [
+          "bow"
+        ]
+      }
+    },
+    {
+      "op": "change",
+      "id": "archer",
+      "set": {
+        "flavour": 3
+      }
+    },
+    {
+      "op": "change",
+      "id": "catapult",
+      "set": {
+        "strength": 3
+      }
+    },
+    {
+      "op": "remove",
+      "id": "war_elephant",
+      "cascade": true
+    },
+    {
+      "op": "remove",
+      "where": {
+        "era": {
+          "in": [
+            "medieval"
+          ]
+        }
+      },
+      "cascade": true
+    },
+    {
+      "op": "remove",
+      "where": {
+        "era": {
+          "eq": "renaissance"
+        }
+      }
+    },
+    {
+      "op": "teleport",
+      "id": "archer"
+    },
+    {
+      "class": "melee",
+      "strength": 1,
+      "moves": 1,
+      "cost": 1
+    },
+    {
+      "op": "remove",
+      "where": {
+        "era": {
+          "near": "ancient"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "contentType": "buildings",
+  "entries": [
+    {
+      "id": "barracks",
+      "era": "ancient",
+      "cost": 60,
+      "nameKey": "building.barracks"
+    },
+    {
+      "id": "armoury",
+      "era": "classical",
+      "cost": 90,
+      "nameKey": "building.armoury",
+      "requires": {
+        "tech": "iron",
+        "buildings": [
+          "barracks"
+        ]
+      },
+      "effects": [
+        {
+          "effect": "freeUnit",
+          "unit": "legionary"
+        }
+      ]
+    }
+  ]
+}

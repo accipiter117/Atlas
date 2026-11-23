@@ -1,0 +1,25 @@
+{
+  "contentType": "units",
+  "entries": [
+    {
+      "id": "brute",
+      "class": "melee",
+      "strength": "forty",
+      "moves": 2,
+      "cost": 50,
+      "colour": "red",
+      "nameKey": "unit.brute",
+      "requires": {
+        "tech": "iron_working_2",
+        "civic": "drill"
+      },
+      "abilities": [
+        {
+          "effect": "buildCharge",
+          "improvement": "fort",
+          "charges": 1
+        }
+      ]
+    }
+  ]
+}

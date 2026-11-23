@@ -1,0 +1,30 @@
+{
+  "id": "base-ancient",
+  "name": "Ancient world",
+  "version": "0.1.0",
+  "type": "ruleset",
+  "engine": ">=0.1.0",
+  "description": "The historical base game, from the first cities to the end of the medieval age.",
+  "dependsOn": [],
+  "loadAfter": [],
+  "incompatibleWith": [],
+  "options": [],
+  "files": [
+    "tuning.json",
+    "eras.json",
+    "terrain.json",
+    "features.json",
+    "resources.json",
+    "mapSizes.json",
+    "mapTypes.json",
+    "unitClasses.json",
+    "units.json",
+    "cityNames.json",
+    "factions.json",
+    "leaders.json",
+    "victories.json",
+    "text/en-GB.json",
+    "skin/skin.json"
+  ],
+  "credits": "Original Atlas content, MIT licence."
+}

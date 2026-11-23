@@ -1,0 +1,42 @@
+{
+  "contentType": "techs",
+  "entries": [
+    {
+      "id": "bronze",
+      "era": "ancient",
+      "cost": 20,
+      "nameKey": "tech.bronze"
+    },
+    {
+      "id": "iron",
+      "era": "classical",
+      "cost": 50,
+      "requires": [
+        "bronze"
+      ],
+      "nameKey": "tech.iron",
+      "unlocks": {
+        "units": [
+          "legionary"
+        ],
+        "buildings": [
+          "armoury"
+        ]
+      }
+    },
+    {
+      "id": "steel",
+      "era": "medieval",
+      "cost": 90,
+      "requires": [
+        "iron"
+      ],
+      "nameKey": "tech.steel",
+      "unlocks": {
+        "units": [
+          "knight"
+        ]
+      }
+    }
+  ]
+}

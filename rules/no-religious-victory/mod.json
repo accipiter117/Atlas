@@ -1,0 +1,11 @@
+{
+  "id": "no-religious-victory",
+  "name": "No religious victory",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "description": "Religions still spread, but cannot win the game.",
+  "dependsOn": ["base-ancient"],
+  "files": ["victories.json"],
+  "credits": "Original Atlas content, MIT licence."
+}

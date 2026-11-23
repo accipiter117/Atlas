@@ -1,0 +1,10 @@
+{
+  "id": "fx-remove-iron",
+  "name": "fx-remove-iron",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": ["fx-base"],
+  "files": ["techs.json"],
+  "credits": "Test fixture."
+}

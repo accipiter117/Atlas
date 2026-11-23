@@ -1,0 +1,6 @@
+{
+  "contentType": "tuning",
+  "set": {
+    "combat.flankingBonuss": 3
+  }
+}

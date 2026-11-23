@@ -1,0 +1,21 @@
+{
+  "id": "fx-bad-files",
+  "name": "fx-bad-files",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [
+    "broken.json",
+    "missing.json",
+    "nocontent.json",
+    "weird.json",
+    "text.json",
+    "tuning.json",
+    "tuning2.json",
+    "religions.json"
+  ],
+  "credits": "Test fixture."
+}

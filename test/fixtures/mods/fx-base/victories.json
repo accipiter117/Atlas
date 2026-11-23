@@ -1,0 +1,20 @@
+{
+  "contentType": "victories",
+  "entries": [
+    {
+      "id": "science",
+      "module": "science",
+      "enabled": true,
+      "nameKey": "victory.science"
+    },
+    {
+      "id": "score",
+      "module": "score",
+      "enabled": true,
+      "params": {
+        "turnLimit": 330
+      },
+      "nameKey": "victory.score"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "contentType": "units",
+  "entries": [
+    {
+      "id": "warrior",
+      "class": "melee",
+      "era": "ancient",
+      "strength": 20,
+      "moves": 2,
+      "cost": 40,
+      "nameKey": "unit.warrior",
+      "upgradesTo": "legionary"
+    },
+    {
+      "id": "archer",
+      "class": "ranged",
+      "era": "ancient",
+      "strength": 15,
+      "rangedStrength": 25,
+      "range": 2,
+      "moves": 2,
+      "cost": 60,
+      "nameKey": "unit.archer",
+      "tags": [
+        "bow"
+      ]
+    },
+    {
+      "id": "chariot",
+      "class": "cavalry",
+      "era": "ancient",
+      "strength": 28,
+      "moves": 3,
+      "cost": 80,
+      "nameKey": "unit.chariot"
+    },
+    {
+      "id": "war_elephant",
+      "class": "cavalry",
+      "era": "classical",
+      "strength": 40,
+      "moves": 2,
+      "cost": 120,
+      "nameKey": "unit.war_elephant"
+    },
+    {
+      "id": "legionary",
+      "class": "melee",
+      "era": "classical",
+      "strength": 40,
+      "moves": 2,
+      "cost": 110,
+      "nameKey": "unit.legionary",
+      "requires": {
+        "tech": "iron",
+        "faction": "fxrome"
+      }
+    },
+    {
+      "id": "knight",
+      "class": "cavalry",
+      "era": "medieval",
+      "strength": 48,
+      "moves": 4,
+      "cost": 180,
+      "nameKey": "unit.knight",
+      "requires": {
+        "tech": "steel"
+      }
+    }
+  ]
+}

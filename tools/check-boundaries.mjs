@@ -20,7 +20,7 @@ const inDir = (dir) => (target) => target.startsWith(`src/${dir}/`);
 // What each layer may import (anything else under src/ is refused).
 const ALLOWED = {
   core: [inDir('core')],
-  data: [inDir('core')],
+  data: [inDir('core'), inDir('data')],
   sim: [inDir('core'), inDir('sim'), isFile('src/battles/index.js')],
   battles: [inDir('core'), inDir('battles')],
   ai: [inDir('core'), inDir('ai'), isFile('src/sim/index.js')],
@@ -45,8 +45,11 @@ const BANNED = {
   data: DOM,
   sim: [...DOM, 'Math.random', 'Date', 'setTimeout', 'setInterval', 'requestAnimationFrame', 'performance'],
   ai: [...DOM, 'Math.random', 'Date', 'setTimeout', 'setInterval'],
-  render: ['Math.random'],
-  ui: ['Math.random'],
+  // Fetching JSON happens only in src/main.js (section 7), so the loader and sim run unchanged in Node.
+  battles: ['fetch'],
+  save: ['fetch'],
+  render: ['Math.random', 'fetch'],
+  ui: ['Math.random', 'fetch'],
 };
 
 function layerOf(file) {

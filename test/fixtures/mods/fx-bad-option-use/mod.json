@@ -1,0 +1,22 @@
+{
+  "id": "fx-bad-option-use",
+  "name": "fx-bad-option-use",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [
+    "units.json"
+  ],
+  "credits": "Test fixture.",
+  "options": [
+    {
+      "id": "era",
+      "type": "choice",
+      "source": "eras",
+      "default": "classical"
+    }
+  ]
+}

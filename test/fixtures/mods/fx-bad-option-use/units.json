@@ -1,0 +1,12 @@
+{
+  "contentType": "units",
+  "entries": [
+    {
+      "op": "change",
+      "id": "archer",
+      "set": {
+        "strength": "$opt:speed"
+      }
+    }
+  ]
+}

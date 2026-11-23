@@ -1,0 +1,10 @@
+{
+  "contentType": "skin",
+  "values": {
+    "id": "ancient",
+    "palette": { "ink": "#1f2430", "paper": "#f4ecd8", "accent": "#8a2b1d", "water": "#2f6f9f", "land": "#9fae6a" },
+    "fonts": { "display": "Cinzel", "body": "Inter" },
+    "art": {},
+    "sounds": {}
+  }
+}

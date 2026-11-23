@@ -1,0 +1,15 @@
+{
+  "id": "fx-incompat",
+  "name": "fx-incompat",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "dependsOn": [
+    "fx-base"
+  ],
+  "files": [],
+  "credits": "Test fixture.",
+  "incompatibleWith": [
+    "fx-ops"
+  ]
+}
