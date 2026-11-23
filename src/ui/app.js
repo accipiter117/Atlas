@@ -1,10 +1,12 @@
-// The title screen, the Mods screen and the phase 1 test bench.
+// The title screen, the Mods screen and starting a game.
 //
 // Words on fixed screens live in index.html markup; words built on the fly
 // (the mod report, button labels for screen readers) come from
 // text/engine.en-GB.json, so this file holds no player-facing sentences.
 
-import { createGame, applyCommand, currentFactionId, getFaction, fingerprint } from '../sim/index.js';
+import { ENGINE_VERSION } from '../sim/index.js';
+import { loadRuleset } from '../data/loader.js';
+import { createGameScreen } from './game.js';
 import { createModManager } from './modManager.js';
 
 let toastTimer = 0;
@@ -30,67 +32,32 @@ function newSeed() {
   return buf[0] % 1_000_000_000;
 }
 
-function renderBench(doc, state) {
-  const bench = doc.getElementById('bench');
-  bench.querySelector('[data-field="turn"]').textContent = String(state.turn);
-  bench.querySelector('[data-field="seed"]').textContent = String(state.setup.seed);
-  bench.querySelector('[data-field="fingerprint"]').textContent = fingerprint(state);
-  const list = bench.querySelector('[data-field="seats"]');
-  list.replaceChildren(...state.seatOrder.map((id) => {
-    const f = getFaction(state, id);
-    const li = doc.createElement('li');
-    const name = doc.createElement('span');
-    name.textContent = f.name;
-    const kind = doc.createElement('span');
-    kind.className = 'kind';
-    kind.textContent = f.kind === 'human' ? bench.dataset.human : bench.dataset.ai;
-    li.append(name, kind);
-    li.setAttribute('aria-current', String(id === currentFactionId(state)));
-    return li;
-  }));
-}
-
-/** Until the AI exists (phase 8), computer seats simply end their turn. */
-function passComputerSeats(state) {
-  let s = state;
-  while (getFaction(s, currentFactionId(s)).kind === 'ai') {
-    s = applyCommand(s, { type: 'endTurn', faction: currentFactionId(s) }).state;
-  }
-  return s;
-}
-
-export function startApp(doc, { loadModSources } = {}) {
-  const bench = doc.getElementById('bench');
+export function startApp(doc, { loadModSources, loadSheets } = {}) {
   const modsScreen = doc.getElementById('mods');
-  let state = null;
+  const gameScreen = doc.getElementById('game');
   let modManager = null;
+  let game = null;
+  let sourcesPromise = null;
+  const sources = () => { sourcesPromise ??= loadModSources(); return sourcesPromise; };
 
   const actions = {
-    new() {
-      state = createGame({}, {
-        seed: newSeed(),
-        players: [
-          { kind: 'human', name: bench.dataset.you },
-          ...[1, 2, 3].map((n) => ({ kind: 'ai', name: `${bench.dataset.rival} ${n}` })),
-        ],
-      });
-      state = passComputerSeats(state);
-      renderBench(doc, state);
-      show(doc, 'bench');
-    },
-    'end-turn'() {
-      if (!state) return;
-      const result = applyCommand(state, { type: 'endTurn', faction: currentFactionId(state) });
-      if (!result.ok) { toast(doc, result.error.message); return; }
-      state = passComputerSeats(result.state);
-      renderBench(doc, state);
-      toast(doc, bench.dataset.aiPass);
+    async new() {
+      const src = await sources();
+      const { ruleset, ok, report } = loadRuleset({ available: src.available, selection: ['base-ancient'], engineVersion: ENGINE_VERSION });
+      if (!ok) { toast(doc, `${report.errors} errors in the rules`); return; }
+      const sheets = await loadSheets(ruleset.skin.art);
+      game?.destroy();
+      show(doc, 'game');
+      const params = new URLSearchParams(doc.defaultView.location.search);
+      const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
+      game = createGameScreen(doc, gameScreen, { ruleset, text: { ...src.engineText, ...ruleset.text }, sheets, seed, toast: (m) => toast(doc, m) });
+      gameScreen.querySelector('#game-map').focus({ preventScroll: true });
     },
     async mods() {
       show(doc, 'mods');
       if (!modManager) {
         try {
-          modManager = createModManager(doc, modsScreen, await loadModSources());
+          modManager = createModManager(doc, modsScreen, await sources());
         } catch (e) {
           modsScreen.querySelector('[data-field="status"]').textContent = String(e.message ?? e);
           return;
@@ -108,7 +75,7 @@ export function startApp(doc, { loadModSources } = {}) {
     actions[btn.dataset.action]?.();
   });
 
-  // Keyboard extras: arrow keys move through a menu, Escape goes back, Enter ends the turn.
+  // Keyboard extras: arrow keys move through a menu, Escape leaves the Mods screen.
   doc.addEventListener('keydown', (e) => {
     const menu = e.target.closest?.('[data-menu]');
     if (menu && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -117,10 +84,8 @@ export function startApp(doc, { loadModSources } = {}) {
       const next = buttons[(i + (e.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length];
       next.focus();
       e.preventDefault();
-    } else if ((!bench.hidden || !modsScreen.hidden) && e.key === 'Escape') {
+    } else if (!modsScreen.hidden && e.key === 'Escape') {
       actions.back();
-    } else if (!bench.hidden && e.key === 'Enter' && !e.target.closest?.('button')) {
-      actions['end-turn']();
     }
   });
 

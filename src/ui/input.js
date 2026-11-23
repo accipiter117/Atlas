@@ -1,15 +1,19 @@
 // Map gestures: drag to pan, wheel to zoom, two-finger pinch to zoom and pan,
 // arrow keys or WASD to pan, + and - to zoom. Works the same with mouse,
 // pen and touch through pointer events, and nothing depends on hovering.
+// A press that barely moves is a tap (onTap); a right-click is onContext;
+// mouse movement without a button held is onHover (an extra, never needed).
 
 import { pan, zoomAt } from '../render/camera.js';
 
 const KEY_PAN = { ArrowLeft: [1, 0], a: [1, 0], ArrowRight: [-1, 0], d: [-1, 0], ArrowUp: [0, 1], w: [0, 1], ArrowDown: [0, -1], s: [0, -1] };
 
-export function attachMapInput(view, { keyTarget } = {}) {
+export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, keyPan = () => true } = {}) {
   const el = view.canvas;
   const pointers = new Map();
   let pinch = null;
+  let press = null; // where the current single press started, to tell taps from drags
+  const TAP_SLOP = 8;
   el.style.touchAction = 'none';
 
   const local = (e) => {
@@ -23,6 +27,7 @@ export function attachMapInput(view, { keyTarget } = {}) {
     // gesture still works without it.
     try { el.setPointerCapture?.(e.pointerId); } catch { /* not capturable */ }
     pointers.set(e.pointerId, local(e));
+    press = pointers.size === 1 && e.button === 0 ? { ...local(e), id: e.pointerId, moved: false, type: e.pointerType } : null;
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
       pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
@@ -30,7 +35,15 @@ export function attachMapInput(view, { keyTarget } = {}) {
   });
 
   el.addEventListener('pointermove', (e) => {
-    if (!pointers.has(e.pointerId)) return;
+    if (!pointers.has(e.pointerId)) {
+      if (e.pointerType === 'mouse' && onHover) onHover(local(e).x, local(e).y);
+      return;
+    }
+    if (press && press.id === e.pointerId && !press.moved) {
+      const p = local(e);
+      if (Math.hypot(p.x - press.x, p.y - press.y) < TAP_SLOP) return;
+      press.moved = true;
+    }
     const prev = pointers.get(e.pointerId);
     const now = local(e);
     pointers.set(e.pointerId, now);
@@ -51,8 +64,20 @@ export function attachMapInput(view, { keyTarget } = {}) {
     pointers.delete(e.pointerId);
     if (pointers.size < 2) pinch = null;
   };
-  el.addEventListener('pointerup', end);
-  el.addEventListener('pointercancel', end);
+  el.addEventListener('pointerup', (e) => {
+    const wasTap = press && press.id === e.pointerId && !press.moved && pointers.size === 1;
+    const type = press?.type;
+    end(e);
+    press = null;
+    if (wasTap && onTap) onTap(local(e).x, local(e).y, type);
+  });
+  el.addEventListener('pointercancel', (e) => { end(e); press = null; });
+  el.addEventListener('contextmenu', (e) => {
+    if (!onContext) return;
+    e.preventDefault();
+    onContext(local(e).x, local(e).y);
+  });
+  el.addEventListener('pointerleave', () => onHover?.(null, null));
 
   el.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -64,7 +89,7 @@ export function attachMapInput(view, { keyTarget } = {}) {
     if (e.target.closest?.('input, select, textarea')) return;
     const step = 60;
     const k = KEY_PAN[e.key] ?? KEY_PAN[e.key.toLowerCase?.()];
-    if (k) {
+    if (k && keyPan(e)) {
       view.setCamera(pan(view.camera, k[0] * step, k[1] * step));
       e.preventDefault();
     } else if (e.key === '+' || e.key === '=' || e.key === '-') {

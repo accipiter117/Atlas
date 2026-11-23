@@ -9,3 +9,7 @@ Atlas engine code: original work under the MIT licence (see `LICENSE`).
 - **No religious victory** (`no-religious-victory` 1.0.0): Original Atlas content, MIT licence.
 - **Test: swift scouts** (`test-swift-scouts` 1.0.0): Original Atlas content, MIT licence.
 - **Test: slow scouts** (`test-slow-scouts` 1.0.0): Original Atlas content, MIT licence.
+
+## Sprite sheets
+
+- **unit.warrior** (`assets/sprites/lpc-test-warrior.json`): Composed from the Universal LPC Spritesheet Character Generator (https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator), layers: body (body/bodies/male); head (head/heads/human/male); trousers (legs/pants/male); chainmail (torso/chainmail/male); helmet (hat/helmet/barbarian_nasal/adult). Artists: bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike), ElizaWy, Matthew Krohn (makrohn), Napsio (Vitruvian Studio). Used under OGA-BY 3.0 (each layer is also available under GPL 3.0). Full per-layer credits: assets/sprites/lpc-test-warrior.CREDITS.md

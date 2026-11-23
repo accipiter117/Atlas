@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test('title screen: five buttons, no console errors, big enough to tap, engine ends turns', async ({ page }, info) => {
+test('title screen: five buttons, no console errors, big enough to tap', async ({ page }, info) => {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -26,37 +26,16 @@ test('title screen: five buttons, no console errors, big enough to tap, engine e
 
   await press('Load');
   await expect(page.locator('[data-toast]')).toHaveText(/phase 9/);
-
-  await press('New game');
-  await expect(page.locator('#bench')).toBeVisible();
-  await expect(page.locator('#bench [data-field="turn"]')).toHaveText('1');
-  await expect(page.locator('.seats li')).toHaveCount(4);
-  await expect(page.locator('.seats li[aria-current="true"]')).toContainText('You');
-
-  for (let turn = 2; turn <= 4; turn += 1) {
-    await press('End turn');
-    await expect(page.locator('#bench [data-field="turn"]')).toHaveText(String(turn));
-  }
-  await expect(page.locator('.seats li[aria-current="true"]')).toContainText('You');
-  await page.screenshot({ path: `test-results/bench-${info.project.name}.png` });
-
-  await press('Title screen');
-  await expect(page.locator('#title')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('keyboard: arrows move through the menu, Enter and Escape work on the bench', async ({ page }, info) => {
+test('keyboard: arrows move through the menu and Enter starts a game', async ({ page }, info) => {
   test.skip(Boolean(info.project.use.hasTouch), 'keyboard run is for laptops');
-  await page.goto('/');
+  await page.goto('/?seed=42');
   await expect(page.getByRole('button', { name: 'New game' })).toBeFocused();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Load' })).toBeFocused();
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('Enter');
-  await expect(page.locator('#bench')).toBeVisible();
-  await page.locator('#bench h2').click();
-  await page.keyboard.press('Enter');
-  await expect(page.locator('#bench [data-field="turn"]')).toHaveText('2');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('#title')).toBeVisible();
+  await expect(page.locator('#game')).toBeVisible();
 });

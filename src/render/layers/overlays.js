@@ -48,3 +48,79 @@ export function drawMarkers(ctx, map, cam, tiles, colour = '#ffffff') {
     ctx.fillText(String(n + 1), x, y);
   });
 }
+
+/** Grey wash over explored tiles that are not visible right now. */
+export function drawFog(ctx, map, cam, view, fog) {
+  if (!fog) return;
+  const corners = cornerOffsets(HEX_SCREEN * cam.zoom + 0.6);
+  const rowH = HEX_SCREEN * 1.5;
+  const colW = HEX_SCREEN * Math.sqrt(3);
+  const r0 = Math.max(0, Math.floor(view.y / rowH) - 1);
+  const r1 = Math.min(map.height - 1, Math.ceil((view.y + view.h) / rowH) + 1);
+  const c0 = Math.max(0, Math.floor(view.x / colW) - 1);
+  const c1 = Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1);
+  ctx.fillStyle = 'rgba(28, 30, 36, 0.52)';
+  ctx.beginPath();
+  for (let r = r0; r <= r1; r += 1) {
+    for (let c = c0; c <= c1; c += 1) {
+      const i = r * map.width + c;
+      if (fog[i] !== 1) continue;
+      const p = tileCentre(map, i);
+      const x = (p.x - cam.x) * cam.zoom;
+      const y = (p.y - cam.y) * cam.zoom;
+      ctx.moveTo(x + corners[0].x, y + corners[0].y);
+      for (let k = 1; k < 6; k += 1) ctx.lineTo(x + corners[k].x, y + corners[k].y);
+      ctx.closePath();
+    }
+  }
+  ctx.fill();
+}
+
+/** Outline one tile (hover, selection target). */
+export function drawTileOutline(ctx, map, cam, tile, colour, width = 2) {
+  const corners = cornerOffsets(HEX_SCREEN * cam.zoom * 0.94);
+  const p = tileCentre(map, tile);
+  tracePath(ctx, (p.x - cam.x) * cam.zoom, (p.y - cam.y) * cam.zoom, corners);
+  ctx.lineWidth = width;
+  ctx.strokeStyle = colour;
+  ctx.stroke();
+}
+
+/**
+ * A planned path: a line from the unit through each tile, with a numbered
+ * badge where each turn ends ("1" is the end of this turn).
+ */
+export function drawPath(ctx, map, cam, from, plan) {
+  if (!plan) return;
+  const pts = [from, ...plan.tiles].map((t) => {
+    const p = tileCentre(map, t);
+    return { x: (p.x - cam.x) * cam.zoom, y: (p.y - cam.y) * cam.zoom };
+  });
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const [w, colour] of [[6, 'rgba(0,0,0,0.45)'], [3, '#fff3b0']]) {
+    ctx.beginPath();
+    pts.forEach((p, k) => (k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+    ctx.lineWidth = w * Math.max(0.7, cam.zoom);
+    ctx.strokeStyle = colour;
+    ctx.stroke();
+  }
+  const r = 11 * Math.max(0.8, cam.zoom);
+  plan.tiles.forEach((t, k) => {
+    const endsTurn = k === plan.tiles.length - 1 || plan.turns[k + 1] > plan.turns[k];
+    if (!endsTurn) return;
+    const p = pts[k + 1];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = '#1f2430';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#fff3b0';
+    ctx.stroke();
+    ctx.fillStyle = '#fff3b0';
+    ctx.font = `bold ${Math.round(r * 1.15)}px system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(plan.turns[k] + 1), p.x, p.y + 0.5);
+  });
+}

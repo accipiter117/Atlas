@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 4: Units, turns and fog of war
+
+What you can try: press New game. You start with a settler, a warrior and a builder on a Small map against three computer rivals (who only end their turns for now). Pick the warrior from Needs attention, point at a hex three tiles away (mouse) or tap it (touch): a path appears with numbers where each turn ends. Click (or tap again) and the warrior walks there, finishing at the start of your next turn. Forests and hills slow units; rivers stop them on the far bank. Unexplored land is black, places you have seen are greyed, and what your units see now is bright. The Next button walks you through units needing orders, then ends the turn. Keys: Space next unit, Enter next, F fortify, S skip, Z sleep, Delete disband, Escape deselect; drag, arrows or WASD to pan.
+
+- Units, movement and fog of war rules (`src/sim`): terrain, hills and feature costs from data, the river rule, the full-moves rule, zone of control (cavalry ignore it), one combat unit and one civilian per tile, A* paths with per-turn waypoints over explored tiles only, sight with hills bonus and mountain and forest shadows, and `view()` so neither you nor the AI can see through the fog.
+- Commands: move, fortify, skip, sleep, wake, disband. Starting units come from `eras.json`. A placeholder AI that ends its turn.
+- The game screen: needs attention list, unit panel with every action, path preview with turn numbers, Next button, walking animation (units jump instead when your system asks for reduced motion).
+- Sprite sheets in the plan's descriptor format with the LPC layout, and one test sheet: an LPC warrior composed from five Universal LPC Spritesheet Character Generator layers, credited in full (OGA-BY 3.0). Other units use code-drawn shields until art exists. `check-data` now fails on any sprite sheet without credits and lists them in `CREDITS.md`.
+- Tests: 88 unit tests (15 new for units, movement, fog, the poison test and 100 rounds of random moves that replay exactly) and browser tests of a real game on all three screen sizes, including touch-only and reduced motion.
+
 ## Phase 3: The hex world
 
 What you can try: open the map viewer from the link on the title screen (or go to `dev.html`). Pick a map type and size, type a seed, press Regenerate. The same seed always gives the same map (the "map" fingerprint stays the same). Drag or use the arrow keys to pan; use the mouse wheel, a two-finger pinch or + and - to zoom. Numbered hexes are the start positions; tick Grid to see every hex.

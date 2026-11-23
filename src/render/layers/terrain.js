@@ -17,7 +17,8 @@ function artCentre(map, i) {
   return { x: SQRT3 * HEX_ART * (c + (r % 2) / 2) + (SQRT3 * HEX_ART) / 2, y: 1.5 * HEX_ART * r + HEX_ART };
 }
 
-export function createTerrainLayer(doc, map, ruleset, registry) {
+export function createTerrainLayer(doc, initialMap, ruleset, registry) {
+  let map = initialMap;
   const chunksX = Math.ceil(map.width / CHUNK);
   const chunksY = Math.ceil(map.height / CHUNK);
   const cache = new Map();
@@ -62,6 +63,7 @@ export function createTerrainLayer(doc, map, ruleset, registry) {
       const x = Math.round(p.x - b.x);
       const y = Math.round(p.y - b.y);
       const t = map.terrain[i];
+      if (t < 0) continue; // unexplored: left black
       const base = terrainColour[t];
       ctx.fillStyle = base;
       fillHexPixels(ctx, x, y, HEX_ART);
@@ -75,7 +77,7 @@ export function createTerrainLayer(doc, map, ruleset, registry) {
     ctx.lineCap = 'round';
     const edgeCornerPts = cornerOffsets(HEX_ART);
     for (const i of tiles) {
-      if (!map.river[i]) continue;
+      if (!map.river[i] || map.terrain[i] < 0) continue;
       const p = artCentre(map, i);
       for (let d = 0; d < 6; d += 1) {
         if (!(map.river[i] & (1 << d))) continue;
@@ -87,7 +89,7 @@ export function createTerrainLayer(doc, map, ruleset, registry) {
       }
     }
     for (const i of tilesIn(cx, cy)) {
-      if (map.resource[i] < 0) continue;
+      if (map.resource[i] < 0 || map.terrain[i] < 0) continue;
       const p = artCentre(map, i);
       drawResource(ctx, Math.round(p.x - b.x), Math.round(p.y - b.y), resourceColour[map.resource[i]]);
     }
@@ -115,5 +117,22 @@ export function createTerrainLayer(doc, map, ruleset, registry) {
     }
   }
 
-  return { draw, chunkCount: chunksX * chunksY, builtCount: () => cache.size, shade };
+  /** Swap in newer map data (more of it explored) and redraw only the chunks those tiles touch. */
+  function update(newMap, changed) {
+    map = newMap;
+    for (const i of changed) {
+      const r = Math.floor(i / map.width);
+      const c = i - r * map.width;
+      // A tile also appears in the border of neighbouring chunks.
+      for (const dr of [-1, 0, 1]) {
+        for (const dc of [-1, 0, 1]) {
+          const cy = Math.floor((r + dr) / CHUNK);
+          const cx = Math.floor((c + dc) / CHUNK);
+          if (cx >= 0 && cy >= 0 && cx < chunksX && cy < chunksY) cache.delete(cy * chunksX + cx);
+        }
+      }
+    }
+  }
+
+  return { draw, update, chunkCount: chunksX * chunksY, builtCount: () => cache.size, shade };
 }

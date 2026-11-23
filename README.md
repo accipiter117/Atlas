@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 3 of 22 (foundations). Rules load from stackable data mods (see the Mods screen), and seeded hex worlds generate and draw in the map viewer (`dev.html`). Units and turns on the map come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 4 of 22: the foundations are complete. Start a game to move your first units across a seeded hex world under fog of war; the rules load from stackable data mods (see the Mods screen). Cities, yields and the rest of the playable core come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

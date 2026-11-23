@@ -1,13 +1,18 @@
 // The map view: a canvas that fills its host element, a camera, and a
 // redraw only when something changed (so an idle map costs nothing).
+// It draws what it is given: the full map in the developer viewer, a
+// faction's view (fog and all) in the game.
 
-import { createCamera, clampToWorld, centreOn } from './camera.js';
-import { worldSize } from './hexDraw.js';
+import { createCamera, clampToWorld, centreOn, screenToWorld } from './camera.js';
+import { worldSize, HEX_SCREEN, SQRT3 } from './hexDraw.js';
+import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
-import { drawGrid, drawMarkers } from './layers/overlays.js';
+import { createUnitsLayer } from './layers/units.js';
+import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
+import { createSpriteSheet } from './art/spriteSheet.js';
 
-export function createMapView(host, { map, ruleset }) {
+export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, sheets: descriptors = {} }) {
   const doc = host.ownerDocument;
   const win = doc.defaultView;
   const canvas = doc.createElement('canvas');
@@ -16,15 +21,29 @@ export function createMapView(host, { map, ruleset }) {
   const ctx = canvas.getContext('2d');
   const registry = createRegistry(ruleset.skin);
   const world = worldSize(map);
+  const reducedMotion = () => win.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  const sheets = {};
+  let dirty = true;
+  for (const [id, desc] of Object.entries(descriptors)) {
+    sheets[id] = createSpriteSheet(doc, desc);
+    sheets[id].onReady = () => { dirty = true; };
+  }
   const view = {
     cam: createCamera(),
     showGrid: false,
     markers: [],
+    map,
+    fog,
+    units,
+    selected: null,
+    hover: null,
+    path: null,
+    pathFrom: null,
     terrain: createTerrainLayer(doc, map, ruleset, registry),
     frames: 0,
     lastFrameMs: 0,
   };
-  let dirty = true;
+  const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion });
   let size = { w: 0, h: 0 };
 
   function resize() {
@@ -45,13 +64,18 @@ export function createMapView(host, { map, ruleset }) {
     const dpr = win.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = '#1d3f5e';
+    ctx.fillStyle = view.fog ? '#0b0c10' : '#1d3f5e';
     ctx.fillRect(0, 0, size.w, size.h);
     const cam = view.cam;
     const visible = { x: cam.x, y: cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom };
     view.terrain.draw(ctx, cam, visible);
-    if (view.showGrid) drawGrid(ctx, map, cam, visible);
-    if (view.markers.length) drawMarkers(ctx, map, cam, view.markers);
+    drawFog(ctx, view.map, cam, visible, view.fog);
+    if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
+    if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.7)');
+    if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
+    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
+    if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
+    if (walking) dirty = true;
     view.frames += 1;
     view.lastFrameMs = win.performance.now() - t0;
   }
@@ -73,6 +97,36 @@ export function createMapView(host, { map, ruleset }) {
       dirty = true;
     },
     centreOnWorld(wx, wy) { api.setCamera(centreOn(view.cam, wx, wy, size.w, size.h)); },
+    centreOnTile(t) {
+      const r = Math.floor(t / view.map.width);
+      const c = t - r * view.map.width;
+      api.centreOnWorld(SQRT3 * HEX_SCREEN * (c + (r % 2) / 2 + 0.5), HEX_SCREEN * (1.5 * r + 1));
+    },
+    /** The tile under a point on the canvas, or -1. */
+    tileAt(sx, sy) {
+      const w = screenToWorld(view.cam, sx, sy);
+      const h = pixelToHex(w.x - (SQRT3 * HEX_SCREEN) / 2, w.y - HEX_SCREEN, HEX_SCREEN);
+      const c = h.q + Math.floor(h.r / 2);
+      if (h.r < 0 || h.r >= view.map.height || c < 0 || c >= view.map.width) return -1;
+      return h.r * view.map.width + c;
+    },
+    /** Update what the player knows: map arrays (for newly explored tiles), fog and units. */
+    setWorld({ map: newMap, fog: newFog, units: newUnits }) {
+      if (newMap && view.fog && newFog) {
+        const changed = [];
+        for (let i = 0; i < newFog.length; i += 1) if ((view.fog[i] === 0) !== (newFog[i] === 0)) changed.push(i);
+        if (changed.length) view.terrain.update(newMap, changed);
+      }
+      if (newMap) view.map = newMap;
+      if (newFog) view.fog = newFog;
+      if (newUnits) view.units = newUnits;
+      dirty = true;
+    },
+    animateMove(unitId, path) { unitsLayer.animate(unitId, path, win.performance.now()); dirty = true; },
+    isAnimating: () => unitsLayer.isAnimating(),
+    setSelection(unitId) { view.selected = unitId; dirty = true; },
+    setHover(tile) { if (view.hover !== tile) { view.hover = tile; dirty = true; } },
+    setPath(from, plan) { view.pathFrom = from; view.path = plan; dirty = true; },
     setGrid(on) { view.showGrid = on; dirty = true; },
     setMarkers(tiles) { view.markers = tiles; dirty = true; },
     redraw() { dirty = true; },

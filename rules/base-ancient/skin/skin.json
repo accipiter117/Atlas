@@ -2,9 +2,34 @@
   "contentType": "skin",
   "values": {
     "id": "ancient",
-    "palette": { "ink": "#1f2430", "paper": "#f4ecd8", "accent": "#8a2b1d", "water": "#2f6f9f", "land": "#9fae6a" },
-    "fonts": { "display": "Cinzel", "body": "Inter" },
-    "art": {},
-    "sounds": {}
+    "palette": {
+      "ink": "#1f2430",
+      "paper": "#f4ecd8",
+      "accent": "#8a2b1d",
+      "water": "#2f6f9f",
+      "land": "#9fae6a"
+    },
+    "fonts": {
+      "display": "Cinzel",
+      "body": "Inter"
+    },
+    "art": {
+      "unit.warrior": {
+        "sheet": "assets/sprites/lpc-test-warrior.json"
+      }
+    },
+    "sounds": {},
+    "seatColours": [
+      "#c23b22",
+      "#2f6fbf",
+      "#e0a526",
+      "#6a4c9c",
+      "#2f9e6e",
+      "#d0602b",
+      "#9c3f6b",
+      "#4b8c8c",
+      "#8c7a3f",
+      "#3f4b8c"
+    ]
   }
 }

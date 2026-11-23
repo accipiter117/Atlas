@@ -21,23 +21,26 @@
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 3: the world exists. Explore it in the <a href="dev.html">map viewer</a>.</p>
+      <p class="footnote">Phase 4: explore with your first units. Developer <a href="dev.html">map viewer</a>.</p>
     </div>
   </main>
 
-  <main id="bench" class="screen bench" hidden aria-labelledby="bench-heading"
-        data-you="You" data-rival="Rival" data-human="human" data-ai="computer"
-        data-ai-pass="The computer players pass (no AI yet).">
-    <div class="card">
-      <h2 id="bench-heading">Turn <span data-field="turn">1</span></h2>
-      <p class="status">Seat order is drawn from the game's seed.</p>
-      <ol class="seats" data-field="seats" aria-label="Seat order"></ol>
-      <div class="row">
-        <button class="btn" type="button" data-action="back">Title screen</button>
-        <button class="btn primary" type="button" data-action="end-turn" title="End turn (Enter)">End turn</button>
-      </div>
-      <p class="fingerprint">Seed <span data-field="seed"></span> · fingerprint <span data-field="fingerprint"></span></p>
-    </div>
+  <main id="game" class="screen game" hidden aria-label="Game">
+    <header class="game-bar">
+      <button class="btn small" type="button" data-action="back">Menu</button>
+      <strong class="game-turn" data-field="turn">Turn 1</strong>
+      <span class="game-hint" data-field="hint"></span>
+    </header>
+    <aside class="attention" aria-labelledby="attention-title">
+      <h2 id="attention-title" data-field="attention-title">Needs attention</h2>
+      <ul data-field="attention"></ul>
+    </aside>
+    <div id="game-map" class="map-host" tabindex="0" aria-label="Map"></div>
+    <aside class="unit-panel" aria-live="polite">
+      <div class="unit-card" data-field="unit-card"></div>
+      <div class="actions" data-field="actions"></div>
+      <button class="btn primary next" type="button" data-action="next" title="Enter">Next turn</button>
+    </aside>
   </main>
 
 

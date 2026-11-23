@@ -4,13 +4,14 @@
 // Loads every mod in rules/index.json on its own (with whatever it depends
 // on) and every standard stack listed there, and fails on any error, so a
 // broken mod never reaches the game. Warnings are printed but do not fail.
-// Also regenerates CREDITS.md from every mod's credits line.
+// Also regenerates CREDITS.md from every mod's credits line and every sprite
+// sheet's credits, and fails if a sheet a skin names is missing or uncredited.
 //
 // Run:  node tools/check-data.mjs [--quiet]
 
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readFile } from 'node:fs/promises';
 import { loadRuleset } from '../src/data/loader.js';
 import { formatMessage } from '../src/data/report.js';
 import { ENGINE_VERSION } from '../src/sim/index.js';
@@ -53,14 +54,34 @@ export async function checkData(root) {
     const manifest = JSON.parse(available[m.id].manifest);
     credits.push(`- **${manifest.name}** (\`${m.id}\` ${manifest.version}): ${manifest.credits}`);
   }
+  // Sprite sheets named by any mod's skin must exist and carry credits (section 10.6).
+  const sheetProblems = [];
+  const sheets = new Map();
+  for (const m of index.mods) {
+    const mod = available[m.id];
+    for (const [file, textData] of Object.entries(mod.files)) {
+      if (!file.startsWith('skin/')) continue;
+      let art = {};
+      try { art = JSON.parse(textData).values?.art ?? {}; } catch { continue; }
+      for (const [id, entry] of Object.entries(art)) if (entry?.sheet) sheets.set(entry.sheet, { id, mod: m.id });
+    }
+  }
+  if (sheets.size) credits.push('', '## Sprite sheets', '');
+  for (const [path, { id, mod }] of sheets) {
+    let desc;
+    try { desc = JSON.parse(await readFile(join(root, path), 'utf8')); } catch { sheetProblems.push(`${mod}: art ${id} points to ${path}, which is missing or not JSON`); continue; }
+    if (!desc.credits) sheetProblems.push(`${path} has no credits`);
+    try { await readFile(join(root, desc.src)); } catch { sheetProblems.push(`${path} points to image ${desc.src}, which is missing`); }
+    credits.push(`- **${id}** (\`${path}\`): ${desc.credits ?? 'MISSING CREDITS'}`);
+  }
   credits.push('');
-  return { results, credits: credits.join('\n') };
+  return { results, credits: credits.join('\n'), sheetProblems };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..');
   const quiet = process.argv.includes('--quiet');
-  const { results, credits } = await checkData(root);
+  const { results, credits, sheetProblems } = await checkData(root);
   await writeFile(join(root, 'CREDITS.md'), credits);
   let failed = 0;
   for (const r of results) {
@@ -71,6 +92,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       if (!quiet) for (const w of r.warnings) console.log(`       warning: ${w}`);
     }
   }
+  for (const p of sheetProblems) console.log(`FAIL sprite sheet: ${p}`);
+  if (sheetProblems.length) failed += 1;
   if (failed) {
     console.error(`check-data: ${failed} stack(s) failed to load`);
     process.exit(1);

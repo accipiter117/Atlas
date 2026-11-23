@@ -29,4 +29,14 @@ async function loadModSources() {
   return { index, available, engineText: JSON.parse(engineText).strings };
 }
 
-startApp(document, { loadModSources });
+/** Fetch the sprite sheet descriptors a skin names, keyed by art id. Missing ones fall back to placeholders. */
+async function loadSheets(art = {}) {
+  const out = {};
+  await Promise.all(Object.entries(art).map(async ([id, entry]) => {
+    if (!entry?.sheet) return;
+    try { out[id] = JSON.parse(await getText(entry.sheet)); } catch { /* placeholder art is used instead */ }
+  }));
+  return out;
+}
+
+startApp(document, { loadModSources, loadSheets });

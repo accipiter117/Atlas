@@ -48,6 +48,22 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The map viewer is linked from the title screen** for now; the plan's Settings "developer mode" switch arrives with Settings in phase 9.
 - **The frame-time test measures the JavaScript side of drawing**, not the graphics card, which a browser does not expose; it catches slow code rather than proving the frame rate.
 
+## Phase 4
+
+- **`applyCommand(state, cmd, ruleset)`.** Moving needs the rules (terrain costs, unit classes), so the merged ruleset is passed in as a third argument. The state already records which ruleset it was made with (`rulesetHash`).
+- **Every other faction counts as an enemy** for zone of control and stacking until diplomacy (phase 12) adds war and peace.
+- **Movement costs add up**: hills add 1 and a feature adds its extra cost, so forest on hills costs 3 (as in Civ VI). Zone of control applies to civilians too.
+- **Paths are planned on what you know.** A* uses only explored tiles and only enemies you can see. The walk itself checks the real world step by step, so a hidden enemy or a newly seen zone of control stops the unit, and it never ends on a tile it cannot share.
+- **Units carry on walking.** A destination more than one turn away is remembered, and the unit continues at the start of each of its turns.
+- **Fog is drawn from the view, not covered up.** Unexplored terrain is never drawn at all (each map chunk redraws when new tiles are explored); explored tiles get a grey wash.
+- **Mouse and touch.** With the mouse, pointing previews the path and a click moves (right-click also moves). On touch, the first tap previews and a second tap on the same hex moves. Tapping a hex with your own units selects them (tap again to cycle), unless the selected unit could share that hex, in which case it moves there.
+- **Keys.** The plan lists S as both "skip" and part of WASD panning. S skips when a unit is selected and pans otherwise. Z sleeps; Delete disbands (press twice, as with the button).
+- **Next button.** While units need orders it reads "Next unit" and selects the next one; Skip or Sleep a unit to clear it. It reads "Next turn" when nothing is waiting.
+- **New game, for now**: a Small Continents map, you plus three computer rivals, a random seed (add `?seed=42` to the address for a repeatable game). The setup screen arrives in phase 9. The phase 1 test bench is gone.
+- **Fortify** counts turns now; its +4 defence arrives with combat in phase 7. **Sleeping** units stay asleep until woken; waking when an enemy appears comes later.
+- **The LPC test sheet** is composed from body, head, trousers, chainmail and helmet layers of the Universal LPC Spritesheet Character Generator, arranged in the classic LPC layout the plan describes (the generator now ships one file per animation). It is used under OGA-BY 3.0, the licence all five layers share; full credits are in `assets/sprites/lpc-test-warrior.CREDITS.md`. Only the warrior has art; other units show a faction-coloured shield with their initial.
+- **Seat colours** come from `seatColours` in the base skin until factions are chosen on the setup screen.
+
 ## Later
 
 - Nothing yet.
