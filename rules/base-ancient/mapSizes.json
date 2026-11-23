@@ -1,9 +1,9 @@
 {
   "contentType": "mapSizes",
   "entries": [
-    { "id": "small", "nameKey": "mapSize.small.name", "width": 44, "height": 26, "factions": 4 },
-    { "id": "standard", "nameKey": "mapSize.standard.name", "width": 60, "height": 38, "factions": 6 },
-    { "id": "large", "nameKey": "mapSize.large.name", "width": 74, "height": 46, "factions": 8, "default": true },
-    { "id": "huge", "nameKey": "mapSize.huge.name", "width": 90, "height": 56, "factions": 10 }
+    {"id": "small", "nameKey": "mapSize.small.name", "width": 44, "height": 26, "factions": 4, "startSpacing": 7},
+    {"id": "standard", "nameKey": "mapSize.standard.name", "width": 60, "height": 38, "factions": 6, "startSpacing": 8},
+    {"id": "large", "nameKey": "mapSize.large.name", "width": 74, "height": 46, "factions": 8, "default": true, "startSpacing": 9},
+    {"id": "huge", "nameKey": "mapSize.huge.name", "width": 90, "height": 56, "factions": 10, "startSpacing": 10}
   ]
 }

@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 2 of 22 (foundations). Rules now load from stackable data mods with a plain-English report, viewable on the Mods screen. There is no map yet. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 3 of 22 (foundations). Rules load from stackable data mods (see the Mods screen), and seeded hex worlds generate and draw in the map viewer (`dev.html`). Units and turns on the map come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Atlas map viewer</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/dev.css">
+</head>
+<body class="dev">
+  <header class="dev-bar">
+    <a class="dev-home" href="./">Atlas</a>
+    <span class="dev-title">Map viewer</span>
+    <label class="field">Seed <input id="map-seed" type="text" inputmode="numeric" value="1234" size="10"></label>
+    <button id="random-seed" class="btn small" type="button">New seed</button>
+    <label class="field">Type <select id="map-type"></select></label>
+    <label class="field">Size <select id="map-size"></select></label>
+    <button id="regenerate" class="btn small primary" type="button">Regenerate</button>
+    <label class="toggle"><input id="show-starts" type="checkbox" checked> Starts</label>
+    <label class="toggle"><input id="show-grid" type="checkbox"> Grid</label>
+  </header>
+  <div class="dev-info">
+    <span data-field="info">Loading...</span>
+    <span class="fingerprint">map <span data-field="hash"></span></span>
+    <span class="hint">Drag or use arrow keys to pan; wheel, pinch or + and - to zoom.</span>
+  </div>
+  <div id="map-host" class="map-host"></div>
+  <script type="module" src="src/dev.js"></script>
+</body>
+</html>

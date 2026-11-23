@@ -60,6 +60,7 @@ body {
 .btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
 
 .footnote { margin: 22px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.footnote a { color: var(--accent); }
 
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px);

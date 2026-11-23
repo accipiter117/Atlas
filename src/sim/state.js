@@ -7,6 +7,7 @@
 import { normaliseSeed, fork } from '../core/rng.js';
 import { hashValue } from '../core/hash.js';
 import { clone, deepFreeze } from '../core/clone.js';
+import { generateMap } from './mapgen.js';
 
 export const STATE_VERSION = 1;
 export const ENGINE_VERSION = '0.1.0';
@@ -60,5 +61,10 @@ export function createGame(ruleset, setup) {
   // Seat order is random per game, from the seed, then fixed (section 3.14).
   // A named fork keeps the main dice stream untouched.
   state.seatOrder = fork(state, 'seats').shuffle(factions.map((f) => f.id));
+
+  // The world, when the setup asks for one and the ruleset can build it.
+  if (setup.map && ruleset?.mapSizes) {
+    state.map = generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
+  }
   return state;
 }

@@ -53,7 +53,8 @@ const BANNED = {
 };
 
 function layerOf(file) {
-  if (file === 'src/main.js') return 'main';
+  // Entry points (src/main.js for the game, src/dev.js for dev.html) wire everything together.
+  if (/^src\/[^/]+\.js$/.test(file)) return 'main';
   const m = /^src\/([^/]+)\//.exec(file);
   return m ? m[1] : null;
 }

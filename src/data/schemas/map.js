@@ -10,6 +10,13 @@ export const terrain = entryType('terrain', {
   defence: int(-20, 20),
   allowsHills: bool(),
   art: str(),
+  // How the map generator uses this terrain (section 3.1). Land terrain is
+  // picked by climate: the nearest temperature and moisture point wins.
+  mapgen: obj({
+    role: req(oneOf(['land', 'mountain', 'coast', 'ocean', 'lake'])),
+    temperature: num(0, 1),
+    moisture: num(0, 1),
+  }),
 });
 
 export const features = entryType('features', {
@@ -20,6 +27,18 @@ export const features = entryType('features', {
   validTerrain: refs('terrain'),
   removable: bool(),
   art: str(),
+  // Where the generator places this feature: a chance per valid tile within a climate window.
+  mapgen: obj({
+    chance: req(num(0, 1)),
+    minTemperature: num(0, 1),
+    maxTemperature: num(0, 1),
+    minMoisture: num(0, 1),
+    maxMoisture: num(0, 1),
+    needsRiver: bool(),
+    avoidsRiver: bool(),
+    flatOnly: bool(),
+    nearLand: bool(),
+  }),
 });
 
 export const resources = entryType('resources', {
@@ -40,6 +59,7 @@ export const mapSizes = entryType('mapSizes', {
   width: req(int(10, 200)),
   height: req(int(10, 200)),
   factions: req(int(1, 16)),
+  startSpacing: req(int(2, 30)),
   default: bool(),
 });
 

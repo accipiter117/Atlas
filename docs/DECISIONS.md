@@ -33,6 +33,21 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Test mods are flagged `dev`** in `rules/index.json` and shown as "Test mod" on the Mods screen. They can be hidden from players later.
 - **`buildCharge` is not an effect.** The plan's legionary example uses it, but it is not in the 24-effect vocabulary of section 4.7, so the loader refuses it. If wanted, it should be added to the vocabulary when builders arrive (phase 6).
 
+## Phase 3
+
+- **Map layout.** Tiles are stored row by row (index `r * width + c`, where column `c = q + floor(r / 2)`), which makes the map a rectangle on screen. Section 3.1 writes `r * width + q`; this is the same idea adjusted so rows line up. The map does not wrap east to west.
+- **Climate settings live in the data.** Terrain gets a `mapgen` block (its role: land, mountain, coast, ocean or lake, plus a temperature and moisture point) and features get a `mapgen` block (chance and climate window). The generator never names "grassland" or "forest", so a conversion can bring its own terrain and the generator uses it.
+- **Start spacing is set per map size** in `mapSizes.json` (`startSpacing`: 7, 8, 9, 10) rather than in `tuning.json`, because the plan's "9 hexes apart on Large" depends on the size. Other generator numbers (resource density, river lengths, lake size, sea level and world age effects, start food rule) are in `tuning.json` under `mapgen`.
+- **Only basic arithmetic in generation.** Noise and shaping use `+ - * /`, `floor` and `sqrt`, which every browser computes identically; functions like `sin` may differ slightly between browsers and would break "same seed, same map" across devices.
+- **Fresh water means a river or a lake.** Oases do not count yet.
+- **Rivers can join other rivers.** A river that meets an existing river ends there and shares its mouth. River sources are spread apart first, so fresh water is not bunched on one side of the map.
+- **Sea lanes.** If a start cannot reach the others by land or coast, the shortest stretch of ocean between them becomes coast, so no player is stranded before ships exist.
+- **Start fallback order.** Starts first must meet the food and water rule at full spacing; if the best-first pick cannot fit them, a spread-out pick is tried; only then does spacing relax by one hex at a time, and only after that the food and water rule. In 300 test maps (Large and Huge, every type) spacing never needed relaxing.
+- **Islands get 16 rivers** (up from 8) so island starts have fresh water.
+- **Pixel art at three times scale.** Terrain is drawn at 14 pixels from hex centre to corner, then scaled up three times with smoothing off: crisp pixels, a 72px-wide hex at 100% zoom (section 10.6), and small cached chunks. Hexes are filled as whole pixel rows so no dark seams show between them.
+- **The map viewer is linked from the title screen** for now; the plan's Settings "developer mode" switch arrives with Settings in phase 9.
+- **The frame-time test measures the JavaScript side of drawing**, not the graphics card, which a browser does not expose; it catches slow code rather than proving the frame rate.
+
 ## Later
 
 - Nothing yet.

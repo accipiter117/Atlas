@@ -7,6 +7,8 @@ import { hashValue } from '../core/hash.js';
 export { createGame, ENGINE_VERSION, STATE_VERSION, SetupError } from './state.js';
 export { applyCommand, COMMANDS } from './commands.js';
 export { currentFactionId, getFaction, livingSeats } from './queries.js';
+export { generateMap, MapgenError, resourceAllowed, tileFood } from './mapgen.js';
+export { tileIndex, tileHex, neighbourTiles } from './map.js';
 
 /**
  * A short hash of the whole state. Two games with the same fingerprint are

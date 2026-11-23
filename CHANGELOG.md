@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 3: The hex world
+
+What you can try: open the map viewer from the link on the title screen (or go to `dev.html`). Pick a map type and size, type a seed, press Regenerate. The same seed always gives the same map (the "map" fingerprint stays the same). Drag or use the arrow keys to pan; use the mouse wheel, a two-finger pinch or + and - to zoom. Numbered hexes are the start positions; tick Grid to see every hex.
+
+- Map generator (`src/sim/mapgen.js`): Continents, Pangaea, Islands, Inland Sea and Highlands in four sizes, all from data. Land share always lands on the recipe's target. Mountains, hills, lakes, coast and ocean; terrain chosen by temperature and moisture; rivers along hex edges that always reach water (or join a river that does); forests, jungles, marshes, floodplains, oases and reefs; resources only where their data allows; fair starts (2+ good food tiles and fresh water within 3 hexes, 9+ hexes apart on Large) that can always reach each other by land or coast.
+- New games now build their map from the seed (on a separate stream, so the map never changes any other dice roll).
+- Map drawing (`src/render`): pixel-art placeholder terrain with seeded patterns, cached in 16x16-hex chunks so a Huge map pans smoothly; rivers, resource gems, a grid toggle; camera with drag, wheel, pinch and keyboard, 50% to 200%.
+- The art registry with its fallback chain (faction art, then the unit's own, then its class, then a code-drawn placeholder).
+- Tests: identical maps from identical seeds, 50 seeds of every map type checked for land share, valid resources and features, rivers reaching water, fair and reachable starts, Large spacing, and Huge generation under 1.5 s (it takes about 50 ms). 73 unit tests in all, plus a browser test of the viewer on all three screen sizes.
+
 ## Phase 2: Rules as data and the mod loader
 
 What you can try: open Mods from the title screen. Tick and untick mods and watch the report on the right update. Tick Lock to one era without Ancient world to see a red error naming the missing mod. Tick both test scout mods and use the arrows to swap their order: the "Last one wins" line flips between 2 and 4.

@@ -1,26 +1,86 @@
 {
   "contentType": "tuning",
   "values": {
-    "map": { "defaultSize": "large", "defaultType": "continents", "riverGrowthBonus": 0.1, "bridgeTech": null },
-    "cities": { "minCityDistance": 4, "claimRadius": 1, "workRadius": 3, "foodPerCitizen": 2, "captureLoss": 0.5 },
-    "growth": { "base": 15, "linear": 8, "exponent": 1.5 },
-    "borders": { "baseCost": 10, "perTileCost": 6, "goldPerTile": 25 },
-    "economy": { "goldPerProduction": 2, "bankruptcyWarningTurns": 2 },
+    "map": {
+      "defaultSize": "large",
+      "defaultType": "continents",
+      "riverGrowthBonus": 0.1,
+      "bridgeTech": null
+    },
+    "cities": {
+      "minCityDistance": 4,
+      "claimRadius": 1,
+      "workRadius": 3,
+      "foodPerCitizen": 2,
+      "captureLoss": 0.5
+    },
+    "growth": {
+      "base": 15,
+      "linear": 8,
+      "exponent": 1.5
+    },
+    "borders": {
+      "baseCost": 10,
+      "perTileCost": 6,
+      "goldPerTile": 25
+    },
+    "economy": {
+      "goldPerProduction": 2,
+      "bankruptcyWarningTurns": 2
+    },
     "amenities": {
       "citizensPerAmenity": 2,
       "citiesPerLuxury": 4,
       "thresholds": [
-        { "atLeast": 2, "yieldPercent": 10, "growthPercent": 0 },
-        { "atLeast": 0, "yieldPercent": 0, "growthPercent": 0 },
-        { "atLeast": -2, "yieldPercent": -15, "growthPercent": -25 },
-        { "atLeast": -99, "yieldPercent": -15, "growthPercent": -50, "rebels": true }
+        {
+          "atLeast": 2,
+          "yieldPercent": 10,
+          "growthPercent": 0
+        },
+        {
+          "atLeast": 0,
+          "yieldPercent": 0,
+          "growthPercent": 0
+        },
+        {
+          "atLeast": -2,
+          "yieldPercent": -15,
+          "growthPercent": -25
+        },
+        {
+          "atLeast": -99,
+          "yieldPercent": -15,
+          "growthPercent": -50,
+          "rebels": true
+        }
       ]
     },
-    "builders": { "charges": 3 },
-    "movement": { "roadCost": 0.5, "minimumOneTile": true },
-    "stacking": { "combatPerTile": 1, "civilianPerTile": 1 },
-    "experience": { "perAttack": 5, "perDefence": 3, "promotionThresholds": [15, 45, 90, 150] },
-    "healing": { "neutral": 10, "friendly": 15, "city": 20 },
+    "builders": {
+      "charges": 3
+    },
+    "movement": {
+      "roadCost": 0.5,
+      "minimumOneTile": true
+    },
+    "stacking": {
+      "combatPerTile": 1,
+      "civilianPerTile": 1
+    },
+    "experience": {
+      "perAttack": 5,
+      "perDefence": 3,
+      "promotionThresholds": [
+        15,
+        45,
+        90,
+        150
+      ]
+    },
+    "healing": {
+      "neutral": 10,
+      "friendly": 15,
+      "city": 20
+    },
     "combat": {
       "hp": 100,
       "baseDamage": 30,
@@ -35,15 +95,73 @@
       "fortifyTurns": 2,
       "woundedPenaltyPer10Hp": 1
     },
-    "progression": { "boostShare": 0.4, "eraTechShare": 0.5 },
-    "religion": { "pantheonFaith": 25, "foundReligionFaith": 200, "religionsPerFaction": 0.5, "pressureRange": 10 },
-    "trade": { "landRange": 15, "seaRange": 30, "routeTurns": 30 },
-    "espionage": { "capBase": 1, "baseOdds": 60, "oddsPerLevel": 10, "missionTurnsMin": 4, "missionTurnsMax": 8 },
-    "diplomacy": { "peaceMinTurns": 10, "decayEveryTurns": 5, "decayAmount": 1 },
-    "victory": { "turnLimit": 330 },
-    "sight": { "default": 2, "hillsBonus": 1 },
-    "start": { "era": "ancient", "grantErasBefore": null },
-    "ai": { "lateGameMode": "normal" },
-    "frontline": { "enabled": false }
+    "progression": {
+      "boostShare": 0.4,
+      "eraTechShare": 0.5
+    },
+    "religion": {
+      "pantheonFaith": 25,
+      "foundReligionFaith": 200,
+      "religionsPerFaction": 0.5,
+      "pressureRange": 10
+    },
+    "trade": {
+      "landRange": 15,
+      "seaRange": 30,
+      "routeTurns": 30
+    },
+    "espionage": {
+      "capBase": 1,
+      "baseOdds": 60,
+      "oddsPerLevel": 10,
+      "missionTurnsMin": 4,
+      "missionTurnsMax": 8
+    },
+    "diplomacy": {
+      "peaceMinTurns": 10,
+      "decayEveryTurns": 5,
+      "decayAmount": 1
+    },
+    "victory": {
+      "turnLimit": 330
+    },
+    "sight": {
+      "default": 2,
+      "hillsBonus": 1
+    },
+    "start": {
+      "era": "ancient",
+      "grantErasBefore": null
+    },
+    "ai": {
+      "lateGameMode": "normal"
+    },
+    "frontline": {
+      "enabled": false
+    },
+    "mapgen": {
+      "resourceDensity": 0.022,
+      "resourceLevels": {
+        "sparse": 0.6,
+        "standard": 1.0,
+        "abundant": 1.5
+      },
+      "riverMinLength": 3,
+      "riverMaxLength": 40,
+      "lakeMaxSize": 6,
+      "startRadius": 3,
+      "startFoodYield": 2,
+      "startMinFoodTiles": 2,
+      "seaLevels": {
+        "low": -0.05,
+        "normal": 0,
+        "high": 0.05
+      },
+      "ages": {
+        "new": 1.3,
+        "standard": 1.0,
+        "old": 0.7
+      }
+    }
   }
 }

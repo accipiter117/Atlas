@@ -1,0 +1,22 @@
+/* The developer map viewer: a toolbar and a map filling the rest of the window. */
+
+body.dev { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background-image: none; }
+.dev-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.dev-home { font: 600 20px/1 var(--font-display); color: var(--ink); text-decoration: none; letter-spacing: 0.06em; }
+.dev-title { color: var(--ink-soft); margin-right: 8px; }
+.field, .toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; min-height: var(--target); }
+.field input, .field select {
+  min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--paper); color: var(--ink); font: inherit;
+}
+.toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
+.btn.small { width: auto; min-height: var(--target); padding: 6px 14px; font-size: 15px; }
+.dev-info { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 6px 16px; font-size: 13px; color: var(--ink-soft); border-bottom: 1px solid var(--line); }
+.dev-info .fingerprint { margin: 0; }
+.dev-info .hint { color: var(--muted); }
+.map-host { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.map-canvas { display: block; cursor: grab; }
+.map-canvas:active { cursor: grabbing; }
