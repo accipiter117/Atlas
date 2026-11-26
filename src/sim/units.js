@@ -36,8 +36,15 @@ export function domainOf(ruleset, typeId) {
 /** Moves per turn: the unit's own, plus moveBonus effects when the state is known. */
 export function maxMoves(ruleset, unit, state = null) {
   const base = unitDef(ruleset, unit)?.moves ?? 1;
-  if (!state?.factions) return base;
-  return Math.max(1, base + sumHook('move', state, ruleset, unit.faction, { unit }));
+  if (!state?.factions) return base + promotionSum(ruleset, unit, 'moveBonus');
+  return Math.max(1, base + promotionSum(ruleset, unit, 'moveBonus') + sumHook('move', state, ruleset, unit.faction, { unit }));
+}
+
+/** The total of one effect across a unit's promotions (they always reach the unit itself). */
+export function promotionSum(ruleset, unit, effect) {
+  let n = 0;
+  for (const p of unit.promotions ?? []) for (const e of ruleset.promotions?.[p]?.effects ?? []) if (e.effect === effect) n += e.amount;
+  return n;
 }
 
 /** Every unit on a tile. */
@@ -75,7 +82,7 @@ export function canStand(state, ruleset, typeId, factionId, tile, ignoreUnitId =
 
 export function createUnit(state, ruleset, typeId, factionId, tile) {
   const id = nextId(state, 'u');
-  const unit = { id, type: typeId, faction: factionId, tile, hp: 100, moves: ruleset.units[typeId].moves, activity: 'none', fortifiedTurns: 0, goto: null };
+  const unit = { id, type: typeId, faction: factionId, tile, hp: 100, moves: ruleset.units[typeId].moves, activity: 'none', fortifiedTurns: 0, goto: null, xp: 0, promotions: [] };
   if ((ruleset.units[typeId].tags ?? []).includes('worker')) unit.charges = ruleset.tuning?.builders?.charges ?? 3;
   state.units[id] = unit;
   unit.moves = maxMoves(ruleset, unit, state);

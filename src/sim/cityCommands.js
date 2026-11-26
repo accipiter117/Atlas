@@ -3,7 +3,7 @@
 // faction's cities: yields, growth, production, borders and stocks.
 
 import { currentFactionId } from './queries.js';
-import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf } from './cities.js';
+import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf, cityHpMax } from './cities.js';
 import { payUpkeep } from './economy.js';
 import { effectsFor, sumHook } from './effects/index.js';
 import { cityYields } from './yields.js';
@@ -186,6 +186,20 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
   const faction = state.factions.find((f) => f.id === factionId);
   let income = 0;
   for (const city of citiesOf(state, factionId)) {
+    // A city being razed loses a citizen each turn and is gone at zero.
+    if (city.razing) {
+      city.pop -= 1;
+      if (city.pop <= 0) {
+        for (let i = 0; i < state.owner.length; i += 1) if (state.owner[i] === city.id) state.owner[i] = null;
+        delete state.cities[city.id];
+        events.push({ type: 'cityRazed', city: city.id, name: city.name, faction: factionId, tile: city.tile });
+        continue;
+      }
+      assignCitizens(state, ruleset, city);
+    }
+    // Cities mend their walls when not attacked since their last turn.
+    const max = cityHpMax(ruleset, city);
+    if ((city.hp ?? max) < max && (city.lastAttacked ?? -1) < state.turn - 1) city.hp = Math.min(max, city.hp + (ruleset.tuning?.combat?.cityHealPerTurn ?? 20));
     const effects = effectsFor(state, ruleset, factionId);
     const y = cityYields(state, ruleset, city, effects);
     income += y.total.gold;

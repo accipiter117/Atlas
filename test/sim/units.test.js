@@ -145,7 +145,8 @@ test('view never leaks unseen tiles or units (poison test)', () => {
   // A visible enemy shows only its outside.
   s.units.u_0002.tile = 2;
   const seen = view(s, 'f0').units.find((u) => u.faction === 'f1');
-  assert.deepEqual(Object.keys(seen).sort(), ['faction', 'hp', 'id', 'tile', 'type']);
+  // Only what can be seen from outside: who, where, health, stance and promotions (needed for honest odds).
+  assert.deepEqual(Object.keys(seen).sort(), ['activity', 'faction', 'fortifiedTurns', 'hp', 'id', 'promotions', 'tile', 'type']);
 });
 
 test('fortify, skip, sleep, wake and disband; refusals name the reason', () => {

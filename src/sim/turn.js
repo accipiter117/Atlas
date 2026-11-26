@@ -7,6 +7,9 @@
 import { currentFactionId, getFaction } from './queries.js';
 import { startUnitsTurn } from './unitCommands.js';
 import { startCitiesTurn } from './cityCommands.js';
+import { runRaiders } from './raiders.js';
+import { runBattle } from './combatCommands.js';
+import { updateAllVisibility } from './visibility.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
@@ -15,7 +18,12 @@ function startFactionTurn(state, factionId, events, ruleset) {
   if (state.units) startUnitsTurn(state, ruleset, factionId, events);
 }
 
-function startRound(state, events) {
+function startRound(state, events, ruleset) {
+  // End of the round (section 3.14): raiders move and fight.
+  if (state.map && ruleset?.tuning) {
+    runRaiders(state, ruleset, events, runBattle);
+    updateAllVisibility(state, ruleset);
+  }
   state.turn += 1;
   state.seatIndex = 0;
   events.push({ type: 'roundStarted', turn: state.turn });
@@ -35,7 +43,7 @@ export const endTurn = {
     let guard = state.seatOrder.length;
     do {
       state.seatIndex += 1;
-      if (state.seatIndex >= state.seatOrder.length) startRound(state, events);
+      if (state.seatIndex >= state.seatOrder.length) startRound(state, events, ruleset);
       guard -= 1;
     } while (!getFaction(state, currentFactionId(state)).alive && guard > 0);
     startFactionTurn(state, currentFactionId(state), events, ruleset);

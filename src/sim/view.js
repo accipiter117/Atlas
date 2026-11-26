@@ -50,17 +50,20 @@ export function view(state, factionId) {
   out.cities = [];
   for (const c of Object.values(state.cities ?? {})) {
     if (c.faction === factionId) out.cities.push(JSON.parse(JSON.stringify(c)));
-    else if (fog[c.tile] !== UNEXPLORED) out.cities.push({ id: c.id, name: c.name, faction: c.faction, tile: c.tile, pop: c.pop, capital: c.capital });
+    else if (fog[c.tile] !== UNEXPLORED) out.cities.push({ id: c.id, name: c.name, faction: c.faction, tile: c.tile, pop: c.pop, capital: c.capital, hp: c.hp, buildings: c.buildings.slice(), originalCapital: c.originalCapital });
   }
   const mine = state.factions.find((f) => f.id === factionId);
   out.stocks = mine.stocks ? { ...mine.stocks } : null;
   out.lastNetGold = mine.lastNetGold ?? null;
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
+  out.pendingCapture = state.pendingCapture?.faction === factionId ? { ...state.pendingCapture } : null;
+  out.pendingBattle = state.pendingBattle && (state.pendingBattle.spec.attacker.faction === factionId || state.pendingBattle.spec.defender.faction === factionId) ? JSON.parse(JSON.stringify(state.pendingBattle)) : null;
+  out.camps = Object.keys(state.raiders?.camps ?? {}).map(Number).filter((t) => fog[t] !== UNEXPLORED);
   for (const u of Object.values(state.units ?? {})) {
     if (u.faction === factionId) {
       out.units.push({ ...u });
     } else if (fog[u.tile] === VISIBLE) {
-      out.units.push({ id: u.id, type: u.type, faction: u.faction, tile: u.tile, hp: u.hp });
+      out.units.push({ id: u.id, type: u.type, faction: u.faction, tile: u.tile, hp: u.hp, activity: u.activity === 'fortify' ? 'fortify' : 'none', fortifiedTurns: u.activity === 'fortify' ? u.fortifiedTurns : 0, promotions: (u.promotions ?? []).slice() });
     }
   }
   return out;

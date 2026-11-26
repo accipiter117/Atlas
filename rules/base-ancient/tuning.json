@@ -107,7 +107,13 @@
       "flankingBonus": 2,
       "fortifyBonus": 4,
       "fortifyTurns": 2,
-      "woundedPenaltyPer10Hp": 1
+      "woundedPenaltyPer10Hp": 1,
+      "cityHp": 200,
+      "cityStrengthBonus": 3,
+      "wallsStrength": 5,
+      "cityRange": 2,
+      "cityHealPerTurn": 20,
+      "siegeVsCity": 10
     },
     "progression": {
       "boostShare": 0.4,
@@ -183,6 +189,37 @@
     },
     "specialists": {
       "yield": 2
+    },
+    "battle": {
+      "auto": {
+        "baseDamage": 30,
+        "strengthScale": 25,
+        "spread": 0.2
+      }
+    },
+    "raiders": {
+      "campEvery": 10,
+      "firstCampTurn": 6,
+      "campsPerLand": 250,
+      "spawnEvery": 6,
+      "maxPerCamp": 2,
+      "campDistance": 6,
+      "aggroRange": 4,
+      "campGold": 30,
+      "units": [
+        {
+          "fromTurn": 0,
+          "unit": "warrior"
+        },
+        {
+          "fromTurn": 40,
+          "unit": "archer"
+        },
+        {
+          "fromTurn": 80,
+          "unit": "horseman"
+        }
+      ]
     }
   }
 }

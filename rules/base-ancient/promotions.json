@@ -1,0 +1,27 @@
+{
+  "contentType": "promotions",
+  "entries": [
+    {"id": "shield_wall", "nameKey": "promotion.shield_wall.name", "descriptionKey": "promotion.shield_wall.text", "class": "melee", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "defending", "vs": {"ranged": true}}]},
+    {"id": "charge", "nameKey": "promotion.charge.name", "descriptionKey": "promotion.charge.text", "class": "melee", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "attacking"}]},
+    {"id": "veteran", "nameKey": "promotion.veteran.name", "descriptionKey": "promotion.veteran.text", "class": "melee", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 5}], "requires": ["shield_wall", "charge"]},
+    {"id": "volley", "nameKey": "promotion.volley.name", "descriptionKey": "promotion.volley.text", "class": "ranged", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 5, "when": "attacking"}]},
+    {"id": "skirmisher", "nameKey": "promotion.skirmisher.name", "descriptionKey": "promotion.skirmisher.text", "class": "ranged", "tier": 1, "effects": [{"effect": "moveBonus", "amount": 1}]},
+    {"id": "marksman", "nameKey": "promotion.marksman.name", "descriptionKey": "promotion.marksman.text", "class": "ranged", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 7, "when": "attacking"}], "requires": ["volley", "skirmisher"]},
+    {"id": "brace", "nameKey": "promotion.brace.name", "descriptionKey": "promotion.brace.text", "class": "anti_cavalry", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "defending"}]},
+    {"id": "pike_drill", "nameKey": "promotion.pike_drill.name", "descriptionKey": "promotion.pike_drill.text", "class": "anti_cavalry", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 5, "vs": {"class": "melee"}}]},
+    {"id": "hold_the_line", "nameKey": "promotion.hold_the_line.name", "descriptionKey": "promotion.hold_the_line.text", "class": "anti_cavalry", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 5}], "requires": ["brace", "pike_drill"]},
+    {"id": "outrider", "nameKey": "promotion.outrider.name", "descriptionKey": "promotion.outrider.text", "class": "cavalry", "tier": 1, "effects": [{"effect": "sightBonus", "amount": 1}]},
+    {"id": "lance", "nameKey": "promotion.lance.name", "descriptionKey": "promotion.lance.text", "class": "cavalry", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "attacking"}]},
+    {"id": "pursuit", "nameKey": "promotion.pursuit.name", "descriptionKey": "promotion.pursuit.text", "class": "cavalry", "tier": 2, "effects": [{"effect": "moveBonus", "amount": 1}], "requires": ["outrider", "lance"]},
+    {"id": "pathfinder", "nameKey": "promotion.pathfinder.name", "descriptionKey": "promotion.pathfinder.text", "class": "recon", "tier": 1, "effects": [{"effect": "moveBonus", "amount": 1}]},
+    {"id": "lookout", "nameKey": "promotion.lookout.name", "descriptionKey": "promotion.lookout.text", "class": "recon", "tier": 1, "effects": [{"effect": "sightBonus", "amount": 1}]},
+    {"id": "stalker", "nameKey": "promotion.stalker.name", "descriptionKey": "promotion.stalker.text", "class": "recon", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 7, "when": "attacking"}], "requires": ["pathfinder", "lookout"]},
+    {"id": "sapper", "nameKey": "promotion.sapper.name", "descriptionKey": "promotion.sapper.text", "class": "siege", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 10, "vs": {"city": true}}]},
+    {"id": "mantlets", "nameKey": "promotion.mantlets.name", "descriptionKey": "promotion.mantlets.text", "class": "siege", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "defending"}]},
+    {"id": "engineer", "nameKey": "promotion.engineer.name", "descriptionKey": "promotion.engineer.text", "class": "siege", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 5}], "requires": ["sapper", "mantlets"]},
+    {"id": "rammer", "nameKey": "promotion.rammer.name", "descriptionKey": "promotion.rammer.text", "class": "naval_melee", "tier": 1, "effects": [{"effect": "combatBonus", "amount": 7, "when": "attacking"}]},
+    {"id": "oarsmen", "nameKey": "promotion.oarsmen.name", "descriptionKey": "promotion.oarsmen.text", "class": "naval_melee", "tier": 1, "effects": [{"effect": "moveBonus", "amount": 1}]},
+    {"id": "boarding", "nameKey": "promotion.boarding.name", "descriptionKey": "promotion.boarding.text", "class": "naval_melee", "tier": 2, "effects": [{"effect": "combatBonus", "amount": 5}], "requires": ["rammer", "oarsmen"]},
+    {"id": "field_medic", "nameKey": "promotion.field_medic.name", "descriptionKey": "promotion.field_medic.text", "class": "melee", "tier": 2, "effects": [{"effect": "healBonus", "amount": 10}], "requires": ["shield_wall", "charge"]}
+  ]
+}

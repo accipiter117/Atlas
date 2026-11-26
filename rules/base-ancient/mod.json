@@ -19,6 +19,7 @@
     "mapTypes.json",
     "unitClasses.json",
     "units.json",
+    "promotions.json",
     "wonders.json",
     "buildings.json",
     "improvements.json",

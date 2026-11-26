@@ -11,6 +11,7 @@
 import { clone } from '../core/clone.js';
 import { endTurn } from './turn.js';
 import { moveUnit, fortify, skip, sleep, wake, disband, buildImprovement } from './unitCommands.js';
+import { attack, cityAttack, resolveBattle, autoResolveBattle, captureChoice, promote } from './combatCommands.js';
 import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
 
 /** Every command the sim understands, by type. Each has validate (returns an error or null) and apply. */
@@ -31,6 +32,12 @@ export const COMMANDS = Object.freeze({
   lockTile,
   unlockTile,
   buyTile,
+  attack,
+  cityAttack,
+  resolveBattle,
+  autoResolveBattle,
+  captureChoice,
+  promote,
 });
 
 const EMPTY = Object.freeze({});
@@ -50,6 +57,11 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   if (!cmd || typeof cmd !== 'object' || Array.isArray(cmd)) return refuse('badCommand', 'A command must be an object');
   if (typeof cmd.type !== 'string') return refuse('badCommand', 'A command needs a type');
   if (!Object.hasOwn(COMMANDS, cmd.type)) return refuse('unknownCommand', `Unknown command "${cmd.type}"`);
+
+  // While a battle waits for its screen, only its result may be sent; while a
+  // captured city waits for Keep or Raze, its new owner must choose first.
+  if (state.pendingBattle && cmd.type !== 'resolveBattle' && cmd.type !== 'autoResolveBattle') return refuse('battlePending', 'Finish the battle first');
+  if (state.pendingCapture && cmd.type !== 'captureChoice' && state.pendingCapture.faction === cmd.faction) return refuse('capturePending', 'Choose whether to keep or raze the captured city first');
 
   const handler = COMMANDS[cmd.type];
   const problem = handler.validate(state, cmd, ruleset);

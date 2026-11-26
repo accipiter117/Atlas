@@ -54,7 +54,7 @@ export function foundCity(state, ruleset, factionId, tile) {
     id, name: nextCityName(state, ruleset, factionId), faction: factionId, tile, capital: first, founded: state.turn,
     pop: 1, food: 0, culture: 0, tilesClaimed: 0,
     focus: Object.values(ruleset.focuses ?? {}).find((f) => f.default)?.id ?? 'balanced',
-    locks: [], worked: [], specialists: {}, queue: [], progress: 0, buildings: [],
+    locks: [], worked: [], specialists: {}, queue: [], progress: 0, buildings: [], originalCapital: first, hp: null,
   };
   state.cities[id] = city;
   const radius = ruleset.tuning?.cities?.claimRadius ?? 1;
@@ -65,6 +65,7 @@ export function foundCity(state, ruleset, factionId, tile) {
   const palace = ruleset.tuning?.cities?.capitalBuilding;
   if (first && palace && ruleset.buildings?.[palace]) city.buildings.push(palace);
   const events = runHook('onCityFounded', state, ruleset, effectsFor(state, ruleset, factionId), { city });
+  city.hp = cityHpMax(ruleset, city);
   assignCitizens(state, ruleset, city);
   return { city, events };
 }
@@ -203,10 +204,20 @@ export function completeItem(state, ruleset, city, item) {
     return ev ? [ev] : null;
   }
   const events = [];
+  const before = cityHpMax(ruleset, city);
   city.buildings.push(item.id);
+  // New walls add their hit points straight away.
+  if (city.hp !== null && city.hp !== undefined) city.hp += cityHpMax(ruleset, city) - before;
   events.push({ type: item.kind === 'wonder' ? 'wonderCompleted' : 'buildingBuilt', city: city.id, building: item.id, faction: city.faction });
   if (item.kind === 'wonder') claimWonder(state, city, item.id, events);
   events.push(...runHook('onBuilt', state, ruleset, effectsFor(state, ruleset, city.faction), { city, built: item.id }));
   assignCitizens(state, ruleset, city);
   return events;
+}
+
+/** A city's full hit points: tuning combat.cityHp plus each building's defence (walls). */
+export function cityHpMax(ruleset, city) {
+  let hp = ruleset.tuning?.combat?.cityHp ?? 200;
+  for (const b of city.buildings) hp += buildingDef(ruleset, b)?.defence ?? 0;
+  return hp;
 }

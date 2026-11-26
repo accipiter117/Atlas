@@ -8,7 +8,7 @@
 
 import { line } from '../core/hex.js';
 import { neighbourCache, tileHex, tileIndex } from './map.js';
-import { factionUnits, unitDef } from './units.js';
+import { factionUnits, unitDef, promotionSum } from './units.js';
 import { sumHook } from './effects/index.js';
 
 export const UNEXPLORED = 0;
@@ -24,7 +24,7 @@ function blocksSight(state, ruleset, t) {
 
 export function sightRange(state, ruleset, unit) {
   const base = unitDef(ruleset, unit)?.sight ?? ruleset.tuning?.sight?.default ?? 2;
-  const bonus = state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }) : 0;
+  const bonus = (state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }) : 0) + promotionSum(ruleset, unit, 'sightBonus');
   return base + bonus + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0);
 }
 
@@ -57,6 +57,8 @@ export function tilesInSight(state, ruleset, from, radius) {
 /** Recompute what a faction sees now; everything it has ever seen stays explored. Working copy only. */
 export function updateVisibility(state, ruleset, factionId) {
   const n = state.map.width * state.map.height;
+  // Only real players have fog; raiders see everything near them.
+  if (!state.factions.some((f) => f.id === factionId)) return null;
   state.fog ??= {};
   let fog = state.fog[factionId];
   if (!fog) {

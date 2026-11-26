@@ -5,10 +5,11 @@
 import { findPath, stepMoves, canStop, passable } from './movement.js';
 import { updateVisibility, UNEXPLORED, VISIBLE } from './visibility.js';
 import { currentFactionId } from './queries.js';
-import { maxMoves, slotOf, unitsAt, isEnemy } from './units.js';
+import { maxMoves, slotOf, unitsAt, isEnemy, promotionSum } from './units.js';
 import { sumHook } from './effects/index.js';
 import { improvementProblem, builderTargets, placeImprovement } from './improvements.js';
 import { assignCitizens } from './cities.js';
+import { clearCampAt } from './raiders.js';
 
 const refuse = (code, message) => ({ code, message });
 
@@ -52,6 +53,7 @@ export function advanceUnit(state, ruleset, unit, target, events) {
     unit.moves = left;
     unit.acted = true;
     walked.push(next);
+    clearCampAt(state, ruleset, unit, next, events);
     if (canStop(state, ruleset, unit, next)) lastStop = { tile: next, moves: left };
     updateVisibility(state, ruleset, unit.faction);
     if (left <= 0) break;
@@ -127,7 +129,7 @@ export function healAmount(state, ruleset, unit) {
   const city = owner ? state.cities[owner] : null;
   let base = h.neutral;
   if (city?.faction === unit.faction) base = city.tile === unit.tile ? h.city : h.friendly;
-  return base + sumHook('heal', state, ruleset, unit.faction, { unit });
+  return base + sumHook('heal', state, ruleset, unit.faction, { unit }) + promotionSum(ruleset, unit, 'healBonus');
 }
 
 /** Start-of-turn work for a faction's units: heal those that rested, refresh moves, clear skips, count fortify turns, carry on walking. */
