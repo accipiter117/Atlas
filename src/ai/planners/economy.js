@@ -5,6 +5,7 @@
 // army at war), buildings and wonders by what they would add here.
 
 import { wantedTraders } from './trade.js';
+import { wantsSpy } from './espionage.js';
 import { buildOptions, itemCost, cityYields, adjacencyBonus, buildingDef } from '../../sim/index.js';
 import { categoryWeight, weightsOf, dist } from '../evaluate.js';
 
@@ -38,6 +39,10 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
         if (builders >= Math.min(w.maxBuilders ?? 4, Math.ceil(myCities.length * (w.builderPerCities ?? 1.5) / 2))) continue;
         value = 7 * categoryWeight(ruleset, view, memory, 'builder');
         reasonKey = 'ai.reason.builder';
+      } else if ((def.tags ?? []).includes('spy')) {
+        if (!wantsSpy(world, ruleset, view)) continue;
+        value = (weightsOf(ruleset, 'espionage').value ?? 6) * categoryWeight(ruleset, view, memory, 'military') * 0.5 + 2;
+        reasonKey = 'ai.reason.spy';
       } else if ((def.tags ?? []).includes('trader')) {
         // Traders while routes are short of the wanted number (each route was a trader).
         const routes = (view.trade?.routes ?? []).filter((r) => r.faction === view.me).length;

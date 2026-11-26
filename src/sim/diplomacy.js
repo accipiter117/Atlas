@@ -96,7 +96,7 @@ export function friendsOf(state, f) {
 
 // ---------- Opinion ----------
 
-function addModifier(state, ruleset, holder, about, id, times = 1) {
+export function addModifier(state, ruleset, holder, about, id, times = 1) {
   if (holder === about || holder === RAIDERS || about === RAIDERS || !ruleset?.diplomacy?.[id]) return;
   const d = dip(state);
   const key = `${holder}>${about}`;

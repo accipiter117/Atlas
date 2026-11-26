@@ -18,6 +18,11 @@ export const espionage = entryType('espionage', {
   outcome: effects(),
   requiresLevel: int(0, 5),
   descriptionKey: key(),
+  // Phase 15: what success does (the engine knows these five), with its numbers.
+  action: oneOf(['intel', 'siphon', 'boost', 'sabotage', 'unrest']),
+  amount: num(0, 1000),
+  cap: int(0, 10000),
+  effectTurns: int(1, 100),
 });
 
 export const diplomacy = entryType('diplomacy', {

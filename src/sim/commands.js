@@ -17,6 +17,7 @@ import { setGovernment, setPolicy } from './government.js';
 import { choosePantheon, foundReligion, buyWithFaith as faithBuy, spreadReligion } from './religion.js';
 import { canBuild, completeItem } from './cities.js';
 import { startTradeRoute } from './trade.js';
+import { assignSpy, startMission } from './espionage.js';
 
 // Buying a building with faith finishes it like any other, so it borrows the city rules.
 const buyWithFaith = {
@@ -63,6 +64,8 @@ export const COMMANDS = Object.freeze({
   buyWithFaith,
   spreadReligion,
   startTradeRoute,
+  assignSpy,
+  startMission,
 });
 
 const EMPTY = Object.freeze({});

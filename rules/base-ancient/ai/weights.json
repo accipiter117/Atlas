@@ -159,6 +159,15 @@
       }
     },
     {
+      "id": "espionage",
+      "planner": "espionage",
+      "weights": {
+        "maxSpies": 3,
+        "minOdds": 40,
+        "value": 6
+      }
+    },
+    {
       "id": "thresholds",
       "planner": "thresholds",
       "weights": {

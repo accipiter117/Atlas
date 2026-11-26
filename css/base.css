@@ -409,3 +409,6 @@ body {
 .trade-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .trade-list li { display: grid; gap: 2px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel); }
 .trade-dest .small { font-size: 13px; }
+.spy-card { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel); }
+.spy-odds { font-weight: 700; color: #2f6fbf; }
+.card-option:disabled { opacity: 0.55; cursor: default; }

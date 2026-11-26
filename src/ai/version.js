@@ -4,4 +4,4 @@
 // tools/sim.mjs plays the two against each other with seats swapped, and the
 // patch is copied into the rules only if it wins (docs/AI_TUNING.md).
 
-export const AI_VERSION = 'ai-v9';
+export const AI_VERSION = 'ai-v10';

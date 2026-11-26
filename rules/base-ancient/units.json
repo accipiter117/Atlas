@@ -29,6 +29,7 @@
     {"id": "musketman", "nameKey": "unit.musketman.name", "descriptionKey": "unit.musketman.text", "class": "melee", "era": "renaissance", "strength": 55, "moves": 2, "cost": 320, "upkeep": 3, "tags": ["infantry"], "domain": "land", "sight": 2, "sprite": "unit.musketman", "requires": {"tech": "gunpowder"}},
     {"id": "bombard", "nameKey": "unit.bombard.name", "descriptionKey": "unit.bombard.text", "class": "siege", "era": "renaissance", "strength": 43, "rangedStrength": 55, "range": 2, "moves": 2, "cost": 340, "upkeep": 3, "tags": ["siege"], "domain": "land", "sight": 2, "sprite": "unit.bombard", "requires": {"tech": "metallurgy"}},
     {"id": "missionary", "nameKey": "unit.missionary.name", "descriptionKey": "unit.missionary.text", "class": "civilian", "era": "ancient", "cost": 1, "strength": 0, "moves": 4, "upkeep": 0, "tags": ["missionary"], "faithOnly": true, "charges": 3},
-    {"id": "trader", "nameKey": "unit.trader.name", "descriptionKey": "unit.trader.text", "class": "civilian", "era": "ancient", "cost": 60, "strength": 0, "moves": 2, "upkeep": 0, "tags": ["trader"], "requires": {"civic": "foreign_trade"}}
+    {"id": "trader", "nameKey": "unit.trader.name", "descriptionKey": "unit.trader.text", "class": "civilian", "era": "ancient", "cost": 60, "strength": 0, "moves": 2, "upkeep": 0, "tags": ["trader"], "requires": {"civic": "foreign_trade"}},
+    {"id": "spy", "nameKey": "unit.spy.name", "descriptionKey": "unit.spy.text", "class": "civilian", "era": "classical", "cost": 70, "strength": 0, "moves": 3, "upkeep": 1, "tags": ["spy"], "requires": {"civic": "recorded_history"}}
   ]
 }

@@ -716,6 +716,22 @@
     "unit.trader.text": "Sets up a trade route from its city to another, yours or a rival's, for 30 turns: both ends gain, and a road is laid along the way.",
     "ai.reason.tradeRoute": "A trader set up a route to {city}.",
     "ai.reason.toTradeCity": "A trader heads for {city} to start a route.",
-    "ai.reason.trader": "{city} trains a trader: trade routes pay."
+    "ai.reason.trader": "{city} trains a trader: trade routes pay.",
+    "mission.gather_intel.name": "Gather Intel",
+    "mission.gather_intel.text": "See the land around the city and what its owner is researching.",
+    "mission.siphon_funds.name": "Siphon Funds",
+    "mission.siphon_funds.text": "Steal a fifth of the owner's gold (at most 120).",
+    "mission.steal_boost.name": "Steal Tech Boost",
+    "mission.steal_boost.text": "Gain a boost (40%) towards a tech they know and you do not.",
+    "mission.sabotage_production.name": "Sabotage Production",
+    "mission.sabotage_production.text": "Undo the production the city has put into its current item.",
+    "mission.incite_unrest.name": "Incite Unrest",
+    "mission.incite_unrest.text": "-2 amenities in the city for 10 turns.",
+    "unit.spy.name": "Spy",
+    "unit.spy.text": "Assign it to a city you know: one of yours to defend it against rival spies, or a rival's to run missions there.",
+    "opinion.caughtSpying": "We caught your spies",
+    "ai.reason.spyPosted": "Posted a spy to {city}.",
+    "ai.reason.mission": "A spy in {city} began {mission} ({odds}% to succeed).",
+    "ai.reason.spy": "{city} trains a spy."
   }
 }

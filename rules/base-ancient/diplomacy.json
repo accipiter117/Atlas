@@ -7,6 +7,7 @@
     {"id": "razedACity", "amount": -6, "reasonKey": "opinion.razedACity", "decays": true, "trigger": "cityRazed"},
     {"id": "killedOurUnits", "amount": -2, "reasonKey": "opinion.killedOurUnits", "decays": true, "trigger": "unitKilled"},
     {"id": "denouncedUs", "amount": -8, "reasonKey": "opinion.denouncedUs", "decays": true, "trigger": "denounced"},
+    {"id": "caughtSpying", "amount": -8, "reasonKey": "opinion.caughtSpying", "decays": true, "trigger": "spyIdentified"},
     {"id": "attackedOurFriend", "amount": -6, "reasonKey": "opinion.attackedOurFriend", "decays": true, "trigger": "warOnFriend"},
     {"id": "madePeace", "amount": 4, "reasonKey": "opinion.madePeace", "decays": true, "trigger": "peaceMade"},
     {"id": "dealMade", "amount": 3, "reasonKey": "opinion.dealMade", "decays": true, "trigger": "dealAccepted"},

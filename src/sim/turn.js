@@ -15,6 +15,8 @@ import { startGovernmentTurn } from './government.js';
 import { startDiplomacyTurn, diplomacyRound } from './diplomacy.js';
 import { religionRound } from './religion.js';
 import { startTradeTurn } from './trade.js';
+import { startEspionageTurn } from './espionage.js';
+import { addModifier } from './diplomacy.js';
 import { eliminate } from './elimination.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
@@ -24,6 +26,7 @@ function startFactionTurn(state, factionId, events, ruleset) {
   // Diplomacy timers (section 3.14): weariness, gold per turn, lapsed offers.
   if (ruleset?.diplomacy) startDiplomacyTurn(state, ruleset, factionId, events);
   if (ruleset?.trade) startTradeTurn(state, ruleset, factionId, events);
+  if (ruleset?.espionage) startEspionageTurn(state, ruleset, factionId, events, addModifier);
   // Section 3.14: cities first (yields, growth, production, borders), then units.
   if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
   if (state.units) startUnitsTurn(state, ruleset, factionId, events);

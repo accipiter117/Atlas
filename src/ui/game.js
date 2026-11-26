@@ -20,6 +20,7 @@ import { renderEmpire } from './empire.js';
 import { renderDiplomacy } from './diplomacy.js';
 import { renderReligionTab, religionName } from './religionTab.js';
 import { renderTradeTab, renderTraderList } from './tradeTab.js';
+import { renderSpiesTab } from './spiesTab.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
 import { renderGameMenu, codeBox } from './gameMenu.js';
@@ -392,6 +393,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'tradeRouteStarted' && e.faction === human) toast(tt('game.routeStarted', { from: cityNameOf(e.origin), to: cityNameOf(e.dest) }));
       if (e.type === 'tradeRouteStarted' && e.faction !== human && e.destFaction === human) toast(tt('game.routeToYou', { faction: civName(e.faction), to: cityNameOf(e.dest) }));
       if (e.type === 'tradeRouteEnded' && e.faction === human) toast(tt('game.routeEnded', { from: cityNameOf(e.origin), to: cityNameOf(e.dest) }));
+      if (e.type === 'missionEnded' && e.faction === human) toast(tt(`spies.result.${e.outcome}`, { mission: ruleset.text[ruleset.espionage?.[e.mission]?.nameKey] ?? '', city: e.cityName, gold: e.gold ?? 0 }));
+      if (e.type === 'missionEnded' && e.target === human && e.outcome === 'captured') toast(tt('spies.caughtTheirs', { faction: civName(e.faction), city: e.cityName }));
+      if (e.type === 'missionEnded' && e.target === human && e.outcome === 'identified') toast(tt('spies.identifiedTheirs', { faction: civName(e.faction), city: e.cityName, mission: ruleset.text[ruleset.espionage?.[e.mission]?.nameKey] ?? '' }));
       if (e.type === 'civicLearned' && e.faction === human) toast(tt('game.civicLearned', { item: civicName(e.item) }));
       if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
@@ -952,6 +956,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     }
     const preach = ruleset.units[u.type]?.faithOnly && u.religion ? preachTarget(world0(), u) : null;
     const isTrader = (ruleset.units[u.type]?.tags ?? []).includes('trader');
+    if ((ruleset.units[u.type]?.tags ?? []).includes('spy')) improve.push(el(doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { action: 'post-spy' }, onclick: () => openEmpire('spies') }, tt('spies.postFromCard')));
     if (isTrader) improve.push(renderTraderList(doc, { world: world0(), view: v, ruleset, text, unit: u, name: civName,
       onStart: (city) => { const r = run({ type: 'startTradeRoute', faction: human, unit: u.id, city }); if (r) selectNextIdle(); } }));
     fill(actions, ...improve, ...[
@@ -1139,6 +1144,14 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       world, view: v, ruleset, text, pick: pickSlot, tab,
       onTab: (t2) => { pickSlot = null; openEmpire(t2); },
       tradeTab: ruleset.trade ? () => renderTradeTab(doc, { world, view: v, ruleset, text, name: civName }) : null,
+      spiesTab: ruleset.espionage ? () => renderSpiesTab(doc, {
+        world, view: v, ruleset, text, name: civName,
+        act: {
+          assignUnit: (unit, city) => { run({ type: 'assignSpy', faction: human, unit, city }); openEmpire('spies'); },
+          move: (spy, city) => { run({ type: 'assignSpy', faction: human, spy, city }); openEmpire('spies'); },
+          mission: (spy, mission) => { run({ type: 'startMission', faction: human, spy, mission }); openEmpire('spies'); },
+        },
+      }) : null,
       religionTab: ruleset.beliefs ? () => renderReligionTab(doc, {
         world, view: v, ruleset, text, name: civName, form: foundForm,
         act: {

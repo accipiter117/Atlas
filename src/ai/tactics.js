@@ -87,6 +87,8 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
 
   if (def.faithOnly && unit.religion) return missionaryMove(world, view, ruleset, unit, move, approach);
   if (tags.includes('trader')) return traderMove(world, view, ruleset, memory, unit, move);
+  // Spy units are posted by the espionage planner; until then they wait.
+  if (tags.includes('spy')) return { cmd: { type: 'skip', faction: me, unit: unit.id }, score: 0, reasonKey: 'ai.reason.hold', params: {} };
 
   if (tags.includes('founder')) {
     const here = foundingProblem(world, ruleset, me, unit.tile) || !surroundingsKnown(view, ruleset, unit.tile) ? null : (ctx.siteScoreAt(unit.tile) ?? 0);

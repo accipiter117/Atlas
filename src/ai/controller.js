@@ -18,6 +18,7 @@ import { rankProduction } from './planners/economy.js';
 import { threatMap, considerWar } from './planners/military.js';
 import { nextDiplomacy } from './planners/diplomacy.js';
 import { nextReligion } from './planners/religion.js';
+import { nextEspionage } from './planners/espionage.js';
 import { decideUnit, builderJobs } from './tactics.js';
 import { weightsOf, dist } from './evaluate.js';
 
@@ -181,6 +182,14 @@ export function createAi(ruleset, factionId, memory = {}) {
       const r = nextReligion(world, view, ruleset, memory);
       if (r && valid(world, r.cmd)) return issue(view, world, r);
       memory.done.religion = 99;
+    }
+
+    // 2e. Espionage: post spies, start missions (phase 15).
+    if (ruleset.espionage && (memory.done.espionage ?? 0) < 6) {
+      memory.done.espionage = (memory.done.espionage ?? 0) + 1;
+      const e = nextEspionage(world, view, ruleset, memory);
+      if (e && valid(world, e.cmd)) return issue(view, world, e);
+      memory.done.espionage = 99;
     }
 
     // 3. War.

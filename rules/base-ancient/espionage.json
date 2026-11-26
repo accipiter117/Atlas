@@ -1,0 +1,10 @@
+{
+  "contentType": "espionage",
+  "entries": [
+    {"id": "gather_intel", "nameKey": "mission.gather_intel.name", "descriptionKey": "mission.gather_intel.text", "turns": 4, "baseOdds": 60, "requiresLevel": 0, "action": "intel", "amount": 3},
+    {"id": "siphon_funds", "nameKey": "mission.siphon_funds.name", "descriptionKey": "mission.siphon_funds.text", "turns": 6, "baseOdds": 60, "requiresLevel": 0, "action": "siphon", "amount": 0.2, "cap": 120},
+    {"id": "steal_boost", "nameKey": "mission.steal_boost.name", "descriptionKey": "mission.steal_boost.text", "turns": 6, "baseOdds": 60, "requiresLevel": 1, "action": "boost", "amount": 1},
+    {"id": "sabotage_production", "nameKey": "mission.sabotage_production.name", "descriptionKey": "mission.sabotage_production.text", "turns": 5, "baseOdds": 60, "requiresLevel": 0, "action": "sabotage", "amount": 1},
+    {"id": "incite_unrest", "nameKey": "mission.incite_unrest.name", "descriptionKey": "mission.incite_unrest.text", "turns": 8, "baseOdds": 60, "requiresLevel": 1, "action": "unrest", "amount": 2, "effectTurns": 10}
+  ]
+}

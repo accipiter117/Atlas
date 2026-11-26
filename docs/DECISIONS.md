@@ -202,6 +202,15 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Resource deals now transfer** (the plan's "resource deal transfers amenities"): this changes the phase 12 rule, where the giver kept its own copy. The giver keeps the resource only if it works another copy; the AI's price for giving reflects that (`dealValues.spareShare` and `lastShare`).
 - **The traders' routes shown to you** are your own and those ending in your cities.
 
+## Phase 15
+
+- **Spies are built, then posted.** A spy is a unit until you assign it to a city you know; then it leaves the map. In your own city it defends (each defender takes 15 plus 5 per level off rivals' odds there); in a rival's city it runs missions. Moving between cities is instant, but a spy on a mission must finish first.
+- **Unlocked by Recorded History** (the plan says "a civic"), capped at 1 plus your era index; the cap counts spy units and posted spies together.
+- **Odds** are fixed when the mission starts and shown before you commit. The result is one roll of the game's seeded dice when the mission ends: under the odds it succeeds (a quarter of successes are recognised), otherwise it fails (half the failures are caught and the spy lost; the rest escape home to your capital).
+- **Mission actions are engine code chosen by data** (`action` in `espionage.json`: intel, siphon, boost, sabotage, unrest), with their numbers in data, as with the five victory modules.
+- **Rival spies are hidden.** You learn of them only when one is caught or recognised in your city.
+- **Intel** lasts 20 turns and is shown in the Spies tab; the land around the city stays explored on your map.
+
 ## Later
 
 - Nothing yet.

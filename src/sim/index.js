@@ -39,6 +39,7 @@ export { atWar, statusOf, opinionOf, evaluateDeal, wouldAccept, dealProblem, pai
 export { slotsOf, governmentOf, workingGovernment, policyAvailable, governmentAvailable, policyProblem, SLOT_KINDS } from './government.js';
 export { scoreOf, scoreParts } from './score.js';
 export { previewRoute, routeYields, routeProblem, routesFrom, cityTradeYields } from './trade.js';
+export { spyCap, spyCount, missionOdds, outcomeChances, cityDefence } from './espionage.js';
 export { majorityOf, religionLimit, foundedBy, pantheonOf, takenBeliefs, followerCities, faithPrice, holyCityOptions, preachTarget, missionaryFaith, pantheonFaith, foundFaith } from './religion.js';
 export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './victories/index.js';
 export { damage, strengths } from '../battles/index.js';

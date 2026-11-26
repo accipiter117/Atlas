@@ -14,6 +14,7 @@ import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
 import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildings.js';
 import { knows, speedMultiplier } from './progression.js';
 import { receivedResources, givenResources } from './diplomacy.js';
+import { spyCount, spyCap } from './espionage.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -168,6 +169,8 @@ export function canBuild(state, ruleset, city, item) {
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;
     if (def.requires?.civic && !knows(state, city.faction, def.requires.civic, 'civics')) return false;
     if (def.requires?.building && !city.buildings.includes(def.requires.building)) return false;
+    // Spies: at most capBase + era index per faction (phase 15).
+    if ((def.tags ?? []).includes('spy') && spyCount(state, ruleset, city.faction) >= spyCap(state, ruleset, city.faction)) return false;
     if (def.requires?.resource && !hasResource(state, ruleset, city.faction, def.requires.resource)) return false;
     // A faction's unique unit hides the unit it replaces.
     for (const u of Object.values(ruleset.units)) {

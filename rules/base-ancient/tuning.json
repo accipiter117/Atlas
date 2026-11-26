@@ -153,7 +153,15 @@
       "baseOdds": 60,
       "oddsPerLevel": 10,
       "missionTurnsMin": 4,
-      "missionTurnsMax": 8
+      "missionTurnsMax": 8,
+      "defencePerSpy": 15,
+      "defencePerLevel": 5,
+      "minOdds": 5,
+      "maxOdds": 95,
+      "identifyChance": 0.25,
+      "captureChance": 0.5,
+      "maxLevel": 3,
+      "intelTurns": 20
     },
     "diplomacy": {
       "peaceMinTurns": 10,

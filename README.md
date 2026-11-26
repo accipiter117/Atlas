@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 14 of 22: the playable core with civics, governments, policy cards, diplomacy (deals, treaties, alliances and teams), religion and trade, fast on big maps, with difficulty levels and rivals that move in the background: set up a match, play a whole game against computer rivals to a conquest, science or score victory, and save, load, export and import it. Pick one of eight peoples, research a 40-tech tree, raise buildings and wonders, and fight with odds shown before every attack, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Espionage comes next. `npm run sim` plays AI against AI; see `docs/AI_TUNING.md`. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 15 of 22: the playable core with civics, governments, policy cards, diplomacy (deals, treaties, alliances and teams), religion, trade and espionage, fast on big maps, with difficulty levels and rivals that move in the background: set up a match, play a whole game against computer rivals to a conquest, science or score victory, and save, load, export and import it. Pick one of eight peoples, research a 40-tech tree, raise buildings and wonders, and fight with odds shown before every attack, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Culture victory, events and the balance pass come next. `npm run sim` plays AI against AI; see `docs/AI_TUNING.md`. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

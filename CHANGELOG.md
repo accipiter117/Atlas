@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 15: Espionage
+
+What you can try: after the Recorded History civic, cities can train spies (one per faction, plus one for each era you reach). Select a new spy and tap "Post this spy", or open Empire (E) and the Spies tab: send it to one of your cities to defend it, or to any rival city you know. Each mission lists its success chance before you commit (60%, plus 10% for each level your spy has, less 15 or more for each spy defending that city), how long it takes, and the risk of being found out or caught: Gather Intel (see the land around the city and what its owner is researching), Siphon Funds (a fifth of their gold, at most 120), Steal Tech Boost (40% towards a tech they know and you do not), Sabotage Production (their current build loses its progress) and Incite Unrest (-2 amenities for 10 turns). A spy that succeeds gains a level. Recognised or caught, your spy costs you opinion with that leader ("We caught your spies"), and rival spies caught in your cities are announced to you.
+
+- `espionage.js` with missions, odds, outcomes and every number in `espionage.json` and `tuning.espionage`; the spy unit; `assignSpy` and `startMission`; outcomes as events with one roll of the game's dice.
+- The Spies tab, a Post button on the spy's card, toasts for results and for rival spies caught or recognised.
+- A new opinion reason, "We caught your spies".
+- The AI's espionage planner, defending its capital first and then sending spies abroad.
+- Tests: 216 unit tests (the odds formula, outcomes over 10,000 seeded rolls within 1% of their chances, the spy cap per era, every mission's effect, opinion when caught) and 51 browser tests (posting a spy and seeing the odds before starting a mission).
+
 ## Phase 14: Trade
 
 What you can try: research the Foreign Trade civic and build a trader. Select it in one of your cities and its card lists every city it can reach, best first, with what your city gets and what they get. Tap one: the trader becomes a 30-turn route, a road is laid along the way at once, and both ends gain (domestic routes bring food and production, foreign ones gold and science, plus a little for each resource the destination works; a market adds 2 gold to foreign routes). When the route ends the trader comes home to be sent again; a war with the destination ends it early. Routes also carry your religion to the far city. Empire (E) now has a Trade tab with every route and its yields each way. In Diplomacy, a spare luxury (one you have twice) is worth offering to a rival for gold per turn; give away your only copy and you lose its amenity.

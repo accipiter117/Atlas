@@ -110,6 +110,10 @@ export function view(state, factionId, ruleset = null) {
     const own = new Set(Object.values(state.cities ?? {}).filter((c) => c.faction === factionId).map((c) => c.id));
     out.trade = { routes: state.trade.routes.filter((r) => r.faction === factionId || own.has(r.dest)).map((r) => ({ ...r, path: r.path.slice() })), nextRoute: state.trade.nextRoute };
   }
+  // Your own spies and the intel they brought back (phase 15); rivals' spies stay hidden.
+  if (state.espionage) {
+    out.espionage = { spies: state.espionage.spies.filter((s) => s.faction === factionId).map((s) => ({ ...s, mission: s.mission ? { ...s.mission } : null })), intel: JSON.parse(JSON.stringify(state.espionage.intel?.[factionId] ?? {})), nextSpy: state.espionage.nextSpy };
+  }
   // Pantheons and religions (founders, holy cities, beliefs) are public (phase 13).
   out.religion = state.religion ? JSON.parse(JSON.stringify(state.religion)) : null;
   // Finished projects and the winner are announced to everyone, so every view has them.
@@ -149,6 +153,7 @@ export function worldFromView(v) {
     diplomacy: v.diplomacy ?? undefined,
     religion: v.religion ?? undefined,
     trade: v.trade ?? undefined,
+    espionage: v.espionage ? { spies: v.espionage.spies, intel: { [v.me]: v.espionage.intel }, nextSpy: v.espionage.nextSpy } : undefined,
     wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,

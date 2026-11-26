@@ -204,6 +204,27 @@ the best route by category weights; weights in `ai/weights.json` "trade").
   cities by turn 200 against 47). Opinions are now worked out only when read, and a faction's
   effects once per sight update, which keeps this under the 2 s target.
 
+### 2026-11-26: phase 15, espionage (ai-v10, 40 games, seeds 1000 to 1039)
+
+A rules change, compared on the same 40 seeds: phase 14 (ai-v9) against phase 15 (ai-v10, with
+the espionage planner: up to 3 spies within the cap, the first defending the capital, the rest
+posted to the rival city it likes least or is at war with, running the mission worth most when its
+odds are 40% or better; weights in `ai/weights.json` "espionage").
+
+| Line | Before (ai-v9) | After (ai-v10) |
+| --- | --- | --- |
+| Science wins | 17 (43%) | 14 (35%) |
+| Score wins | 11 (28%) | 14 (35%) |
+| Religious wins | 12 (30%) | 12 (30%) |
+| Conquest wins | 0 | 0 |
+| Average victory turn | 192 | 194 |
+| Most wins (faction) | Carthage 8 of 17 | Carthage 8 of 17, Persia 8 of 26 |
+| Errors | 0 | 0 |
+
+- In sample games each AI runs 20 to 35 missions; every outcome turns up (success, identified,
+  escaped, captured), and spies reach level 3.
+- Large 8-faction rounds at turn 200: about 0.66 to 1.0 s in Node.
+
 ## Open problems
 
 - **Conquest wins 0%.** Taking every original capital in 220 Quick turns needs a sustained
