@@ -230,6 +230,15 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Stack check** plays five rounds of a small AI-only game on the Mods screen after loading, rather than only re-reading the report, so it shows the combination really plays.
 - **Faction choices reset** when the conversion changes, since the old factions no longer exist.
 
+## Phase 18
+
+- **Only battles you start are fought by hand.** Computer against computer, and a computer attacking you during its own turn, auto-resolve. Section 5.4 allows any battle with a human side to wait, but a defence would stall the computer's turn (it runs in the background worker) until you answered.
+- **Whether a battle waits depends on the setup alone** (your attack, a battle mode other than auto, and a module other than auto), never on which modules are installed. The screen then auto-resolves anything its module cannot fight (a sea battle) or if the module has gone. The command log holds the answer, so a save replays the same even if a module is changed or removed.
+- **Fair by construction.** The tactical sim strikes with the auto-resolve curve on the spec's own strengths and modifiers, with each side's luck for the day drawn once like auto's spread, and a clash lasts long enough (12 seconds) to deal what auto would. Terrain decides how the field looks and how fast bands move; how hard the defender is to beat comes from the modifiers, as in auto. Player skill adds a little: a charge (+3 for its first 2.5 seconds), a blow to the flank or rear (+3 while it lasts), and the choice to withdraw.
+- **City battles** are fought against the walls, which strike back; the garrison watches from behind them and keeps its health, as in auto. **Ranged attacks** are a volley across the gap: only the shooters deal damage, as in auto.
+- **One soldier for every 10 HP**, so a full-strength unit is a band of ten.
+- **Britannia's battle code** was read for ideas (bands, formations, wheeling to face, charges, the spatial picture) and rewritten from scratch to Atlas's rules and folder boundaries; nothing is copied.
+
 ## Later
 
 - Nothing yet.

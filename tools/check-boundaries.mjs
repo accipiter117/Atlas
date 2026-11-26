@@ -23,6 +23,8 @@ const ALLOWED = {
   data: [inDir('core'), inDir('data')],
   sim: [inDir('core'), inDir('sim'), isFile('src/battles/index.js')],
   battles: [inDir('core'), inDir('battles')],
+  // A battle module's own rules (src/battles/<id>/sim, section 5.5): like src/sim, no screen, clock or loose dice.
+  battleSim: [(t) => t.startsWith('src/core/'), (t) => /^src\/battles\/[^/]+\/sim\//.test(t)],
   ai: [inDir('core'), inDir('ai'), isFile('src/sim/index.js')],
   save: [inDir('core'), inDir('save'), isFile('src/sim/index.js')],
   render: [inDir('core'), inDir('render'), isFile('src/sim/index.js'), isFile('src/data/text.js')],
@@ -47,6 +49,7 @@ const BANNED = {
   ai: [...DOM, 'Math.random', 'Date', 'setTimeout', 'setInterval'],
   // Fetching JSON happens only in src/main.js (section 7), so the loader and sim run unchanged in Node.
   battles: ['fetch'],
+  battleSim: [...DOM, 'Math.random', 'Date', 'setTimeout', 'setInterval', 'requestAnimationFrame', 'performance'],
   save: ['fetch'],
   render: ['Math.random', 'fetch'],
   ui: ['Math.random', 'fetch'],
@@ -55,6 +58,7 @@ const BANNED = {
 function layerOf(file) {
   // Entry points (src/main.js for the game, src/dev.js for dev.html) wire everything together.
   if (/^src\/[^/]+\.js$/.test(file)) return 'main';
+  if (/^src\/battles\/[^/]+\/sim\//.test(file)) return 'battleSim';
   const m = /^src\/([^/]+)\//.exec(file);
   return m ? m[1] : null;
 }

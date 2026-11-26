@@ -8,6 +8,7 @@
 
 import { t } from '../data/text.js';
 import { VICTORY_MODULES } from '../sim/index.js';
+import { getModule, moduleIds } from '../battles/index.js';
 
 function el(doc, tag, props = {}, ...children) {
   const node = doc.createElement(tag);
@@ -56,6 +57,12 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
   return previous ? { ...base, ...previous, seed } : base;
 }
 
+/** The interactive battle module to use: the one asked for if it is interactive, else the first installed. */
+export function interactiveModule(wanted) {
+  if (getModule(wanted)?.kind === 'interactive') return wanted;
+  return moduleIds().find((id) => getModule(id).kind === 'interactive') ?? 'auto';
+}
+
 /** The mods a setup loads, in order: the ruleset, the conversion (if any), then the ticked tweaks in their order. */
 export function selectionOf(cfg) {
   return ['base-ancient', ...(cfg.conversion && cfg.conversion !== 'none' ? [cfg.conversion] : []), ...cfg.tweaks];
@@ -89,8 +96,9 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     fog: cfg.fog,
     recordAI: cfg.recordAI,
     autosave: cfg.autosave,
-    battleMode: 'auto',
-    battleModule: 'auto',
+    battleMode: cfg.battleMode ?? 'auto',
+    // Fighting your own battles needs an interactive module: the chosen one, else the first installed.
+    battleModule: (cfg.battleMode ?? 'auto') === 'auto' ? 'auto' : interactiveModule(cfg.battleModule),
     difficulty: cfg.difficulty ?? 'prince',
   };
   if (cfg.turnLimit === 'none') setup.turnLimit = null;
@@ -242,9 +250,13 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     row(tt('setup.raiders'), select('raiders', cfg.raiders, choose('setup.raidersOpt', ['off', 'on', 'raging']), (v) => { cfg.raiders = v; })),
     row(tt('setup.events'), select('events', cfg.events ?? 'occasional', choose('setup.eventsOpt', ['off', 'occasional', 'frequent']), (v) => { cfg.events = v; })),
     row(tt('setup.disasters'), select('disasters', cfg.disasters ?? 'off', choose('setup.raidersOpt', ['off', 'on']), (v) => { cfg.disasters = v; })));
+  // Battles (phase 18): auto-resolve, or fight your own with an interactive module.
+  const interactive = moduleIds().filter((id) => getModule(id).kind === 'interactive');
+  const mode = cfg.battleMode ?? 'auto';
   const battles = group(tt('setup.group.battles'),
-    row(tt('setup.battleMode'), select('battleMode', 'auto', [{ value: 'auto', label: tt('setup.battleAuto') }, { value: 'ask', label: tt('setup.battleAsk'), disabled: true }, { value: 'fight', label: tt('setup.battleFight'), disabled: true }], () => {}), el(doc, 'span', { class: 'later' }, tt('setup.battleNote'))),
-    row(tt('setup.battleModule'), select('battleModule', 'auto', [{ value: 'auto', label: tt('setup.moduleAuto') }], () => {}, { disabled: true })));
+    row(tt('setup.battleMode'), select('battleMode', mode, [{ value: 'auto', label: tt('setup.battleAuto') }, { value: 'ask', label: tt('setup.battleAsk'), disabled: !interactive.length }, { value: 'fight', label: tt('setup.battleFight'), disabled: !interactive.length }], (v) => { cfg.battleMode = v; })),
+    row(tt('setup.battleModule'), select('battleModule', mode === 'auto' ? 'auto' : interactiveModule(cfg.battleModule), mode === 'auto' ? [{ value: 'auto', label: tt('setup.moduleAuto') }] : interactive.map((id) => ({ value: id, label: tt(`setup.module.${id}`) })), (v) => { cfg.battleModule = v; }, { disabled: mode === 'auto' })),
+    el(doc, 'p', { class: 'small muted' }, tt(mode === 'auto' ? 'setup.battleNoteAuto' : 'setup.battleNoteFight')));
   const advanced = group(tt('setup.group.advanced'),
     row(tt('setup.fog'), select('fog', cfg.fog, choose('setup.onOff', ['on', 'off']), (v) => { cfg.fog = v; })),
     row(tt('setup.recorder'), select('recordAI', cfg.recordAI, choose('setup.journalOpt', ['on', 'off']), (v) => { cfg.recordAI = v; })),

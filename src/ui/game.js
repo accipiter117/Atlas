@@ -13,6 +13,7 @@ import {
   atWar, buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
+import { getModule } from '../battles/index.js';
 import { factionCard } from './factionCards.js';
 import { createSeatRunner, rankTechs, rankCivics } from '../ai/index.js';
 import { renderTrees } from './trees.js';
@@ -240,6 +241,16 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         state = next;
         refresh();
       },
+      /** Choose how your battles are fought (battle tests): 'auto', 'ask' or 'fight'. */
+      battleMode(mode, module = 'tactical') {
+        const next = JSON.parse(JSON.stringify(state));
+        next.setup.battleMode = mode;
+        next.setup.battleModule = mode === 'auto' ? 'auto' : module;
+        setup.battleMode = next.setup.battleMode;
+        setup.battleModule = next.setup.battleModule;
+        state = next;
+        refresh();
+      },
       /** Add faith to your stock (religion tests). */
       faith(n) {
         const next = JSON.parse(JSON.stringify(state));
@@ -369,7 +380,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
     if (religionLens) mapView.setReligionLens(lensData());
-    if (v.pendingCapture) showCaptureDialog();
+    if (v.pendingBattle) showBattleCard();
+    else if (v.pendingCapture) showCaptureDialog();
     else if (v.pendingEvent) showEventDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
@@ -529,7 +541,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   /** The Next button: whatever still blocks the turn, else end it (section 10.1). */
   function next() {
-    if (v.pendingCapture) showCaptureDialog();
+    if (v.pendingBattle) showBattleCard();
+    else if (v.pendingCapture) showCaptureDialog();
     else if (v.pendingEvent) showEventDialog();
     else if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
     else if (idle().length) selectNextIdle();
@@ -942,6 +955,61 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     overlay.querySelector('[data-action="close-overlay"]').hidden = true;
     overlay.hidden = false;
     body.querySelector('[data-capture="keep"]').focus();
+  }
+
+  // ---------- Battles you fight yourself (phase 18) ----------
+  let battleScreen = null;   // { host element, mounted module screen, battleId }
+
+  const sideName = (factionId) => (factionId === 'raiders' ? raidersName() : civName(factionId));
+
+  /** A battle you started waits: with "Ask each time", the Fight or Auto-resolve card; with "Always fight", straight to the field. */
+  function showBattleCard() {
+    const p = v.pendingBattle;
+    if (!p || battleScreen?.battleId === p.spec.battleId) return;
+    // A battle the module cannot fight (or a module no longer installed) settles at once.
+    const mod = getModule(p.module);
+    if (!mod?.mount || !mod.canHandle(p.spec)) { setTimeout(() => { if (v.pendingBattle) run({ type: 'autoResolveBattle' }); }, 0); return; }
+    if ((setup.battleMode ?? 'auto') === 'fight') { openBattle(p); return; }
+    const o = estimateOdds(p.spec);
+    const overlay = doc.querySelector('[data-field="overlay"]');
+    const body = overlay.querySelector('[data-field="overlay-body"]');
+    const a = p.spec.attacker.units[0];
+    const target = p.spec.defender.city ? p.spec.defender.city.name : unitName({ type: p.spec.defender.units[0]?.type });
+    fill(body,
+      el(doc, 'h2', { dataset: { field: 'battle-title' } }, tt('battleCard.title', { unit: unitName({ type: a.type }), target, faction: sideName(p.spec.defender.faction) })),
+      el(doc, 'p', { dataset: { field: 'battle-odds' } }, tt('battleCard.odds', { win: Math.round(o.win * 100), lose: Math.round(o.lose * 100), taken: Math.round(o.attackerLoss), dealt: Math.round(o.defenderLoss) })),
+      el(doc, 'p', { class: 'small muted' }, tt('battleCard.note')),
+      el(doc, 'div', { class: 'capture-choices' },
+        el(doc, 'button', { type: 'button', class: 'btn primary', dataset: { battle: 'fight' }, onclick: () => { overlay.hidden = true; openBattle(p); } }, tt('battleCard.fight')),
+        el(doc, 'button', { type: 'button', class: 'btn', dataset: { battle: 'auto' }, onclick: () => { overlay.hidden = true; run({ type: 'autoResolveBattle' }); } }, tt('battleCard.auto'))));
+    overlay.querySelector('[data-action="close-overlay"]').hidden = true;
+    overlay.hidden = false;
+    body.querySelector('[data-battle="fight"]').focus();
+  }
+
+  /** Mount the battle module's screen over the map; its result comes back as resolveBattle. */
+  function openBattle(p) {
+    const mod = getModule(p.module);
+    if (!mod?.mount) { run({ type: 'autoResolveBattle' }); return; }
+    const o = estimateOdds(p.spec);
+    const holder = el(doc, 'section', { class: 'battle-screen', role: 'dialog', 'aria-modal': 'true', 'aria-label': tt('tactical.fieldLabel'), dataset: { field: 'battle-screen' } });
+    root.append(holder);
+    battleScreen = { battleId: p.spec.battleId, holder, screen: null };
+    battleScreen.screen = mod.mount(p.spec, {
+      element: holder,
+      t: (k, a) => tt(k, a),
+      colours: { attacker: colours[p.spec.attacker.faction], defender: colours[p.spec.defender.faction] },
+      names: { attacker: sideName(p.spec.attacker.faction), defender: sideName(p.spec.defender.faction) },
+      unitName: (type) => unitName({ type }),
+      oddsText: tt('tactical.odds', { win: Math.round(o.win * 100), lose: Math.round(o.lose * 100) }),
+      playerSide: 'attacker',
+      finish: (result) => {
+        battleScreen?.screen?.destroy?.();
+        holder.remove();
+        battleScreen = null;
+        if (!run({ type: 'resolveBattle', result })) run({ type: 'autoResolveBattle' });
+      },
+    });
   }
 
   /** An event waits for an answer (phase 16): its text and one button per choice. */

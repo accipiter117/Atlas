@@ -272,6 +272,37 @@
         "baseDamage": 30,
         "strengthScale": 25,
         "spread": 0.2
+      },
+      "tactical": {
+        "width": 640,
+        "height": 400,
+        "tick": 0.1,
+        "clashSeconds": 12,
+        "maxSeconds": 90,
+        "hpPerMan": 10,
+        "speed": {
+          "foot": 30,
+          "mounted": 60,
+          "siege": 15
+        },
+        "turnRate": 1.2,
+        "reach": {
+          "melee": 6,
+          "ranged": 200,
+          "siege": 260
+        },
+        "slow": {
+          "forest": 0.55,
+          "hill": 0.7,
+          "river": 0.4,
+          "marsh": 0.5,
+          "water": 0.25
+        },
+        "chargeBonus": 3,
+        "chargeSeconds": 2.5,
+        "chargeSpeed": 1.5,
+        "flankBonus": 3,
+        "flankDot": 0.5
       }
     },
     "raiders": {

@@ -223,7 +223,8 @@ export function buildSpec(state, ruleset, unit, target) {
     defender: defenderSide,
     ground: { ...groundOf(state, ruleset, target), riverCrossing: aMods.some((m) => m.source === 'river') },
     modifiers: { attacker: aMods, defender: dMods },
-    tuning: { ...battle, xpAttack: xp.perAttack ?? 5, xpDefence: xp.perDefence ?? 3 },
+    // Interactive modules read their own slice (battle.<id>, section 5.2).
+    tuning: { ...battle, xpAttack: xp.perAttack ?? 5, xpDefence: xp.perDefence ?? 3, tactical: ruleset.tuning?.battle?.tactical ?? null },
     skin: ruleset.skin?.id ?? null,
     target,
   };

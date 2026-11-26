@@ -71,7 +71,7 @@ test('a good result from the screen is applied; auto-resolve also works', () => 
   unregisterModule('fake');
 });
 
-test('computer-only battles never wait: the module simulates', () => {
+test('computer-only battles never wait: they auto-resolve (phase 18)', () => {
   registerModule(fake);
   const s = fixtureGame(OPEN, [{ type: 'warrior', at: 0 }, { type: 'warrior', faction: 'f1', at: 1 }]);
   s.factions[0].kind = 'ai';
@@ -79,5 +79,18 @@ test('computer-only battles never wait: the module simulates', () => {
   const r = play(s, { type: 'attack', faction: 'f0', unit: 'u_0001', target: 1 });
   assert.equal(r.state.pendingBattle ?? null, null);
   assert.ok(r.state.units.u_0002.hp < 100);
+  assert.equal(r.state.battleLog.at(-1).module, 'auto');
+  unregisterModule('fake');
+});
+
+test('a computer attacking a human never waits either: it auto-resolves', () => {
+  registerModule(fake);
+  const s = fixtureGame(OPEN, [{ type: 'warrior', at: 0 }, { type: 'warrior', faction: 'f1', at: 1 }]);
+  s.factions[0].kind = 'ai';
+  s.factions[1].kind = 'human';
+  s.setup = { ...s.setup, battleModule: 'fake', battleMode: 'fight' };
+  const r = play(s, { type: 'attack', faction: 'f0', unit: 'u_0001', target: 1 });
+  assert.equal(r.state.pendingBattle ?? null, null);
+  assert.equal(r.state.battleLog.at(-1).module, 'auto');
   unregisterModule('fake');
 });

@@ -2,14 +2,13 @@
 // autoResolveBattle, captureChoice and promote.
 //
 // Every fight goes through runBattle: build the spec, draw its seed from the
-// game dice once, pick the module (the setup's battle module if it can handle
-// this fight, otherwise auto), and either resolve it now or, for an
-// interactive module with a human side, wait in state.pendingBattle for the
-// screen to send back resolveBattle (or autoResolveBattle).
+// game dice once, and either auto-resolve it now or, when the setup has a human
+// fight their own battles, wait in state.pendingBattle for the battle screen to
+// send back resolveBattle (or autoResolveBattle).
 
 import { currentFactionId } from './queries.js';
 import { createRng } from '../core/rng.js';
-import { getModule, autoModule, validateResult } from '../battles/index.js';
+import { autoModule, validateResult } from '../battles/index.js';
 import { attackProblem, buildSpec, buildCitySpec, seedBattle, applyResult, promotionsAvailable, cityHasWalls, defenderAt, combatKind } from './combat.js';
 import { updateVisibility, VISIBLE } from './visibility.js';
 import { distance } from './borders.js';
@@ -17,21 +16,25 @@ import { unitDef } from './units.js';
 
 const refuse = (code, message) => ({ code, message });
 
-function chooseModule(state, spec) {
-  const wanted = getModule(state.setup?.battleModule ?? 'auto');
-  return wanted && wanted.canHandle(spec) ? wanted : autoModule();
-}
-
 /** Run a battle from its spec (working copy). Returns 'pending' or 'done'. */
 export function runBattle(state, ruleset, spec, events, { forceAuto = false } = {}) {
   seedBattle(state, spec);
-  const mod = forceAuto ? autoModule() : chooseModule(state, spec);
-  const human = spec.attacker.human || spec.defender.human;
-  if (mod.kind === 'interactive' && human && (state.setup?.battleMode ?? 'auto') !== 'auto') {
-    state.pendingBattle = { spec, module: mod.id };
-    events.push({ type: 'battlePending', battleId: spec.battleId, module: mod.id });
+  // Phase 18: only a battle a human starts can be fought by hand. Everything
+  // else (computer against computer, or a computer attacking a human during
+  // its own turn) auto-resolves, so computer turns never wait on a screen.
+  // Whether it waits depends on the setup alone, never on which modules are
+  // installed, so a saved game replays the same even if a module is later
+  // changed or removed: the screen's answer (resolveBattle or
+  // autoResolveBattle) is in the command log. The screen auto-resolves any
+  // battle its module cannot fight (a sea battle, say).
+  const wanted = state.setup?.battleModule ?? 'auto';
+  const fightable = !forceAuto && spec.attacker.human && (state.setup?.battleMode ?? 'auto') !== 'auto' && wanted !== 'auto';
+  if (fightable) {
+    state.pendingBattle = { spec, module: wanted };
+    events.push({ type: 'battlePending', battleId: spec.battleId, module: wanted });
     return 'pending';
   }
+  const mod = autoModule();
   const rng = createRng(spec.seed);
   const result = mod.kind === 'instant' ? mod.resolve(spec, rng.next) : mod.simulate(spec, rng.next);
   const problem = validateResult(spec, result);

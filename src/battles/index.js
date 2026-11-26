@@ -7,8 +7,14 @@
 // simulate() so computer-only battles and tests can run it headless.
 
 import auto from './auto/index.js';
+import tactical from './tactical/index.js';
 
-const MODULES = new Map([[auto.id, auto]]);
+const MODULES = new Map([[auto.id, auto], [tactical.id, tactical]]);
+
+/** Every module, for the setup screen's list. */
+export function moduleIds() {
+  return [...MODULES.keys()];
+}
 
 export function registerModule(mod) {
   if (!mod?.id || !['instant', 'interactive'].includes(mod.kind)) throw new Error('A battle module needs an id and a kind');
