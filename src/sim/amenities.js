@@ -8,6 +8,7 @@
 
 import { sumHook, buildingDef, effectsFor } from './effects/index.js';
 import { citiesOf } from './cities.js';
+import { wearinessAmenities, receivedResources } from './diplomacy.js';
 
 /** Luxury kinds a faction has improved somewhere in its land. */
 export function luxuriesOf(state, ruleset, factionId) {
@@ -21,6 +22,8 @@ export function luxuriesOf(state, ruleset, factionId) {
     if (res?.class !== 'luxury' || map.improvement?.[i] < 0) continue;
     if (map.improvementIds[map.improvement[i]] === res.improvement) kinds.add(id);
   }
+  // Luxuries received in deals count too.
+  for (const id of receivedResources(state, factionId)) if (ruleset.resources[id]?.class === 'luxury') kinds.add(id);
   return [...kinds].sort();
 }
 
@@ -31,8 +34,10 @@ export function amenitiesFor(state, ruleset, factionId) {
   const effects = effectsFor(state, ruleset, factionId);
   const cities = citiesOf(state, factionId);
   const out = {};
+  // War weariness (phase 12) costs amenities in every city.
+  const weary = ruleset.diplomacy ? wearinessAmenities(state, ruleset, factionId) : 0;
   for (const c of cities) {
-    let have = 0;
+    let have = -weary;
     for (const b of c.buildings) have += buildingDef(ruleset, b)?.amenities ?? 0;
     have += sumHook('amenities', state, ruleset, factionId, { city: c }, effects);
     out[c.id] = { need: Math.floor(c.pop / per), have, luxuries: 0 };

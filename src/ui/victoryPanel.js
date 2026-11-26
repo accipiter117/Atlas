@@ -48,7 +48,8 @@ export function renderEnd(doc, host, { state, ruleset, text, human, name, onExpo
   const say = (key) => text[key] ?? ruleset.text?.[key] ?? key;
   const w = state.winner;
   const you = state.factions.find((f) => f.id === human);
-  const headline = w ? (w.faction === human ? tt('end.won', { victory: say(ruleset.victories[w.victory]?.nameKey) }) : tt('end.lost', { faction: name(w.faction), victory: say(ruleset.victories[w.victory]?.nameKey) }))
+  const yourTeam = state.setup?.players?.[state.factions.findIndex((f) => f.id === human)]?.team ?? null;
+  const headline = w ? (w.faction !== human && w.team !== null && w.team !== undefined && w.team === yourTeam ? tt('end.teamWon', { victory: say(ruleset.victories[w.victory]?.nameKey) }) : w.faction === human ? tt('end.won', { victory: say(ruleset.victories[w.victory]?.nameKey) }) : tt('end.lost', { faction: name(w.faction), victory: say(ruleset.victories[w.victory]?.nameKey) }))
     : tt('end.defeated');
   const table = state.factions.map((f) => ({ f, parts: scoreParts(state, ruleset, f.id), total: scoreOf(state, ruleset, f.id) })).sort((a, b) => b.total - a.total);
   const cols = ['citizens', 'cities', 'techs', 'wonders', 'buildings', 'projects'];

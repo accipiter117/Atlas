@@ -132,6 +132,30 @@ civics and policy planner, weights in `ai/weights.json` "policy").
 - Conquest is still 0% (see below). Persia is within twice the average (42% against 24%).
 - Large 8-faction rounds at turn 200: 386 to 630 ms in Node (target under 2 s).
 
+### 2026-11-26: phase 12, diplomacy (ai-v7, 40 games, seeds 1000 to 1039)
+
+Again a rules change, compared on the same 40 seeds: phase 11 (ai-v6) against phase 12 (ai-v7,
+with the diplomacy planner: answering offers with evaluateDeal, offering peace when losing,
+treaties with those it likes, denouncing before a planned war; weights in `ai/weights.json`
+"diplomacy", plus `military.warnBeforeWar` 3).
+
+| Line | Before (ai-v6) | After (ai-v7) |
+| --- | --- | --- |
+| Score wins | 23 (57%) | 26 (65%) |
+| Science wins | 17 (43%) | 14 (35%) |
+| Conquest wins | 0 | 0 |
+| Average victory turn | 212 | 215 |
+| Most wins (faction) | Persia 11 of 26 | Britons 6 of 15 (Persia 5 of 26) |
+| Errors | 0 | 0 |
+| Slowest round (Small) | 516 ms | 831 ms |
+
+- In sample games AIs meet, sign open borders, defensive pacts and alliances, denounce,
+  declare formal wars after denouncing, and sometimes make peace again.
+- Faction wins are the most even yet; Persia's earlier lead is gone.
+- Conquest is still 0%: wars can now end in peace, and defensive pacts pull friends in, both of
+  which protect the weaker side.
+- Large 8-faction rounds at turn 200: 506 to 578 ms in Node (target under 2 s).
+
 ## Open problems
 
 - **Conquest wins 0%.** Taking every original capital in 220 Quick turns needs a sustained

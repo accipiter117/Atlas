@@ -33,6 +33,7 @@
     "ai/weights.json",
     "leaders.json",
     "difficulty.json",
+    "diplomacy.json",
     "victories.json",
     "focuses.json",
     "ui/advice.json",

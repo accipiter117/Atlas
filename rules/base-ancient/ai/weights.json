@@ -129,6 +129,19 @@
       }
     },
     {
+      "id": "diplomacy",
+      "planner": "diplomacy",
+      "weights": {
+        "peaceEvery": 5,
+        "minWarTurns": 10,
+        "peaceWantAbove": 0,
+        "peaceGoldShare": 0.5,
+        "friendEvery": 10,
+        "friendWantAbove": 10,
+        "denounceBelow": -15
+      }
+    },
+    {
       "id": "thresholds",
       "planner": "thresholds",
       "weights": {
@@ -182,6 +195,7 @@
         "warCheckEvery": 5,
         "maxWars": 2,
         "capitalTargetPull": 6,
+        "warnBeforeWar": 3,
         "minTurnForWar": 30
       }
     },

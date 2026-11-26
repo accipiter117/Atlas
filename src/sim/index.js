@@ -35,7 +35,7 @@ export { buildSpec, buildCitySpec, attackProblem, cityStrength, cityHasWalls, co
 export { promotionOptions } from './combatCommands.js';
 export { cityHpMax } from './cities.js';
 export { costOf, available, pathTo, eraOf, knows, researchOf } from './progression.js';
-export { atWar } from './diplomacy.js';
+export { atWar, statusOf, opinionOf, evaluateDeal, wouldAccept, dealProblem, pairKey, hasMet, treatyOf, teammates, teamOf, wearinessAmenities, DEAL_ITEMS } from './diplomacy.js';
 export { slotsOf, governmentOf, workingGovernment, policyAvailable, governmentAvailable, policyProblem, SLOT_KINDS } from './government.js';
 export { scoreOf, scoreParts } from './score.js';
 export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './victories/index.js';

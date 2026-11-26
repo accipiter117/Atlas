@@ -40,7 +40,7 @@ test('conquest: holding every original capital wins at the end of the round, not
   s = play(s, { type: 'endTurn', faction: 'f0' }).state;
   assert.equal(s.winner ?? null, null, 'not mid-round');
   s = endRound(s);
-  assert.deepEqual({ ...s.winner, turn: undefined }, { faction: 'f0', victory: 'conquest', turn: undefined });
+  assert.deepEqual({ ...s.winner, turn: undefined }, { faction: 'f0', victory: 'conquest', turn: undefined, team: null });
 });
 
 test('conquest needs every rival to have founded a capital first', () => {

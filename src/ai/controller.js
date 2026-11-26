@@ -16,6 +16,7 @@ import { rankCivics, considerGovernment, nextPolicy } from './planners/governmen
 import { scanSites } from './planners/expansion.js';
 import { rankProduction } from './planners/economy.js';
 import { threatMap, considerWar } from './planners/military.js';
+import { nextDiplomacy } from './planners/diplomacy.js';
 import { decideUnit, builderJobs } from './tactics.js';
 import { weightsOf, dist } from './evaluate.js';
 
@@ -163,6 +164,14 @@ export function createAi(ruleset, factionId, memory = {}) {
       const p = nextPolicy(world, view, ruleset, memory);
       if (p && valid(world, p.cmd)) return issue(view, world, p);
       memory.done.policies = 99;
+    }
+
+    // 2c. Diplomacy: answer offers, seek peace when losing, make friends, denounce (phase 12).
+    if (ruleset.diplomacy && (memory.done.diplomacy ?? 0) < 6) {
+      memory.done.diplomacy = (memory.done.diplomacy ?? 0) + 1;
+      const d = nextDiplomacy(world, view, ruleset, memory);
+      if (d && valid(world, d.cmd)) return issue(view, world, d);
+      memory.done.diplomacy = 99;
     }
 
     // 3. War.

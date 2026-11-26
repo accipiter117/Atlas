@@ -6,6 +6,7 @@
 // faction can see right now, with only what can be seen from outside.
 
 import { VISIBLE, UNEXPLORED } from './visibility.js';
+import { opinionOf } from './diplomacy.js';
 
 const HIDDEN = -1;
 
@@ -65,7 +66,34 @@ export function view(state, factionId, ruleset = null) {
   out.government = mine.government ? JSON.parse(JSON.stringify(mine.government)) : null;
   out.pendingGovernment = mine.pendingGovernment ? JSON.parse(JSON.stringify(mine.pendingGovernment)) : null;
   out.setup = JSON.parse(JSON.stringify(state.setup ?? {}));
-  out.wars = (state.wars ?? []).filter((w) => w.split('|').includes(factionId));
+  // Who is at war with whom, who has met whom and the treaties are public (phase 12),
+  // as are war weariness levels; opinions, offers and running deals only for the parties.
+  out.wars = (state.wars ?? []).slice();
+  if (state.diplomacy) {
+    const d = state.diplomacy;
+    const mine = (x) => x.from === factionId || x.to === factionId;
+    out.diplomacy = {
+      met: d.met.slice(),
+      treaties: JSON.parse(JSON.stringify(d.treaties)),
+      peaceUntil: { ...d.peaceUntil },
+      warSince: { ...(d.warSince ?? {}) },
+      weariness: { ...d.weariness },
+      counters: JSON.parse(JSON.stringify(d.counters)),
+      denounced: Object.fromEntries(Object.entries(d.denounced).filter(([k]) => k.split('>').includes(factionId))),
+      deals: JSON.parse(JSON.stringify(d.deals.filter(mine))),
+      resources: d.resources.filter(mine).map((r) => ({ ...r })),
+      goldPerTurn: d.goldPerTurn.filter(mine).map((g) => ({ ...g })),
+      modifiers: {},
+      nextDeal: d.nextDeal,
+    };
+    out.opinions = {};
+    if (ruleset) {
+      for (const f of state.factions) {
+        if (f.id === factionId || !d.met.includes(factionId < f.id ? `${factionId}|${f.id}` : `${f.id}|${factionId}`)) continue;
+        out.opinions[f.id] = { mine: opinionOf(state, ruleset, factionId, f.id), theirs: opinionOf(state, ruleset, f.id, factionId) };
+      }
+    }
+  }
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
   // Finished projects and the winner are announced to everyone, so every view has them.
   out.projects = JSON.parse(JSON.stringify(state.projects ?? {}));
@@ -101,6 +129,7 @@ export function worldFromView(v) {
     seatIndex: v.seatOrder.indexOf(v.current),
     fog: v.fog ? { [v.me]: v.fog } : {},
     wars: v.wars ?? [],
+    diplomacy: v.diplomacy ?? undefined,
     wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,

@@ -13,6 +13,7 @@ import { tileYields, factionEffects, YIELD_NAMES } from './yields.js';
 import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
 import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildings.js';
 import { knows, speedMultiplier } from './progression.js';
+import { receivedResources } from './diplomacy.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -145,6 +146,7 @@ export function hasResource(state, ruleset, factionId, resourceId) {
   const want = ruleset.resources[resourceId];
   if (!want || !map.improvement) return false;
   if (want.revealedBy && !knows(state, factionId, want.revealedBy)) return false;
+  if (receivedResources(state, factionId).includes(resourceId)) return true;
   for (let i = 0; i < state.owner.length; i += 1) {
     const o = state.owner[i];
     if (o === null || state.cities[o]?.faction !== factionId) continue;

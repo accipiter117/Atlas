@@ -44,5 +44,17 @@ export function considerWar(world, view, ruleset, memory) {
     if (ratio >= need * pathBoost && (!best || ratio > best.ratio)) best = { target: f.id, ratio };
   }
   if (!best) return null;
+  // Denounce first (diplomacy planner), then declare once the warning has stood a few turns,
+  // so the war is a formal one rather than a surprise (data: military.warnBeforeWar).
+  const warnTurns = w.warnBeforeWar ?? 0;
+  if (warnTurns > 0 && view.diplomacy) {
+    const said = view.diplomacy.denounced?.[`${view.me}>${best.target}`];
+    if (said === undefined || view.turn - said < warnTurns) {
+      memory.warPlan = best.target;
+      memory.warCheck = view.turn - (w.warCheckEvery ?? 5) + 1;
+      return null;
+    }
+  }
+  memory.warPlan = null;
   return { cmd: { type: 'declareWar', faction: view.me, target: best.target }, score: best.ratio, reasonKey: 'ai.reason.war', params: { target: best.target, ratio: Math.round(best.ratio * 10) / 10 } };
 }

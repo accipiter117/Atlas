@@ -144,7 +144,50 @@
     "diplomacy": {
       "peaceMinTurns": 10,
       "decayEveryTurns": 5,
-      "decayAmount": 1
+      "decayAmount": 1,
+      "treatyTurns": 30,
+      "dealExpireRounds": 1,
+      "surpriseWarWindow": 20,
+      "denounceWarDelay": 5,
+      "closeBordersDistance": 5,
+      "modifierCap": 30,
+      "weariness": {
+        "perTurnAtWar": 1,
+        "perUnitLost": 2,
+        "perCityLost": 5,
+        "recoveryPerTurn": 3,
+        "perAmenity": 10,
+        "maxAmenityLoss": 3
+      },
+      "dealValues": {
+        "perGold": 1,
+        "goldPerTurnTurns": 30,
+        "goldPerTurnDiscount": 0.7,
+        "luxury": 40,
+        "strategic": 50,
+        "openBorders": 10,
+        "defensivePact": 30,
+        "alliance": 60,
+        "peaceBase": 30,
+        "peacePerStrength": 60,
+        "jointWar": 40,
+        "opinionWeight": 3,
+        "minAllianceOpinion": 10,
+        "minPactOpinion": 5,
+        "minOpenBordersOpinion": -5,
+        "peaceOpinionShare": 0.25
+      },
+      "agenda": {
+        "largeEmpireRatio": 1.0,
+        "fewCitiesRatio": 0.6,
+        "manyFriends": 2,
+        "largeArmyRatio": 1.0,
+        "weakArmyRatio": 0.6,
+        "navyUnits": 2,
+        "invaderUnits": 2,
+        "settledNearDistance": 6,
+        "peaceTurns": 20
+      }
     },
     "victory": {
       "turnLimits": {

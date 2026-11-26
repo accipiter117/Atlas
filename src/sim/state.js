@@ -11,6 +11,7 @@ import { generateMap } from './mapgen.js';
 import { placeStartingUnits } from './units.js';
 import { emptyResearch, grantErasBefore } from './progression.js';
 import { emptyGovernment } from './government.js';
+import { emptyDiplomacy, setUpTeams } from './diplomacy.js';
 import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
@@ -91,6 +92,7 @@ export function createGame(ruleset, setup) {
     if (ruleset?.governments) { f.government = emptyGovernment(); f.pendingGovernment = null; }
   }
   state.wars = [];
+  if (ruleset?.diplomacy) { state.diplomacy = emptyDiplomacy(); setUpTeams(state); }
 
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {

@@ -166,6 +166,19 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Content order:** `tools/gen/base-ancient-civics.py` runs after the techs script (it also gives the palace its slot).
 - **The AI version is now ai-v6** (the civics and policy planner). This was not a head-to-head test, because the rules changed underneath; `docs/AI_TUNING.md` compares the same 40 seeds before and after.
 
+## Phase 12
+
+- **One treaty per pair**, on a ladder: open borders, then defensive pact, then alliance (each includes the ones below). Treaties last 30 turns (`tuning.diplomacy.treatyTurns`); war or denouncing ends them. Teams are a permanent alliance.
+- **Open borders has no movement rule yet.** Units of factions at peace could already walk through each other's land (only cities block), so open borders currently means opinion and, from phase 14, trade routes. Keeping units out of closed borders would change every path the AI plans; it can come later if it proves needed.
+- **Surprise wars:** declaring war without having denounced that faction in the last 20 turns is a surprise war, which everyone who has met you remembers. The AI denounces first and waits 3 turns (`military.warnBeforeWar`).
+- **Offers are answered on the other side's turn**, so every change still goes through a command in order (saves and replays stay exact). Unanswered offers lapse at the start of the proposer's next turn.
+- **One value function for everything:** `evaluateDeal` is how the AI answers, how it decides what to propose, and the screen's likely answer (which uses what you can see, hence "likely"). Gold and gold per turn are worth exactly the same to both sides; opinion adds a fixed amount per point; on deals that include peace, opinion counts for only a quarter, so a losing side takes peace even from someone it hates.
+- **Opinions are a public rule output.** Each view carries the opinions between the viewer and everyone they have met, worked out by the rules from the whole game (as diplomatic modifiers are in the board game), and who is at war with whom, who has met whom, treaties and war weariness are public. Rivals' treasuries stay hidden; a deal's gold is checked when it is made.
+- **War weariness** grows by 1 a turn per war, 2 per unit lost and 5 per city lost, eases by 3 a turn at peace, and costs 1 amenity in every city per 10 points (at most 3).
+- **Traded resources are copies:** the receiver gains access for 30 turns and the giver keeps its own.
+- **D opens diplomacy** (section 10.1), so it no longer pans the map; arrow keys and W, A, S still do.
+- **The AI version is now ai-v7.** As in phase 11, a rules change, so `docs/AI_TUNING.md` compares the same 40 seeds before and after.
+
 ## Later
 
 - Nothing yet.

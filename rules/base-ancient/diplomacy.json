@@ -1,0 +1,25 @@
+{
+  "contentType": "diplomacy",
+  "entries": [
+    {"id": "declaredWarOnUs", "amount": -12, "reasonKey": "opinion.declaredWarOnUs", "decays": true, "trigger": "warDeclared"},
+    {"id": "surpriseWar", "amount": -8, "reasonKey": "opinion.surpriseWar", "decays": true, "trigger": "surpriseWar"},
+    {"id": "capturedOurCity", "amount": -10, "reasonKey": "opinion.capturedOurCity", "decays": true, "trigger": "cityCaptured"},
+    {"id": "razedACity", "amount": -6, "reasonKey": "opinion.razedACity", "decays": true, "trigger": "cityRazed"},
+    {"id": "killedOurUnits", "amount": -2, "reasonKey": "opinion.killedOurUnits", "decays": true, "trigger": "unitKilled"},
+    {"id": "denouncedUs", "amount": -8, "reasonKey": "opinion.denouncedUs", "decays": true, "trigger": "denounced"},
+    {"id": "attackedOurFriend", "amount": -6, "reasonKey": "opinion.attackedOurFriend", "decays": true, "trigger": "warOnFriend"},
+    {"id": "madePeace", "amount": 4, "reasonKey": "opinion.madePeace", "decays": true, "trigger": "peaceMade"},
+    {"id": "dealMade", "amount": 3, "reasonKey": "opinion.dealMade", "decays": true, "trigger": "dealAccepted"},
+    {"id": "refusedOurDeal", "amount": -1, "reasonKey": "opinion.refusedOurDeal", "decays": true, "trigger": "dealRefused"},
+    {"id": "jointWar", "amount": 5, "reasonKey": "opinion.jointWar", "decays": true, "trigger": "jointWar"},
+    {"id": "atWar", "amount": -10, "reasonKey": "opinion.atWar", "decays": false, "trigger": "live"},
+    {"id": "alliance", "amount": 10, "reasonKey": "opinion.alliance", "decays": false, "trigger": "live"},
+    {"id": "defensivePact", "amount": 5, "reasonKey": "opinion.defensivePact", "decays": false, "trigger": "live"},
+    {"id": "openBorders", "amount": 2, "reasonKey": "opinion.openBorders", "decays": false, "trigger": "live"},
+    {"id": "sharedEnemy", "amount": 4, "reasonKey": "opinion.sharedEnemy", "decays": false, "trigger": "live"},
+    {"id": "closeBorders", "amount": -4, "reasonKey": "opinion.closeBorders", "decays": false, "trigger": "live"},
+    {"id": "teammates", "amount": 20, "reasonKey": "opinion.teammates", "decays": false, "trigger": "live"},
+    {"id": "agendaLike", "amount": 6, "reasonKey": "opinion.agendaLike", "decays": false, "trigger": "agenda"},
+    {"id": "agendaHate", "amount": -6, "reasonKey": "opinion.agendaHate", "decays": false, "trigger": "agenda"}
+  ]
+}

@@ -1,12 +1,12 @@
 // Map gestures: drag to pan, wheel to zoom, two-finger pinch to zoom and pan,
-// arrow keys or WASD to pan, + and - to zoom. Works the same with mouse,
+// arrow keys or W, A and S to pan (D opens diplomacy), + and - to zoom. Works the same with mouse,
 // pen and touch through pointer events, and nothing depends on hovering.
 // A press that barely moves is a tap (onTap); a right-click is onContext;
 // mouse movement without a button held is onHover (an extra, never needed).
 
 import { pan, zoomAt } from '../render/camera.js';
 
-const KEY_PAN = { ArrowLeft: [1, 0], a: [1, 0], ArrowRight: [-1, 0], d: [-1, 0], ArrowUp: [0, 1], w: [0, 1], ArrowDown: [0, -1], s: [0, -1] };
+const KEY_PAN = { ArrowLeft: [1, 0], a: [1, 0], ArrowRight: [-1, 0], ArrowUp: [0, 1], w: [0, 1], ArrowDown: [0, -1], s: [0, -1] };
 
 export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, keyPan = () => true } = {}) {
   const el = view.canvas;

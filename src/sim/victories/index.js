@@ -9,6 +9,7 @@
 import conquest from './conquest.js';
 import science from './science.js';
 import score from './score.js';
+import { teamOf } from '../diplomacy.js';
 
 export const VICTORY_MODULES = Object.freeze({ conquest, science, score });
 
@@ -41,7 +42,7 @@ export function checkVictory(state, ruleset, events) {
   for (const v of activeVictories(state, ruleset)) {
     const id = v.module.winner(state, ruleset, v.def.params ?? {}, limit);
     if (id) {
-      state.winner = { faction: id, victory: v.id, turn: state.turn };
+      state.winner = { faction: id, victory: v.id, turn: state.turn, team: teamOf(state, id) };
       events.push({ type: 'gameWon', faction: id, victory: v.id, turn: state.turn, global: true });
       return;
     }

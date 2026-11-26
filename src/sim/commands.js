@@ -12,7 +12,7 @@ import { clone } from '../core/clone.js';
 import { endTurn } from './turn.js';
 import { moveUnit, fortify, skip, sleep, wake, disband, buildImprovement } from './unitCommands.js';
 import { setResearch, queueResearch, applyBoosts } from './progression.js';
-import { declareWar } from './diplomacy.js';
+import { declareWar, denounce, proposeDeal, answerDeal, noteDiplomacyEvents } from './diplomacy.js';
 import { setGovernment, setPolicy } from './government.js';
 import { attack, cityAttack, resolveBattle, autoResolveBattle, captureChoice, promote } from './combatCommands.js';
 import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
@@ -44,6 +44,9 @@ export const COMMANDS = Object.freeze({
   setResearch,
   queueResearch,
   declareWar,
+  denounce,
+  proposeDeal,
+  answerDeal,
   setGovernment,
   setPolicy,
 });
@@ -98,6 +101,7 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   handler.apply(next, cmd, events, ruleset);
   if (ruleset.techs) applyBoosts(next, ruleset, events);
   if (ruleset.civics) applyBoosts(next, ruleset, events, 'civics');
+  if (ruleset.diplomacy) noteDiplomacyEvents(next, ruleset, events);
   next.commandCount += 1;
   return { ok: true, state: next, events };
 }

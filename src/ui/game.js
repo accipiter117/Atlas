@@ -17,6 +17,7 @@ import { factionCard } from './factionCards.js';
 import { createSeatRunner, rankTechs, rankCivics } from '../ai/index.js';
 import { renderTrees } from './trees.js';
 import { renderEmpire } from './empire.js';
+import { renderDiplomacy } from './diplomacy.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
 import { renderGameMenu, codeBox } from './gameMenu.js';
@@ -210,6 +211,18 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         w.terminate();
         return { direct: fingerprint(direct.state), worker: fingerprint(reply.state), commands: [direct.commands.length, reply.commands?.length] };
       },
+      /** Meet every other faction at once (diplomacy tests). */
+      meetAll() {
+        const next = JSON.parse(JSON.stringify(state));
+        for (const f of next.factions) {
+          if (f.id === human) continue;
+          const k = human < f.id ? `${human}|${f.id}` : `${f.id}|${human}`;
+          if (!next.diplomacy.met.includes(k)) next.diplomacy.met.push(k);
+        }
+        next.diplomacy.met.sort();
+        state = next;
+        refresh();
+      },
       /** Know these techs or civics at once (tree: 'techs' or 'civics'). */
       learn(tree, ids) {
         const next = JSON.parse(JSON.stringify(state));
@@ -337,6 +350,16 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'warDeclared' && (e.faction === human || e.target === human || v.cities.some((c) => c.faction === e.faction))) toast(tt('game.warDeclared', { faction: civName(e.faction), target: civName(e.target) }));
       if (e.type === 'boost' && e.faction === human) toast(tt('game.boost', { item: e.tree === 'civics' ? civicName(e.item) : techName(e.item), pct: Math.round((ruleset.tuning?.progression?.boostShare ?? 0.4) * 100) }));
       if (e.type === 'techLearned' && e.faction === human) toast(tt('game.techLearned', { item: techName(e.item) }));
+      const involved = e.faction === human || e.target === human;
+      if (e.type === 'peaceMade' && (involved || v.opinions?.[e.faction])) toast(tt('game.peaceMade', { faction: civName(e.faction), target: civName(e.target) }));
+      if (e.type === 'treatySigned' && involved) toast(tt('game.treatySigned', { faction: civName(e.faction), target: civName(e.target), kind: tt(`dip.item.${e.kind}`) }));
+      if (e.type === 'denounced' && involved) toast(tt('game.denounced', { faction: civName(e.faction), target: civName(e.target) }));
+      if (e.type === 'dealAccepted' && e.target === human) toast(tt('game.dealAccepted', { faction: civName(e.faction) }));
+      if (e.type === 'dealRefused' && e.target === human) toast(tt('game.dealRefused', { faction: civName(e.faction) }));
+      if (e.type === 'dealLapsed' && e.faction === human) toast(tt('game.dealLapsed', { faction: civName(e.target) }));
+      if (e.type === 'factionMet' && e.faction === human) toast(tt('game.factionMet', { faction: civName(e.other) }));
+      if (e.type === 'treatyEnded' && (e.faction === human || e.other === human)) toast(tt('game.treatyEnded', { faction: civName(e.faction === human ? e.other : e.faction) }));
+      if (e.type === 'dealProposed' && e.target === human) toast(tt('game.attention.offer', { faction: civName(e.faction) }));
       if (e.type === 'civicLearned' && e.faction === human) toast(tt('game.civicLearned', { item: civicName(e.item) }));
       if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
@@ -753,6 +776,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       ...noProduction().map((c) => ({ key: `p${c.id}`, label: tt('game.attention.production', { city: c.name }), go: () => openCityDrawer(c.id, { centre: true }), urgent: true })),
       ...starving().map((c) => ({ key: `s${c.id}`, label: tt('game.attention.starving', { city: c.name }), go: () => openCityDrawer(c.id, { centre: true }), urgent: true })),
       ...myUnits().filter((u) => promotionsAvailable(ruleset, u) > 0 && combatKind(ruleset, u) !== 'none').map((u) => ({ key: `pr${u.id}`, label: tt('game.attention.promote', { unit: unitName(u) }), go: () => select(u.id, { centre: true }) })),
+      ...(v.diplomacy?.deals ?? []).filter((d) => d.to === human).map((d) => ({ key: `deal${d.id}`, label: tt('game.attention.offer', { faction: civName(d.from) }), go: () => openDiplomacy(d.from), urgent: true })),
       ...idle().map((u) => ({ key: u.id, label: tt('game.attention.idle', { unit: unitName(u) }), go: () => select(u.id, { centre: true }), unit: u.id })),
     ];
     $('[data-field="attention-title"]').textContent = tt('game.attention', { n: items.length });
@@ -979,6 +1003,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       r: () => openTrees('techs'),
       c: () => (ruleset.civics ? openTrees('civics') : false),
       e: () => (ruleset.governments ? openEmpire() : false),
+      d: () => (ruleset.diplomacy ? openDiplomacy() : false),
       j: () => openJournal(),
       v: () => openVictory(),
       f: () => act('fortify'),
@@ -1005,6 +1030,25 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     });
     panel.hidden = false;
   }
+  const dipUi = { selected: null, deal: null };
+  function openDiplomacy(select = dipUi.selected) {
+    dipUi.selected = select ?? Object.keys(v.opinions ?? {})[0] ?? null;
+    const civOf = (id) => v.factions.find((f) => f.id === id)?.civ;
+    renderDiplomacy(doc, panel.querySelector('[data-field="panel-body"]'), {
+      world: knownWorld(v), view: v, ruleset, text, ui: dipUi, name: civName,
+      leaderName: (id) => ruleset.text[ruleset.leaders?.[ruleset.factions?.[civOf(id)]?.leaders?.[0]]?.nameKey] ?? '',
+      act: {
+        select: (id) => { dipUi.selected = id; dipUi.deal = null; openDiplomacy(id); },
+        editDeal: (deal) => { dipUi.deal = deal; openDiplomacy(); },
+        propose: (target, give, get) => { if (run({ type: 'proposeDeal', faction: human, target, give, get })) { toast(tt('dip.sent', { faction: civName(target) })); dipUi.deal = null; } openDiplomacy(); },
+        answer: (deal, accept) => { run({ type: 'answerDeal', faction: human, deal, accept }); openDiplomacy(); },
+        denounce: (target) => { run({ type: 'denounce', faction: human, target }); openDiplomacy(); },
+        declareWar: (target) => { run({ type: 'declareWar', faction: human, target }); openDiplomacy(); },
+        close: () => { dipUi.deal = null; panel.hidden = true; },
+      },
+    });
+    panel.hidden = false;
+  }
   let pickSlot = null;
   function openEmpire() {
     renderEmpire(doc, panel.querySelector('[data-field="panel-body"]'), {
@@ -1024,6 +1068,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
   $('[data-action="journal"]').onclick = openJournal;
   $('[data-action="empire"]').onclick = openEmpire;
+  $('[data-action="diplomacy"]').onclick = () => openDiplomacy();
   const nameOf = (id) => (id === human ? tt('victory.you', { faction: civName(id) }) : civName(id));
   function openVictory() {
     renderVictory(doc, panel.querySelector('[data-field="panel-body"]'), { state, ruleset, text, human, name: nameOf, colours, onClose: () => { panel.hidden = true; } });

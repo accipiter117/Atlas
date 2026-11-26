@@ -1,5 +1,18 @@
 # Changelog
 
+## Phase 12: Diplomacy
+
+What you can try: press D (or Diplomacy) once you have met a rival (explore until you see one of their units or cities). Each leader shows their status and their opinion of you, and picking one lists every reason behind it ("You denounced us -8", "Agenda: The road to Babylon +6") and whether their agenda likes what you do. Make a deal: gold, gold per turn, luxury and strategic resources, open borders, a defensive pact, an alliance or a joint war on someone else; the panel says "Likely yes" or "Likely no" before you send it, and they answer on their turn. Denounce a rival first and your later war is a formal one; attack without warning and everyone remembers the surprise war. At war, Propose peace; a peace treaty then stops either side declaring war again for 10 turns. Long wars build war weariness, which costs amenities in every city. Rivals make friends, denounce and, when losing, offer you peace (it appears under Needs attention). On the setup screen, Teams now works: teammates start as permanent allies and win conquest together.
+
+- `diplomacy.js`: relations (unmet, war, peace, open borders, defensive pact, alliance) with minimum durations; opinion from named reasons in `diplomacy.json` that fade by 1 every 5 turns, live reasons and leader agendas; war weariness; deals and their evaluation; commands `declareWar`, `proposeDeal`, `answerDeal` and `denounce`.
+- Defensive pacts and alliances pull partners into wars on their friends; joint wars start together.
+- Luxuries received in a deal count for amenities; strategic ones let you build the units that need them.
+- The diplomacy overlay (D), offers under Needs attention, toasts for meetings, treaties, denouncements, peace and answers.
+- The AI's diplomacy planner, and the AI now denounces before it declares war.
+- Teams on the setup screen.
+- D now opens diplomacy instead of panning right (arrow keys and W, A, S still pan).
+- Tests: 196 unit tests (opinion fading, the peace minimum, symmetric deal values, deterministic AI answers, war weariness and amenities, surprise wars, defensive pacts, offers lapsing, teams, traded luxuries, a losing AI offering peace) and 42 browser tests (the diplomacy overlay with likely answers, denouncing, war and a peace offer).
+
 ## Phase 11: Culture, civics and government
 
 What you can try: press C (or tap the culture figure in the top bar) for the Civics tree, which culture fills just as science fills the techs, with boosts and queueing. Code of Laws unlocks Chiefdom; press E (or Empire) and adopt it, then tap a slot and pick a card from the short list. Political Philosophy brings Autocracy and Republic, Divine Right brings Monarchy. Changes take effect at the start of your next turn, and switching from one government to another means one turn of anarchy (no government or cards), so choose with care. Try Autocracy with Agoge in a military slot: a warrior's cost drops by 40% from your next turn. The advice line now suggests a civic, a government to adopt and empty slots to fill. In the AI journal (J) you can watch rivals study civics, adopt governments and slot cards.

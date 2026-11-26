@@ -38,6 +38,7 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
     ais: preset.ais ?? Math.max(1, (ruleset.mapSizes?.[size]?.factions ?? 4) - 1),
     aiFactions: [],
     noDuplicates: true,
+    teams: [],
     victories: Object.values(ruleset.victories ?? {}).filter((v) => v.enabled && VICTORY_MODULES[v.module]).map((v) => v.id),
     turnLimit: 'default',
     customTurns: 300,
@@ -63,8 +64,8 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     modOptions: Object.fromEntries(cfg.tweaks.filter((id) => cfg.modOptions[id]).map((id) => [id, cfg.modOptions[id]])),
     map: { ...cfg.map },
     players: [
-      { kind: 'human', name: tt('game.you'), ...(cfg.faction ? { faction: cfg.faction } : {}) },
-      ...Array.from({ length: cfg.ais }, (_, i) => ({ kind: 'ai', name: tt('game.rival', { n: i + 1 }), ...(cfg.aiFactions[i] ? { faction: cfg.aiFactions[i] } : {}) })),
+      { kind: 'human', name: tt('game.you'), ...(cfg.faction ? { faction: cfg.faction } : {}), ...(cfg.teams?.[0] ? { team: cfg.teams[0] } : {}) },
+      ...Array.from({ length: cfg.ais }, (_, i) => ({ kind: 'ai', name: tt('game.rival', { n: i + 1 }), ...(cfg.aiFactions[i] ? { faction: cfg.aiFactions[i] } : {}), ...(cfg.teams?.[i + 1] ? { team: cfg.teams[i + 1] } : {}) })),
     ],
     victories: cfg.victories.slice(),
     speed: cfg.speed,
@@ -159,7 +160,10 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
     row(tt('setup.ais'), select('ais', cfg.ais, Array.from({ length: limit.maxAis }, (_, i) => ({ value: i + 1, label: String(i + 1) })), (v) => { cfg.ais = Number(v); cfg.aiFactions = cfg.aiFactions.slice(0, cfg.ais); changed(); })),
     ...aiRows,
     el(doc, 'label', { class: 'tick setup-row' }, el(doc, 'input', { type: 'checkbox', name: 'noDuplicates', checked: cfg.noDuplicates, onchange: (e) => { cfg.noDuplicates = e.target.checked; rerender(); } }), el(doc, 'span', {}, tt('setup.noDuplicates'))),
-    row(tt('setup.teams'), select('teams', 'off', [{ value: 'off', label: tt('setup.off') }], () => {}, { disabled: true }), later(12)));
+    el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.teams')),
+      el(doc, 'div', { class: 'setup-teams' }, ...Array.from({ length: cfg.ais + 1 }, (_, i) => row(tt('setup.team', { player: i === 0 ? tt('game.you') : tt('game.rival', { n: i }) }),
+        select(`team-${i}`, cfg.teams?.[i] ?? 0, [{ value: 0, label: tt('setup.noTeam') }, ...[1, 2, 3, 4].map((n) => ({ value: n, label: tt('setup.teamN', { n }) }))], (v) => { cfg.teams = Array.from({ length: cfg.ais + 1 }, (_, k) => (k === i ? Number(v) : cfg.teams?.[k] ?? 0)); })))),
+      el(doc, 'p', { class: 'small muted' }, tt('setup.teamsNote'))));
 
   // Victory.
   const victoryRows = Object.values(ruleset.victories ?? {}).map((v) => {

@@ -366,3 +366,25 @@ body {
 .gov-card.current { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
 .gov-card.locked { opacity: 0.6; }
 .gov-card .btn { justify-self: start; }
+
+/* Phase 12: the diplomacy overlay. */
+.dip-body { display: grid; grid-template-columns: minmax(220px, 0.7fr) minmax(0, 2fr); gap: 16px; overflow: auto; padding-top: 8px; }
+@media (max-width: 860px) { .dip-body { grid-template-columns: 1fr; } }
+.dip-body h3 { margin: 4px 0 6px; font: 600 18px/1.3 var(--font-display); }
+.dip-body h4 { margin: 4px 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+.dip-leaders { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.dip-leader { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; text-align: left; min-height: var(--target); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+.dip-leader .small { grid-column: 1; color: var(--ink-soft); }
+.dip-leader .dip-op { grid-column: 2; grid-row: 1 / 3; align-self: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dip-leader.selected { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.dip-op.good, .dip-reasons .good .dip-amount, .dip-preview.good { color: #2f6b2f; }
+.dip-op.bad, .dip-reasons .bad .dip-amount, .dip-preview.bad { color: #8a2b1d; }
+.dip-reasons { list-style: none; padding: 0; margin: 0 0 8px; display: grid; gap: 2px; font-size: 14px; }
+.dip-amount { display: inline-block; min-width: 2.6em; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dip-status { font-weight: 600; margin: 0; }
+.dip-offers, .dip-deal { border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px 12px; background: var(--paper); margin-bottom: 12px; }
+.dip-offer { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 6px; }
+.dip-sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.dip-amount-field { display: grid; gap: 2px; font-size: 13px; margin-bottom: 6px; }
+.dip-amount-field input { min-height: var(--target); font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+.dip-preview { font-weight: 700; font-size: 17px; margin: 8px 0; }
