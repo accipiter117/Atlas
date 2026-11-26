@@ -17,6 +17,7 @@ import { scanSites } from './planners/expansion.js';
 import { rankProduction } from './planners/economy.js';
 import { threatMap, considerWar } from './planners/military.js';
 import { nextDiplomacy } from './planners/diplomacy.js';
+import { nextReligion } from './planners/religion.js';
 import { decideUnit, builderJobs } from './tactics.js';
 import { weightsOf, dist } from './evaluate.js';
 
@@ -172,6 +173,14 @@ export function createAi(ruleset, factionId, memory = {}) {
       const d = nextDiplomacy(world, view, ruleset, memory);
       if (d && valid(world, d.cmd)) return issue(view, world, d);
       memory.done.diplomacy = 99;
+    }
+
+    // 2d. Religion: pantheon, founding, missionaries (phase 13).
+    if (ruleset.beliefs && (memory.done.religion ?? 0) < 4) {
+      memory.done.religion = (memory.done.religion ?? 0) + 1;
+      const r = nextReligion(world, view, ruleset, memory);
+      if (r && valid(world, r.cmd)) return issue(view, world, r);
+      memory.done.religion = 99;
     }
 
     // 3. War.

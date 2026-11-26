@@ -156,6 +156,30 @@ treaties with those it likes, denouncing before a planned war; weights in `ai/we
   which protect the weaker side.
 - Large 8-faction rounds at turn 200: 506 to 578 ms in Node (target under 2 s).
 
+### 2026-11-26: phase 13, religion (ai-v8, 40 games, seeds 1000 to 1039)
+
+A rules change again, compared on the same 40 seeds: phase 12 (ai-v7) against phase 13 (ai-v8,
+with the religion planner, missionary tactics and a religious victory path; weights in
+`ai/weights.json` "religion"). Two data changes came from trial games, where no AI founded a
+religion: faith costs now scale with game speed like every other cost, and two leaders lean
+religious (Hatshepsut 1.4, Boudica 1.3; everyone else 0.8).
+
+| Line | Before (ai-v7) | After (ai-v8) |
+| --- | --- | --- |
+| Score wins | 26 (65%) | 13 (33%) |
+| Science wins | 14 (35%) | 12 (30%) |
+| Religious wins | (not enabled) | 15 (38%) |
+| Conquest wins | 0 | 0 |
+| Average victory turn | 215 | 195 |
+| Errors | 0 | 0 |
+| Slowest round (Small) | 831 ms | 778 ms |
+
+- Religious victories meet the healthy range (at least 5%) and are now the most common way to
+  win on Small maps, with four factions; they may be a little strong, which is a question for
+  the phase 16 balance pass (pressure and conversion numbers are all in `tuning.religion`).
+- Faction wins stay even (Egypt 7 of 24, Rome 6 of 22, Persia 6 of 26, Britons 3 of 15).
+- Large 8-faction rounds at turn 200: 427 to 651 ms in Node.
+
 ## Open problems
 
 - **Conquest wins 0%.** Taking every original capital in 220 Quick turns needs a sustained

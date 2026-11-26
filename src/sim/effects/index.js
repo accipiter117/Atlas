@@ -32,10 +32,13 @@ import healBonus from './healBonus.js';
 import autoRoad from './autoRoad.js';
 import freePolicySlot from './freePolicySlot.js';
 import borderGrowthPercent from './borderGrowthPercent.js';
+import religiousPressure from './religiousPressure.js';
+import faithPurchase from './faithPurchase.js';
+import { religionEffects, majorityOf } from '../religion.js';
 
 export const HANDLERS = Object.freeze(Object.fromEntries(
   [yieldBonus, yieldPercent, cityYieldPercent, tileYield, costPercent, upkeepPercent, growthPercent,
-    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad, freePolicySlot, borderGrowthPercent].map((h) => [h.name, h]),
+    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad, freePolicySlot, borderGrowthPercent, religiousPressure, faithPurchase].map((h) => [h.name, h]),
 ));
 
 /** A building's definition, whether a building or a wonder. */
@@ -79,6 +82,8 @@ export function effectsFor(state, ruleset, factionId) {
       }
     }
   }
+  // Religion (phase 13): pantheon, follower beliefs in following cities, founder beliefs.
+  if (ruleset.beliefs) out.push(...religionEffects(state, ruleset, factionId));
   for (const city of Object.values(state.cities ?? {})) {
     if (city.faction !== factionId) continue;
     for (const b of city.buildings ?? []) {
@@ -96,6 +101,7 @@ export function reachesCity(ruleset, e, city) {
   if (scope === 'thisCity') return e.source?.city === city.id;
   if (scope === 'capital') return city.capital === true;
   if (scope === 'capturedCities') return city.captured === true;
+  if (scope.startsWith('religion:')) return majorityOf(city) === scope.slice('religion:'.length);
   if (scope.startsWith('withBuilding:')) return hasBuilding(ruleset, city, scope.slice('withBuilding:'.length));
   return false;
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 13: Religion
+
+What you can try: faith now has a purpose. Build a shrine; at 25 faith (scaled by game speed, so less at Quick) the advice line offers a pantheon: tap Faith in the top bar (or E, then Religion) and choose one, unique in the world. At 200 faith, with a shrine or temple in a city, found a religion there: pick one of eight, give it your own name if you like, and choose a follower belief (it helps every city that follows your religion, whoever owns it) and a founder belief (yours alone, some paying per follower city). Your holy city converts at once, and every city spreads its religion to cities within 10 hexes each turn. Press L (or Religion lens) to see coloured pips above each city, one per citizen. In a city that follows your religion, the city drawer offers a missionary for faith: walk it next to any city and Preach to convert two people (three uses). If most people in more than half of every faction's cities follow your religion, you win a religious victory. Only half as many religions as factions can exist, so do not wait too long.
+
+- `religion.js`: faith, pantheons, founding (with a name), the religion limit, pressure within 10 hexes and conversion, missionaries bought with faith, buying shrines and temples with faith (a founder belief).
+- 22 beliefs (8 pantheon, 8 follower, 6 founder) and 8 religions with colours, all original, all through the effects registry; two new effect handlers, `religiousPressure` and `faithPurchase`.
+- The religious victory module, the religion lens, the Religion tab, faith purchases in the city drawer and Preach for missionaries; advice for a pantheon and for founding.
+- The AI's religion planner and a religious victory path; missionaries walk to the best cities and preach.
+- Tests: 203 unit tests (pressure maths by fixture, conversion order, the religion limit, pantheon and founding, belief effects, missionaries, the religious victory exactly at its threshold) and 45 browser tests (pantheon, founding a named religion, the lens and a missionary).
+
 ## Phase 12: Diplomacy
 
 What you can try: press D (or Diplomacy) once you have met a rival (explore until you see one of their units or cities). Each leader shows their status and their opinion of you, and picking one lists every reason behind it ("You denounced us -8", "Agenda: The road to Babylon +6") and whether their agenda likes what you do. Make a deal: gold, gold per turn, luxury and strategic resources, open borders, a defensive pact, an alliance or a joint war on someone else; the panel says "Likely yes" or "Likely no" before you send it, and they answer on their turn. Denounce a rival first and your later war is a formal one; attack without warning and everyone remembers the surprise war. At war, Propose peace; a peace treaty then stops either side declaring war again for 10 turns. Long wars build war weariness, which costs amenities in every city. Rivals make friends, denounce and, when losing, offer you peace (it appears under Needs attention). On the setup screen, Teams now works: teammates start as permanent allies and win conquest together.

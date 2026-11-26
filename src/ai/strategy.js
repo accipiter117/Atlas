@@ -3,12 +3,13 @@
 // dither: a new path must beat the current one by switchMargin points.
 //   pathScore = progress x w.progress + feasibility x w.feasibility
 //             + leaderBias x w.bias + traitFit x w.trait - rivalLead x w.rival
-// Paths available for now: conquest, science and score (others arrive with
-// their systems). lock-era's sandbox mode replaces them with "sandbox".
+// Paths: conquest, science, score and (from phase 13) religious; culture
+// arrives with its system. lock-era's sandbox mode replaces them with "sandbox".
 
 import { weightsOf, personalityOf } from './evaluate.js';
+import { majorityOf } from '../sim/index.js';
 
-const PATHS = ['conquest', 'science', 'score'];
+const PATHS = ['conquest', 'science', 'score', 'religious'];
 
 export function pathScores(view, ruleset) {
   const w = weightsOf(ruleset, 'strategy');
@@ -28,6 +29,13 @@ export function pathScores(view, ruleset) {
       feasibility = view.map?.type === 'islands' ? 0.5 : 1;
     } else if (p === 'science') {
       progress = known / techs;
+    } else if (p === 'religious') {
+      // Share of known cities that mostly follow our religion; founding is possible while religions remain.
+      const mine = Object.values(view.religion?.religions ?? {}).find((r) => r.founder === view.me);
+      const seen = view.cities.length || 1;
+      progress = mine ? view.cities.filter((c) => majorityOf(c) === mine.id).length / seen : 0;
+      const left = Object.keys(view.religion?.religions ?? {}).length < Math.ceil(view.factions.length * (ruleset.tuning?.religion?.religionsPerFaction ?? 0.5));
+      feasibility = mine ? 1 : left ? 0.5 : 0;
     } else {
       progress = Math.min(1, myCities.length / 8);
     }

@@ -127,7 +127,18 @@
       "pantheonFaith": 25,
       "foundReligionFaith": 200,
       "religionsPerFaction": 0.5,
-      "pressureRange": 10
+      "pressureRange": 10,
+      "pressurePerCity": 1,
+      "pressurePerFollower": 0.25,
+      "holyCityPressure": 2,
+      "convertAt": 30,
+      "missionaryFaith": 80,
+      "missionaryFollowers": 2,
+      "faithPerProduction": 2,
+      "foundNeedsBuilding": [
+        "shrine",
+        "temple"
+      ]
     },
     "trade": {
       "landRange": 15,

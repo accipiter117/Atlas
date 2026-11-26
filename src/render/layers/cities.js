@@ -35,7 +35,7 @@ export function drawBorders(ctx, map, cam, owner, cityColour, nbs) {
   }
 }
 
-export function drawCities(ctx, map, cam, cities, colourOf, selectedCity) {
+export function drawCities(ctx, map, cam, cities, colourOf, selectedCity, religionLens = null) {
   const z = cam.zoom;
   for (const c of cities) {
     const p = screen(map, cam, c.tile);
@@ -80,6 +80,26 @@ export function drawCities(ctx, map, cam, cities, colourOf, selectedCity) {
     ctx.fillText(String(c.pop), bx + bh / 2, by + bh / 2 + 0.5);
     ctx.textAlign = 'left';
     ctx.fillText(label, bx + bh + 7, by + bh / 2 + 0.5);
+    // Religion lens: one pip per citizen, in the colour of their religion, above the banner (grey: none).
+    const pips = religionLens?.[c.id];
+    if (pips) {
+      const r = Math.max(3, 4 * z);
+      const list = [];
+      for (const p2 of pips) for (let k = 0; k < p2.n; k += 1) list.push(p2.colour);
+      while (list.length < c.pop) list.push('#9a9a9a');
+      const shown = list.slice(0, 10);
+      const px = p.x - ((shown.length - 1) * (r * 2 + 2)) / 2;
+      const py = by - r - 3;
+      shown.forEach((col, i) => {
+        ctx.fillStyle = col;
+        ctx.strokeStyle = '#111';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(px + i * (r * 2 + 2), py, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+    }
     if (c.capital) {
       ctx.fillStyle = '#ffd34d';
       ctx.beginPath();

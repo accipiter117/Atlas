@@ -85,6 +85,7 @@ export function createUnit(state, ruleset, typeId, factionId, tile) {
   const id = nextId(state, 'u');
   const unit = { id, type: typeId, faction: factionId, tile, hp: 100, moves: ruleset.units[typeId].moves, activity: 'none', fortifiedTurns: 0, goto: null, xp: 0, promotions: [] };
   if ((ruleset.units[typeId].tags ?? []).includes('worker')) unit.charges = ruleset.tuning?.builders?.charges ?? 3;
+  else if (ruleset.units[typeId].charges) unit.charges = ruleset.units[typeId].charges;
   state.units[id] = unit;
   unit.moves = maxMoves(ruleset, unit, state);
   return unit;

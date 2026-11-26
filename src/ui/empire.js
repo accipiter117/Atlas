@@ -24,7 +24,7 @@ function el(doc, tag, props = {}, ...children) {
  * pick: the slot being chosen for, { kind, index } or null.
  * onGovernment(id), onPolicy(kind, index, policyId|null), onPick(slot|null), onClose().
  */
-export function renderEmpire(doc, host, { world, view, ruleset, text, pick = null, onGovernment, onPolicy, onPick, onClose }) {
+export function renderEmpire(doc, host, { world, view, ruleset, text, pick = null, onGovernment, onPolicy, onPick, onClose, tab = 'government', onTab = null, religionTab = null }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key, fallback = '') => ruleset.text[key] ?? fallback;
   const me = view.me;
@@ -84,9 +84,11 @@ export function renderEmpire(doc, host, { world, view, ruleset, text, pick = nul
   host.replaceChildren(
     el(doc, 'div', { class: 'tree-head' },
       el(doc, 'h2', {}, tt('empire.title')),
-      el(doc, 'div', { class: 'tabs', role: 'tablist' }, el(doc, 'button', { type: 'button', class: 'btn small primary', role: 'tab', 'aria-selected': 'true' }, tt('empire.tab.government'))),
+      el(doc, 'div', { class: 'tabs', role: 'tablist' },
+        el(doc, 'button', { type: 'button', class: `btn small${tab === 'government' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'government'), dataset: { tab: 'government' }, onclick: () => onTab?.('government') }, tt('empire.tab.government')),
+        religionTab ? el(doc, 'button', { type: 'button', class: `btn small${tab === 'religion' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'religion'), dataset: { tab: 'religion' }, onclick: () => onTab?.('religion') }, tt('empire.tab.religion')) : null),
       el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-empire' }, onclick: onClose }, tt('tree.close'))),
-    el(doc, 'div', { class: 'empire-body' },
+    tab === 'religion' && religionTab ? el(doc, 'div', { class: 'empire-body single' }, religionTab()) : el(doc, 'div', { class: 'empire-body' },
       el(doc, 'section', { class: 'empire-left' }, ...status, el(doc, 'h3', {}, tt('empire.cards')), el(doc, 'div', { class: 'slot-groups' }, ...slotGroups), list),
       el(doc, 'section', { class: 'empire-right' }, el(doc, 'h3', {}, tt('empire.choose')), el(doc, 'p', { class: 'small muted' }, tt('empire.changeNote')), el(doc, 'div', { class: 'gov-list' }, ...govs))));
 }

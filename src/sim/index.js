@@ -38,5 +38,6 @@ export { costOf, available, pathTo, eraOf, knows, researchOf } from './progressi
 export { atWar, statusOf, opinionOf, evaluateDeal, wouldAccept, dealProblem, pairKey, hasMet, treatyOf, teammates, teamOf, wearinessAmenities, DEAL_ITEMS } from './diplomacy.js';
 export { slotsOf, governmentOf, workingGovernment, policyAvailable, governmentAvailable, policyProblem, SLOT_KINDS } from './government.js';
 export { scoreOf, scoreParts } from './score.js';
+export { majorityOf, religionLimit, foundedBy, pantheonOf, takenBeliefs, followerCities, faithPrice, holyCityOptions, preachTarget, missionaryFaith, pantheonFaith, foundFaith } from './religion.js';
 export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './victories/index.js';
 export { damage, strengths } from '../battles/index.js';

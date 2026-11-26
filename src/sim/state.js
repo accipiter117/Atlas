@@ -12,6 +12,7 @@ import { placeStartingUnits } from './units.js';
 import { emptyResearch, grantErasBefore } from './progression.js';
 import { emptyGovernment } from './government.js';
 import { emptyDiplomacy, setUpTeams } from './diplomacy.js';
+import { emptyReligion } from './religion.js';
 import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
@@ -93,6 +94,7 @@ export function createGame(ruleset, setup) {
   }
   state.wars = [];
   if (ruleset?.diplomacy) { state.diplomacy = emptyDiplomacy(); setUpTeams(state); }
+  if (ruleset?.beliefs) state.religion = emptyReligion();
 
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {

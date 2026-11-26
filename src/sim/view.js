@@ -56,7 +56,7 @@ export function view(state, factionId, ruleset = null) {
   out.cities = [];
   for (const c of Object.values(state.cities ?? {})) {
     if (c.faction === factionId) out.cities.push(JSON.parse(JSON.stringify(c)));
-    else if (fog[c.tile] !== UNEXPLORED) out.cities.push({ id: c.id, name: c.name, faction: c.faction, tile: c.tile, pop: c.pop, capital: c.capital, hp: c.hp, buildings: c.buildings.slice(), originalCapital: c.originalCapital });
+    else if (fog[c.tile] !== UNEXPLORED) out.cities.push({ id: c.id, name: c.name, faction: c.faction, tile: c.tile, pop: c.pop, capital: c.capital, hp: c.hp, buildings: c.buildings.slice(), originalCapital: c.originalCapital, followers: { ...(c.followers ?? {}) } });
   }
   const mine = state.factions.find((f) => f.id === factionId);
   out.stocks = mine.stocks ? { ...mine.stocks } : null;
@@ -95,6 +95,8 @@ export function view(state, factionId, ruleset = null) {
     }
   }
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
+  // Pantheons and religions (founders, holy cities, beliefs) are public (phase 13).
+  out.religion = state.religion ? JSON.parse(JSON.stringify(state.religion)) : null;
   // Finished projects and the winner are announced to everyone, so every view has them.
   out.projects = JSON.parse(JSON.stringify(state.projects ?? {}));
   out.winner = state.winner ? { ...state.winner } : null;
@@ -130,6 +132,7 @@ export function worldFromView(v) {
     fog: v.fog ? { [v.me]: v.fog } : {},
     wars: v.wars ?? [],
     diplomacy: v.diplomacy ?? undefined,
+    religion: v.religion ?? undefined,
     wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,

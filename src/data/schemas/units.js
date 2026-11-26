@@ -33,6 +33,9 @@ export const units = entryType('units', {
   abilities: effects(),
   sprite: str(),
   descriptionKey: key(),
+  // Phase 13: units bought only with faith (missionaries), and uses before they are spent.
+  faithOnly: bool(),
+  charges: int(1, 20),
 });
 
 export const promotions = entryType('promotions', {

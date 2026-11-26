@@ -13,6 +13,7 @@ import { updateAllVisibility } from './visibility.js';
 import { checkVictory } from './victories/index.js';
 import { startGovernmentTurn } from './government.js';
 import { startDiplomacyTurn, diplomacyRound } from './diplomacy.js';
+import { religionRound } from './religion.js';
 import { eliminate } from './elimination.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
@@ -32,6 +33,7 @@ function startRound(state, events, ruleset) {
     runRaiders(state, ruleset, events, runBattle);
     updateAllVisibility(state, ruleset);
     diplomacyRound(state, ruleset, events);
+    religionRound(state, ruleset, events);
     eliminate(state, ruleset, events);
     checkVictory(state, ruleset, events);
   }

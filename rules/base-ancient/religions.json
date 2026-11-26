@@ -1,0 +1,13 @@
+{
+  "contentType": "religions",
+  "entries": [
+    {"id": "solar_way", "nameKey": "religion.solar_way.name", "colour": "#e0a526"},
+    {"id": "starward_faith", "nameKey": "religion.starward_faith.name", "colour": "#3f6fb5"},
+    {"id": "grove_circle", "nameKey": "religion.grove_circle.name", "colour": "#3f8a4a"},
+    {"id": "flame_covenant", "nameKey": "religion.flame_covenant.name", "colour": "#c4462b"},
+    {"id": "river_church", "nameKey": "religion.river_church.name", "colour": "#2f9bb0"},
+    {"id": "path_of_stone", "nameKey": "religion.path_of_stone.name", "colour": "#7a6a58"},
+    {"id": "sky_lodge", "nameKey": "religion.sky_lodge.name", "colour": "#8a63c0"},
+    {"id": "sea_communion", "nameKey": "religion.sea_communion.name", "colour": "#24607a"}
+  ]
+}

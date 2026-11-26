@@ -34,6 +34,8 @@
     "leaders.json",
     "difficulty.json",
     "diplomacy.json",
+    "beliefs.json",
+    "religions.json",
     "victories.json",
     "focuses.json",
     "ui/advice.json",

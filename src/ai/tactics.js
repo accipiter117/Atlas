@@ -10,6 +10,7 @@
 // - Settlers go to the best site and found; builders improve worked land;
 //   scouts explore the nearest edge of the unknown.
 
+import { missionaryMove } from './planners/religion.js';
 import { attackProblem, combatKind, rangeOf, improvementProblem, builderTargets, foundingProblem, findPath, atWar, tileYields, UNEXPLORED, VISIBLE } from '../sim/index.js';
 import { weightsOf, odds, dist } from './evaluate.js';
 import { surroundingsKnown } from './planners/expansion.js';
@@ -82,6 +83,8 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
   const me = view.me;
   const th = weightsOf(ruleset, 'thresholds');
   const myCities = view.cities.filter((c) => c.faction === me);
+
+  if (def.faithOnly && unit.religion) return missionaryMove(world, view, ruleset, unit, move, approach);
 
   if (tags.includes('founder')) {
     const here = foundingProblem(world, ruleset, me, unit.tile) || !surroundingsKnown(view, ruleset, unit.tile) ? null : (ctx.siteScoreAt(unit.tile) ?? 0);

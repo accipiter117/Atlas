@@ -58,6 +58,22 @@
       "action": "empire"
     },
     {
+      "id": "pantheon",
+      "priority": 68,
+      "condition": "pantheonReady",
+      "textKey": "advice.pantheon",
+      "actionKey": "advice.religion.do",
+      "action": "religion"
+    },
+    {
+      "id": "found_religion",
+      "priority": 66,
+      "condition": "religionReady",
+      "textKey": "advice.foundReligion",
+      "actionKey": "advice.religion.do",
+      "action": "religion"
+    },
+    {
       "id": "choose_production",
       "priority": 80,
       "condition": "cityNoProduction",

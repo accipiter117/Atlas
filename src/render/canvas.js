@@ -85,7 +85,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.7)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
     drawCamps(ctx, view.map, cam, view.camps);
-    drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity);
+    drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens);
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
     const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
@@ -154,6 +154,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setTarget(tile) { if (view.target !== tile) { view.target = tile; dirty = true; } },
     setGrid(on) { view.showGrid = on; dirty = true; },
     setMarkers(tiles) { view.markers = tiles; dirty = true; },
+    /** The religion lens: { cityId: [{ colour, n }] } or null to hide it. */
+    setReligionLens(lens) { view.religionLens = lens; dirty = true; },
     redraw() { dirty = true; },
     /** Draw immediately (for timing tests). */
     drawNow() { resize(); draw(); return view.lastFrameMs; },

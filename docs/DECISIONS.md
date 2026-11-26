@@ -179,6 +179,19 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **D opens diplomacy** (section 10.1), so it no longer pans the map; arrow keys and W, A, S still do.
 - **The AI version is now ai-v7.** As in phase 11, a rules change, so `docs/AI_TUNING.md` compares the same 40 seeds before and after.
 
+## Phase 13
+
+- **Followers are citizens.** Each city records how many of its people follow each religion; the rest follow none. A city's religion is the one with the most followers (a tie is none). New citizens follow nothing; people lost leave the biggest group first.
+- **Pressure and conversion:** at the end of each round every city whose people mostly follow a religion presses it on every city within 10 hexes, itself included: 1 plus a quarter per follower, doubled in the holy city, plus `religiousPressure` effects. When a city's pressure for a religion reaches 30, one citizen converts (people of no religion first, then from the biggest other group), and the rest carries over. Trade routes will carry pressure from phase 14.
+- **Founding needs a holy city**: one of your cities with a shrine or temple (the plan's "faith from shrines and temples"). Founding converts the holy city at once.
+- **Names:** you pick one of the eight religions (its colour and default name) and may give it your own name, up to 30 letters.
+- **Founder beliefs** that pay per follower city (Tithe, Pilgrimage, Scripture, Church Unity) pay into your holy city, or your capital if the holy city is lost.
+- **Faith costs scale with game speed**, like every other cost (25 and 200 faith at Standard). Missionaries cost 80 faith and convert 2 people per use, 3 uses; they can only be bought, never built.
+- **Pantheons, religions and each city's followers are public** in every view (the lens shows them for cities you have seen).
+- **The religious victory** counts only living factions that have cities, needs strictly more than half of each faction's cities, and only a founder can win it.
+- **Two leaders lean religious** (Hatshepsut and Boudica), so the religious path is tried; without them no AI founded a religion in trial games.
+- **L toggles the religion lens.** Its pips sit above the city banner so units in the city do not hide them.
+
 ## Later
 
 - Nothing yet.

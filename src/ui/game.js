@@ -9,7 +9,7 @@
 import {
   createGame, applyCommand, view, worldFromView, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
-  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf, slotsOf, workingGovernment, governmentAvailable, policyAvailable,
+  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf, slotsOf, workingGovernment, governmentAvailable, policyAvailable, faithPrice, preachTarget, pantheonOf, foundedBy, pantheonFaith, foundFaith, holyCityOptions, religionLimit,
   atWar, buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
@@ -18,6 +18,7 @@ import { createSeatRunner, rankTechs, rankCivics } from '../ai/index.js';
 import { renderTrees } from './trees.js';
 import { renderEmpire } from './empire.js';
 import { renderDiplomacy } from './diplomacy.js';
+import { renderReligionTab, religionName } from './religionTab.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
 import { renderGameMenu, codeBox } from './gameMenu.js';
@@ -211,6 +212,20 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         w.terminate();
         return { direct: fingerprint(direct.state), worker: fingerprint(reply.state), commands: [direct.commands.length, reply.commands?.length] };
       },
+      /** Add faith to your stock (religion tests). */
+      faith(n) {
+        const next = JSON.parse(JSON.stringify(state));
+        next.factions.find((x) => x.id === human).stocks.faith += n;
+        state = next;
+        refresh();
+      },
+      /** Put a building in one of your cities at once. */
+      addBuilding(cityId, id) {
+        const next = JSON.parse(JSON.stringify(state));
+        next.cities[cityId].buildings.push(id);
+        state = next;
+        refresh();
+      },
       /** Meet every other faction at once (diplomacy tests). */
       meetAll() {
         const next = JSON.parse(JSON.stringify(state));
@@ -324,6 +339,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function refresh() {
     v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
+    if (religionLens) mapView.setReligionLens(lensData());
     if (v.pendingCapture) showCaptureDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
@@ -360,6 +376,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'factionMet' && e.faction === human) toast(tt('game.factionMet', { faction: civName(e.other) }));
       if (e.type === 'treatyEnded' && (e.faction === human || e.other === human)) toast(tt('game.treatyEnded', { faction: civName(e.faction === human ? e.other : e.faction) }));
       if (e.type === 'dealProposed' && e.target === human) toast(tt('game.attention.offer', { faction: civName(e.faction) }));
+      if (e.type === 'pantheonChosen' && (e.faction === human || v.opinions?.[e.faction])) toast(tt('game.pantheonChosen', { faction: civName(e.faction), belief: ruleset.text[ruleset.beliefs?.[e.belief]?.nameKey] ?? '' }));
+      if (e.type === 'religionFounded') toast(tt('game.religionFounded', { faction: civName(e.faction), religion: e.name || religionName(ruleset, v, e.religion) }));
+      if (e.type === 'cityConverted' && e.faction === human && e.religion) toast(tt('game.cityConverted', { city: e.name, religion: religionName(ruleset, v, e.religion) }));
+      if (e.type === 'religionSpread' && e.faction === human) toast(tt('game.religionSpread', { n: e.converted, city: e.name }));
       if (e.type === 'civicLearned' && e.faction === human) toast(tt('game.civicLearned', { item: civicName(e.item) }));
       if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
@@ -699,8 +719,41 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       ruleset.civics ? el(doc, 'button', { type: 'button', class: 'y culture link-like', dataset: { action: 'civics' }, onclick: () => openTrees('civics') },
         v.civicResearch?.current ? tt('game.bar.civic', { rate: signed(total.culture), item: civicName(v.civicResearch.current) }) : tt('game.bar.noCivic', { rate: signed(total.culture) }))
         : el(doc, 'span', { class: 'y culture' }, tt('game.bar.culture', { rate: signed(total.culture) })),
-      el(doc, 'span', { class: 'y faith' }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
+      ruleset.beliefs ? el(doc, 'button', { type: 'button', class: 'y faith link-like', dataset: { action: 'religion' }, onclick: () => openEmpire('religion') }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) }))
+        : el(doc, 'span', { class: 'y faith' }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
+      ruleset.beliefs ? el(doc, 'button', { type: 'button', class: `y link-like lens${religionLens ? ' on' : ''}`, dataset: { action: 'lens' }, 'aria-pressed': String(religionLens), onclick: toggleLens }, tt('game.lens')) : null,
     );
+  }
+
+  /** Buttons to buy things with faith in this city (missionaries, faithPurchase buildings). */
+  function faithBuys(c, world) {
+    const items = [{ kind: 'unit', id: 'missionary' }, ...Object.keys(ruleset.buildings ?? {}).map((id) => ({ kind: 'building', id }))];
+    return items.map((item) => {
+      const price = ruleset.beliefs ? faithPrice(world, ruleset, c, item) : null;
+      if (price === null || (item.kind === 'building' && !canBuildHere(world, c, item))) return null;
+      const label = item.kind === 'unit' ? ruleset.text[ruleset.units[item.id].nameKey] : ruleset.text[ruleset.buildings[item.id].nameKey];
+      return el(doc, 'button', { type: 'button', class: 'btn small', dataset: { faithBuy: item.id }, disabled: (v.stocks?.faith ?? 0) < price,
+        onclick: () => cityCmd({ type: 'buyWithFaith', item }) }, tt('city.buyFaith', { item: label, price }));
+    }).filter(Boolean);
+  }
+  const canBuildHere = (world, c, item) => buildOptions(world, ruleset, c).some((o) => o.kind === item.kind && o.id === item.id);
+  const world0 = () => knownWorld(v);
+
+  // The religion lens: pips under each city in the colours of its followers.
+  let religionLens = false;
+  function lensData() {
+    if (!religionLens) return null;
+    const out = {};
+    for (const c of v.cities) {
+      out[c.id] = Object.entries(c.followers ?? {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+        .map(([id, n]) => ({ colour: ruleset.religions?.[id]?.colour ?? '#888', n }));
+    }
+    return out;
+  }
+  function toggleLens() {
+    religionLens = !religionLens;
+    mapView.setReligionLens(lensData());
+    render();
   }
 
   /** The civic the AI's planner would pick in your place. */
@@ -738,6 +791,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       noCivic: () => ruleset.civics && !v.civicResearch?.current && !(v.civicResearch?.queue ?? []).length && civicSuggestion() && { civic: civicName(civicSuggestion()) },
       governmentReady: () => readyGovernment() && { government: ruleset.text[ruleset.governments[readyGovernment()].nameKey] },
       emptyPolicySlot: () => emptySlot() && {},
+      pantheonReady: () => ruleset.beliefs && !pantheonOf(knownWorld(v), human) && (v.stocks?.faith ?? 0) >= pantheonFaith(knownWorld(v), ruleset) && {},
+      religionReady: () => {
+        const w = knownWorld(v);
+        return ruleset.beliefs && pantheonOf(w, human) && !foundedBy(w, human) && (v.stocks?.faith ?? 0) >= foundFaith(w, ruleset)
+          && holyCityOptions(w, ruleset, human).length && Object.keys(v.religion?.religions ?? {}).length < religionLimit(w, ruleset) && {};
+      },
       goldRunningOut: () => goldTurnsLeft() <= (ruleset.tuning?.economy?.bankruptcyWarningTurns ?? 2) && { n: goldTurnsLeft() },
       unitsNeedOrders: () => idle().length && { n: idle().length },
       cityCanBuyTile: () => false,
@@ -758,7 +817,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (a.action === 'endTurn') endTurn();
     else if (a.action === 'research') run({ type: 'setResearch', faction: human, item: suggestion() });
     else if (a.action === 'civic') run({ type: 'setResearch', faction: human, item: civicSuggestion(), tree: 'civics' });
-    else if (a.action === 'empire') openEmpire();
+    else if (a.action === 'empire') openEmpire('government');
+    else if (a.action === 'religion') openEmpire('religion');
   }
 
   function renderAdvice() {
@@ -878,7 +938,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         }
       }
     }
+    const preach = ruleset.units[u.type]?.faithOnly && u.religion ? preachTarget(world0(), u) : null;
     fill(actions, ...improve, ...[
+      preach ? el(doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { act: 'spreadReligion' }, disabled: u.moves <= 0,
+        onclick: () => { const r = run({ type: 'spreadReligion', faction: human, unit: u.id }); if (r) selectNextIdle(); } }, tt('game.action.preach', { city: preach.name })) : null,
       isFounder(u) ? button('foundCity', tt('game.action.found'), !foundable, ' primary wide') : null,
       isCivilian(u) ? null : button('fortify', tt('game.action.fortify'), u.activity === 'fortify'),
       button('skip', tt('game.action.skip'), u.moves <= 0 || u.activity === 'skip'),
@@ -949,6 +1012,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
           ? tt('city.building', { item: itemName(head), n: Math.max(1, Math.ceil((itemCost(ruleset, head, world, c) - c.progress) / prod)) })
           : tt('city.buildingNothing')),
         head && price !== null ? el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'buy' }, disabled: (v.stocks?.gold ?? 0) < price, onclick: () => cityCmd({ type: 'buyItem' }) }, tt('city.buy', { price })) : null,
+        ...faithBuys(c, world),
         c.queue.length > 1 ? el(doc, 'p', { class: 'muted' }, tt('city.queue', { items: c.queue.slice(1).map(itemName).join(', ') })) : null),
       el(doc, 'h3', {}, tt('city.choose')),
       el(doc, 'ul', { class: 'choose', dataset: { field: 'options' } }, ...shown.map((o) => el(doc, 'li', {},
@@ -1004,6 +1068,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       c: () => (ruleset.civics ? openTrees('civics') : false),
       e: () => (ruleset.governments ? openEmpire() : false),
       d: () => (ruleset.diplomacy ? openDiplomacy() : false),
+      l: () => (ruleset.beliefs ? toggleLens() : false),
       j: () => openJournal(),
       v: () => openVictory(),
       f: () => act('fortify'),
@@ -1050,9 +1115,22 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     panel.hidden = false;
   }
   let pickSlot = null;
-  function openEmpire() {
+  let empireTab = 'government';
+  let foundForm = {};
+  function openEmpire(tab = empireTab) {
+    empireTab = tab;
+    const world = knownWorld(v);
     renderEmpire(doc, panel.querySelector('[data-field="panel-body"]'), {
-      world: knownWorld(v), view: v, ruleset, text, pick: pickSlot,
+      world, view: v, ruleset, text, pick: pickSlot, tab,
+      onTab: (t2) => { pickSlot = null; openEmpire(t2); },
+      religionTab: ruleset.beliefs ? () => renderReligionTab(doc, {
+        world, view: v, ruleset, text, name: civName, form: foundForm,
+        act: {
+          pantheon: (belief) => { run({ type: 'choosePantheon', faction: human, belief }); openEmpire('religion'); },
+          form: (f) => { foundForm = f; openEmpire('religion'); },
+          found: (f) => { if (run({ type: 'foundReligion', faction: human, ...f })) foundForm = {}; openEmpire('religion'); },
+        },
+      }) : null,
       onGovernment: (id) => { pickSlot = null; run({ type: 'setGovernment', faction: human, government: id }); openEmpire(); },
       onPolicy: (kind, index, policy) => { pickSlot = null; run({ type: 'setPolicy', faction: human, slot: kind, index, policy }); openEmpire(); },
       onPick: (slot) => { pickSlot = slot; openEmpire(); },
@@ -1067,7 +1145,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     panel.hidden = false;
   }
   $('[data-action="journal"]').onclick = openJournal;
-  $('[data-action="empire"]').onclick = openEmpire;
+  $('[data-action="empire"]').onclick = () => openEmpire('government');
   $('[data-action="diplomacy"]').onclick = () => openDiplomacy();
   const nameOf = (id) => (id === human ? tt('victory.you', { faction: civName(id) }) : civName(id));
   function openVictory() {

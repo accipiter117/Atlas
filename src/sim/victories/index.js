@@ -9,9 +9,10 @@
 import conquest from './conquest.js';
 import science from './science.js';
 import score from './score.js';
+import religious from './religious.js';
 import { teamOf } from '../diplomacy.js';
 
-export const VICTORY_MODULES = Object.freeze({ conquest, science, score });
+export const VICTORY_MODULES = Object.freeze({ conquest, science, score, religious });
 
 /** The victories this game can be won by: [{ id, def, module }]. */
 export function activeVictories(state, ruleset) {

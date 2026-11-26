@@ -24,9 +24,9 @@ function cityGame(rules = ruleset, rows = LAND, extra = []) {
   return { s, city: Object.values(s.cities)[0] };
 }
 
-test('the registry has the 14 phase 6 effect handlers plus the 2 from phase 11', () => {
-  assert.deepEqual(Object.keys(HANDLERS).sort(), ['amenityBonus', 'autoRoad', 'borderGrowthPercent', 'cityYieldPercent', 'costPercent', 'freeBuilding', 'freePolicySlot', 'freeUnit', 'growthPercent',
-    'healBonus', 'moveBonus', 'sightBonus', 'tileYield', 'upkeepPercent', 'yieldBonus', 'yieldPercent']);
+test('the registry has the 14 phase 6 effect handlers plus 2 from phase 11 and 2 from phase 13', () => {
+  assert.deepEqual(Object.keys(HANDLERS).sort(), ['amenityBonus', 'autoRoad', 'borderGrowthPercent', 'cityYieldPercent', 'costPercent', 'faithPurchase', 'freeBuilding', 'freePolicySlot', 'freeUnit', 'growthPercent',
+    'healBonus', 'moveBonus', 'religiousPressure', 'sightBonus', 'tileYield', 'upkeepPercent', 'yieldBonus', 'yieldPercent']);
 });
 
 test('yieldBonus adds a flat yield where its scope reaches', () => {

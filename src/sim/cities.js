@@ -160,7 +160,7 @@ export function hasResource(state, ruleset, factionId, resourceId) {
 export function canBuild(state, ruleset, city, item) {
   if (item.kind === 'unit') {
     const def = ruleset.units[item.id];
-    if (!def) return false;
+    if (!def || def.faithOnly) return false;
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;

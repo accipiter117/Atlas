@@ -12,11 +12,13 @@ const TYPES = {
   setFocus: 'SF', lockTile: 'LT', unlockTile: 'UT', buyTile: 'BT', attack: 'AT', cityAttack: 'CA',
   resolveBattle: 'RB', autoResolveBattle: 'AB', captureChoice: 'CC', promote: 'PR',
   setResearch: 'SR', queueResearch: 'QR', declareWar: 'DW', setGovernment: 'SG', setPolicy: 'SY',
+  choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL',
 };
 const FIELDS = {
   type: 'T', faction: 'F', unit: 'U', to: 'D', city: 'C', item: 'I', tile: 'L', target: 'G',
   choice: 'H', promotion: 'P', focus: 'O', improvement: 'M', tree: 'R', result: 'S',
   government: 'V', policy: 'Y', slot: 'Z', index: 'X',
+  belief: 'B', religion: 'Q', name: 'N', follower: 'W', founder: 'J',
 };
 
 const invert = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [v, k]));

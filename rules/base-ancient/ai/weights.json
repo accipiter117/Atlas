@@ -142,6 +142,15 @@
       }
     },
     {
+      "id": "religion",
+      "planner": "religion",
+      "weights": {
+        "missionaries": 1,
+        "missionariesReligious": 3,
+        "faithSpareFactor": 2
+      }
+    },
+    {
       "id": "thresholds",
       "planner": "thresholds",
       "weights": {

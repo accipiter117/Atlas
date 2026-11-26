@@ -14,6 +14,14 @@ import { moveUnit, fortify, skip, sleep, wake, disband, buildImprovement } from 
 import { setResearch, queueResearch, applyBoosts } from './progression.js';
 import { declareWar, denounce, proposeDeal, answerDeal, noteDiplomacyEvents } from './diplomacy.js';
 import { setGovernment, setPolicy } from './government.js';
+import { choosePantheon, foundReligion, buyWithFaith as faithBuy, spreadReligion } from './religion.js';
+import { canBuild, completeItem } from './cities.js';
+
+// Buying a building with faith finishes it like any other, so it borrows the city rules.
+const buyWithFaith = {
+  validate: (s, c, r) => faithBuy.validate(s, c, r, { canBuild }),
+  apply: (s, c, e, r) => faithBuy.apply(s, c, e, r, { completeItem }),
+};
 import { attack, cityAttack, resolveBattle, autoResolveBattle, captureChoice, promote } from './combatCommands.js';
 import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
 
@@ -49,6 +57,10 @@ export const COMMANDS = Object.freeze({
   answerDeal,
   setGovernment,
   setPolicy,
+  choosePantheon,
+  foundReligion,
+  buyWithFaith,
+  spreadReligion,
 });
 
 const EMPTY = Object.freeze({});

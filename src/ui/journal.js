@@ -20,6 +20,8 @@ function named(ruleset, text, factionName, params) {
   const out = { ...params };
   const say = (k) => text[k] ?? k;
   if (out.tech) out.tech = say(ruleset.techs?.[out.tech]?.nameKey) ?? out.tech;
+  if (out.belief) out.belief = say(ruleset.beliefs?.[out.belief]?.nameKey) ?? out.belief;
+  if (out.religion) out.religion = say(ruleset.religions?.[out.religion]?.nameKey) ?? out.religion;
   if (out.civic) out.civic = say(ruleset.civics?.[out.civic]?.nameKey) ?? out.civic;
   if (out.government) out.government = say(ruleset.governments?.[out.government]?.nameKey) ?? out.government;
   if (out.policy) out.policy = say(ruleset.policies?.[out.policy]?.nameKey) ?? out.policy;

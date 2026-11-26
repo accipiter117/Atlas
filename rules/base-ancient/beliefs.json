@@ -1,0 +1,27 @@
+{
+  "contentType": "beliefs",
+  "entries": [
+    {"id": "forge_spirit", "nameKey": "belief.forge_spirit.name", "descriptionKey": "belief.forge_spirit.text", "kind": "pantheon", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 1}]},
+    {"id": "harvest_mother", "nameKey": "belief.harvest_mother.name", "descriptionKey": "belief.harvest_mother.text", "kind": "pantheon", "effects": [{"effect": "growthPercent", "amount": 10}]},
+    {"id": "river_goddess", "nameKey": "belief.river_goddess.name", "descriptionKey": "belief.river_goddess.text", "kind": "pantheon", "effects": [{"effect": "yieldBonus", "yield": "faith", "amount": 2, "scope": "capital"}, {"effect": "amenityBonus", "amount": 1, "scope": "capital"}]},
+    {"id": "war_drums", "nameKey": "belief.war_drums.name", "descriptionKey": "belief.war_drums.text", "kind": "pantheon", "effects": [{"effect": "healBonus", "amount": 10}]},
+    {"id": "lady_of_the_hunt", "nameKey": "belief.lady_of_the_hunt.name", "descriptionKey": "belief.lady_of_the_hunt.text", "kind": "pantheon", "effects": [{"effect": "tileYield", "yield": "food", "amount": 1, "improvement": "camp"}]},
+    {"id": "stone_circle", "nameKey": "belief.stone_circle.name", "descriptionKey": "belief.stone_circle.text", "kind": "pantheon", "effects": [{"effect": "yieldBonus", "yield": "faith", "amount": 2, "scope": "withBuilding:shrine"}]},
+    {"id": "sea_father", "nameKey": "belief.sea_father.name", "descriptionKey": "belief.sea_father.text", "kind": "pantheon", "effects": [{"effect": "tileYield", "yield": "food", "amount": 1, "improvement": "fishing_boats"}]},
+    {"id": "ancestor_hall", "nameKey": "belief.ancestor_hall.name", "descriptionKey": "belief.ancestor_hall.text", "kind": "pantheon", "effects": [{"effect": "yieldPercent", "yield": "culture", "amount": 10}]},
+    {"id": "choral_music", "nameKey": "belief.choral_music.name", "descriptionKey": "belief.choral_music.text", "kind": "follower", "effects": [{"effect": "yieldBonus", "yield": "culture", "amount": 1}]},
+    {"id": "alms_houses", "nameKey": "belief.alms_houses.name", "descriptionKey": "belief.alms_houses.text", "kind": "follower", "effects": [{"effect": "amenityBonus", "amount": 1}]},
+    {"id": "monastic_scribes", "nameKey": "belief.monastic_scribes.name", "descriptionKey": "belief.monastic_scribes.text", "kind": "follower", "effects": [{"effect": "yieldBonus", "yield": "science", "amount": 1}]},
+    {"id": "feast_days", "nameKey": "belief.feast_days.name", "descriptionKey": "belief.feast_days.text", "kind": "follower", "effects": [{"effect": "growthPercent", "amount": 10}]},
+    {"id": "sacred_crafts", "nameKey": "belief.sacred_crafts.name", "descriptionKey": "belief.sacred_crafts.text", "kind": "follower", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 1}]},
+    {"id": "pilgrim_roads", "nameKey": "belief.pilgrim_roads.name", "descriptionKey": "belief.pilgrim_roads.text", "kind": "follower", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1}]},
+    {"id": "tithe_barns", "nameKey": "belief.tithe_barns.name", "descriptionKey": "belief.tithe_barns.text", "kind": "follower", "effects": [{"effect": "yieldBonus", "yield": "food", "amount": 1}]},
+    {"id": "temple_schools", "nameKey": "belief.temple_schools.name", "descriptionKey": "belief.temple_schools.text", "kind": "follower", "effects": [{"effect": "yieldPercent", "yield": "science", "amount": 10}]},
+    {"id": "tithe", "nameKey": "belief.tithe.name", "descriptionKey": "belief.tithe.text", "kind": "founder", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1}], "perFollowerCity": true},
+    {"id": "pilgrimage", "nameKey": "belief.pilgrimage.name", "descriptionKey": "belief.pilgrimage.text", "kind": "founder", "effects": [{"effect": "yieldBonus", "yield": "faith", "amount": 1}], "perFollowerCity": true},
+    {"id": "scripture", "nameKey": "belief.scripture.name", "descriptionKey": "belief.scripture.text", "kind": "founder", "effects": [{"effect": "yieldBonus", "yield": "science", "amount": 1}], "perFollowerCity": true},
+    {"id": "church_unity", "nameKey": "belief.church_unity.name", "descriptionKey": "belief.church_unity.text", "kind": "founder", "effects": [{"effect": "yieldBonus", "yield": "culture", "amount": 1}], "perFollowerCity": true},
+    {"id": "evangelism", "nameKey": "belief.evangelism.name", "descriptionKey": "belief.evangelism.text", "kind": "founder", "effects": [{"effect": "religiousPressure", "amount": 30}]},
+    {"id": "temple_builders", "nameKey": "belief.temple_builders.name", "descriptionKey": "belief.temple_builders.text", "kind": "founder", "effects": [{"effect": "faithPurchase", "target": "shrine"}, {"effect": "faithPurchase", "target": "temple"}]}
+  ]
+}
