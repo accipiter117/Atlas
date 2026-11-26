@@ -38,7 +38,7 @@ export function renderVictory(doc, host, { state, ruleset, text, human, name, co
       el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-victory' }, onclick: onClose }, tt('tree.close'))),
     el(doc, 'div', { class: 'victory-grid' }, ...paths.map((v) => el(doc, 'section', { class: 'victory-path', dataset: { victory: v.id } },
       el(doc, 'h3', {}, say(v.nameKey)),
-      el(doc, 'p', { class: 'small muted' }, tt(`victory.how.${v.id}`)),
+      el(doc, 'p', { class: 'small muted' }, tt(`victory.how.${v.id}`, { min: ruleset.victories?.[v.id]?.params?.minInfluence ?? '' })),
       pathRows(doc, tt, v, name, human, colours)))),
   );
 }

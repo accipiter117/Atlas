@@ -659,6 +659,14 @@
     "spies.identifiedTheirs": "A spy from {faction} carried out {mission} in {city}.",
     "game.refused.spyBusy": "That spy is on a mission.",
     "game.refused.spyTooGreen": "The spy needs more experience.",
-    "game.refused.ownCity": "Spies run missions in rivals' cities."
+    "game.refused.ownCity": "Spies run missions in rivals' cities.",
+    "setup.eventsOpt.off": "Off",
+    "setup.eventsOpt.occasional": "Occasional",
+    "setup.eventsOpt.frequent": "Frequent",
+    "victory.how.culture": "Influence (from wonders, great buildings and some policy cards) higher than the lifetime culture of every living rival, and at least {min}.",
+    "event.title": "An event",
+    "event.inCity": "In {city}",
+    "event.choose": "Choose what to do. You must decide before ending your turn.",
+    "event.chosen": "{event}: your choice is made."
   }
 }

@@ -221,6 +221,15 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         state = next;
         refresh();
       },
+      /** Make an event happen to you now, in your first city (events tests). */
+      event(id) {
+        const next = JSON.parse(JSON.stringify(state));
+        const city = Object.values(next.cities).find((c) => c.faction === human);
+        next.events ??= { pending: {}, last: {}, nextId: 1 };
+        next.events.pending[human] = { id: `e${next.events.nextId++}`, event: id, city: city.id, turn: next.turn };
+        state = next;
+        refresh();
+      },
       /** Add faith to your stock (religion tests). */
       faith(n) {
         const next = JSON.parse(JSON.stringify(state));
@@ -351,6 +360,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
     if (religionLens) mapView.setReligionLens(lensData());
     if (v.pendingCapture) showCaptureDialog();
+    else if (v.pendingEvent) showEventDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
     render();
@@ -507,6 +517,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   /** The Next button: whatever still blocks the turn, else end it (section 10.1). */
   function next() {
     if (v.pendingCapture) showCaptureDialog();
+    else if (v.pendingEvent) showEventDialog();
     else if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
     else if (idle().length) selectNextIdle();
     else endTurn();
@@ -800,6 +811,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   /** The advice line: the highest-priority piece of advice whose condition holds (rules/<mod>/ui/advice.json). */
   function currentAdvice() {
     const checks = {
+      eventPending: () => v.pendingEvent && { city: v.cities.find((c) => c.id === v.pendingEvent.city)?.name ?? '' },
       noCities: () => myCities().length === 0 && myUnits().some(isFounder) && {},
       cityStarving: () => starving().length && { city: starving()[0].name, target: starving()[0].id },
       cityNoProduction: () => noProduction().length && { city: noProduction()[0].name, target: noProduction()[0].id },
@@ -835,6 +847,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (a.action === 'civic') run({ type: 'setResearch', faction: human, item: civicSuggestion(), tree: 'civics' });
     else if (a.action === 'empire') openEmpire('government');
     else if (a.action === 'religion') openEmpire('religion');
+    else if (a.action === 'event') showEventDialog();
   }
 
   function renderAdvice() {
@@ -916,6 +929,28 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     overlay.querySelector('[data-action="close-overlay"]').hidden = true;
     overlay.hidden = false;
     body.querySelector('[data-capture="keep"]').focus();
+  }
+
+  /** An event waits for an answer (phase 16): its text and one button per choice. */
+  function showEventDialog() {
+    const p = v.pendingEvent;
+    const ev = p && ruleset.events?.[p.event];
+    if (!ev) return;
+    const c = v.cities.find((x) => x.id === p.city);
+    const cityName = c?.name ?? '';
+    const say = (key) => (ruleset.text[key] ?? key).replaceAll('{city}', cityName);
+    const overlay = doc.querySelector('[data-field="overlay"]');
+    const body = overlay.querySelector('[data-field="overlay-body"]');
+    fill(body,
+      el(doc, 'h2', { dataset: { field: 'event-title' } }, say(ev.nameKey)),
+      el(doc, 'p', { class: 'small muted' }, tt('event.inCity', { city: cityName })),
+      el(doc, 'p', {}, say(ev.textKey)),
+      el(doc, 'p', { class: 'small muted' }, tt('event.choose')),
+      el(doc, 'div', { class: 'event-choices' }, ...ev.choices.map((ch, i) => el(doc, 'button', { type: 'button', class: `btn wide${i === 0 ? ' primary' : ''}`, dataset: { eventChoice: String(i) },
+        onclick: () => { overlay.hidden = true; run({ type: 'chooseEvent', faction: human, event: p.id, choice: i }); toast(tt('event.chosen', { event: say(ev.nameKey) })); render(); } }, say(ch.textKey)))));
+    overlay.querySelector('[data-action="close-overlay"]').hidden = true;
+    overlay.hidden = false;
+    body.querySelector('[data-event-choice="0"]')?.focus();
   }
 
   function renderUnitCard(u) {

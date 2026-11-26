@@ -15,6 +15,7 @@ import { emptyDiplomacy, setUpTeams } from './diplomacy.js';
 import { emptyReligion } from './religion.js';
 import { emptyTrade } from './trade.js';
 import { emptyEspionage } from './espionage.js';
+import { emptyEvents } from './events.js';
 import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
@@ -99,6 +100,7 @@ export function createGame(ruleset, setup) {
   if (ruleset?.beliefs) state.religion = emptyReligion();
   if (ruleset?.trade) state.trade = emptyTrade();
   if (ruleset?.espionage) state.espionage = emptyEspionage();
+  if (ruleset?.events) state.events = emptyEvents();
 
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {

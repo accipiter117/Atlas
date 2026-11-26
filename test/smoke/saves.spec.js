@@ -61,10 +61,11 @@ test('setup, autosave, Continue, export and import', async ({ page }, info) => {
   expect(turn).toBe(before + 1);
   const fingerprint = await page.evaluate(() => JSON.stringify(window.__atlasGame.state.units));
 
-  // The victory panel shows every active path (conquest, science, score, religious) for everyone.
+  // The victory panel shows every active path (conquest, science, score, religious, culture) for everyone.
   await page.locator('[data-action="victory"]').click();
   const panel = page.locator('[data-field="panel"]');
-  await expect(panel.locator('.victory-path')).toHaveCount(4);
+  await expect(panel.locator('.victory-path')).toHaveCount(5);
+  await expect(panel.locator('[data-victory="culture"]')).toContainText('at least 100');
   await expect(panel.locator('[data-victory="score"] li')).toHaveCount(4);
   await expect(panel).toContainText('turns left');
   await page.screenshot({ path: `test-results/victory-${info.project.name}.png` });

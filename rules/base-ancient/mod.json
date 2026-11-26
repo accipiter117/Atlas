@@ -38,6 +38,7 @@
     "religions.json",
     "trade.json",
     "espionage.json",
+    "events.json",
     "victories.json",
     "focuses.json",
     "ui/advice.json",

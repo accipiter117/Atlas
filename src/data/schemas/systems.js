@@ -41,6 +41,8 @@ export const events = entryType('events', {
   })),
   textKey: req(key()),
   choices: req(list(obj({ textKey: req(key()), effects: effects() }), { min: 1 })),
+  // Phase 16: disasters only happen with the Disasters setup option on.
+  disaster: bool(),
 });
 
 // Difficulty (section 9.5): the only advantages anyone gets, all listed on the setup screen.

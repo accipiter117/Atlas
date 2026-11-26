@@ -19,6 +19,7 @@ import { threatMap, considerWar } from './planners/military.js';
 import { nextDiplomacy } from './planners/diplomacy.js';
 import { nextReligion } from './planners/religion.js';
 import { nextEspionage } from './planners/espionage.js';
+import { chooseEventChoice } from './planners/events.js';
 import { decideUnit, builderJobs } from './tactics.js';
 import { weightsOf, dist } from './evaluate.js';
 
@@ -67,6 +68,12 @@ export function createAi(ruleset, factionId, memory = {}) {
     const hasScout = mine.some((u) => ruleset.units[u.type].class === 'recon');
     const explorer = !hasScout && view.turn < 40 ? fighters.filter((u) => !posted.has(u.id)).sort((a, b) => (a.id < b.id ? -1 : 1))[0]?.id : null;
 
+    // Mustering (phase 16): with military.musterUnits set, units bound for the war target
+    // gather musterDistance hexes away until that many stand there, then go in together.
+    const musterOn = (mil.musterUnits ?? 0) > 0 && (!mil.musterPaths || mil.musterPaths.includes(memory.path));
+    const mustered = warTarget !== null && musterOn ? fighters.filter((u) => !posted.has(u.id) && dist(view.map, u.tile, warTarget) <= (mil.musterDistance ?? 3)).length : 0;
+    const muster = musterOn && warTarget !== null && mustered < mil.musterUnits ? (mil.musterDistance ?? 3) : 0;
+
     const claimed = new Set(Object.values(memory.siteOf ?? {}));
     const jobs = builderJobs(world, view, ruleset);
     const takenJobs = new Set();
@@ -75,6 +82,7 @@ export function createAi(ruleset, factionId, memory = {}) {
       atWar: (world.wars ?? []).some((w) => w.split('|').includes(me)) || view.units.some((u) => u.faction === 'raiders' && myCities.some((c) => dist(view.map, c.tile, u.tile) <= (mil.threatRange ?? 4))),
       threatAt: threat,
       warTarget,
+      muster,
       unhappy: (c) => (amen[c.id]?.balance ?? 0) < 0,
       siteScoreAt: (t) => sites.find((s) => s.tile === t)?.score ?? null,
       claimSite(unit) {
@@ -141,6 +149,12 @@ export function createAi(ruleset, factionId, memory = {}) {
     if (view.pendingCapture) {
       const cmd = { type: 'captureChoice', faction: me, city: view.pendingCapture.city, choice: 'keep' };
       if (valid(world, cmd)) return issue(view, world, { cmd, reasonKey: 'ai.reason.keep', params: {} });
+    }
+
+    // 1b. An event waits for a choice (phase 16): take the one worth most.
+    if (view.pendingEvent) {
+      const ranked = (chooseEventChoice(view, ruleset, memory) ?? []).filter((c) => valid(world, c.cmd));
+      if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
     }
 
     // 2. Research.

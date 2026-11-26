@@ -12,13 +12,13 @@ const TYPES = {
   setFocus: 'SF', lockTile: 'LT', unlockTile: 'UT', buyTile: 'BT', attack: 'AT', cityAttack: 'CA',
   resolveBattle: 'RB', autoResolveBattle: 'AB', captureChoice: 'CC', promote: 'PR',
   setResearch: 'SR', queueResearch: 'QR', declareWar: 'DW', setGovernment: 'SG', setPolicy: 'SY',
-  choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL', startTradeRoute: 'TR', assignSpy: 'AS', startMission: 'SM',
+  choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL', startTradeRoute: 'TR', assignSpy: 'AS', startMission: 'SM', chooseEvent: 'CE',
 };
 const FIELDS = {
   type: 'T', faction: 'F', unit: 'U', to: 'D', city: 'C', item: 'I', tile: 'L', target: 'G',
   choice: 'H', promotion: 'P', focus: 'O', improvement: 'M', tree: 'R', result: 'S',
   government: 'V', policy: 'Y', slot: 'Z', index: 'X',
-  belief: 'B', religion: 'Q', name: 'N', follower: 'W', founder: 'J', spy: 'K', mission: 'E',
+  belief: 'B', religion: 'Q', name: 'N', follower: 'W', founder: 'J', spy: 'K', mission: 'E', event: 'A',
 };
 
 const invert = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [v, k]));

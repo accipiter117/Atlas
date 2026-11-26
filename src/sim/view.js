@@ -114,6 +114,9 @@ export function view(state, factionId, ruleset = null) {
   if (state.espionage) {
     out.espionage = { spies: state.espionage.spies.filter((s) => s.faction === factionId).map((s) => ({ ...s, mission: s.mission ? { ...s.mission } : null })), intel: JSON.parse(JSON.stringify(state.espionage.intel?.[factionId] ?? {})), nextSpy: state.espionage.nextSpy };
   }
+  // An event waiting for your choice (phase 16), your influence and lifetime culture, and everyone's lifetime culture (public, for the culture victory).
+  out.pendingEvent = state.events?.pending?.[factionId] ? { ...state.events.pending[factionId] } : null;
+  out.culture = Object.fromEntries(state.factions.map((f) => [f.id, { lifetime: Math.floor(f.lifetimeCulture ?? 0), influence: Math.floor(f.influence ?? 0) }]));
   // Pantheons and religions (founders, holy cities, beliefs) are public (phase 13).
   out.religion = state.religion ? JSON.parse(JSON.stringify(state.religion)) : null;
   // Finished projects and the winner are announced to everyone, so every view has them.
@@ -153,6 +156,7 @@ export function worldFromView(v) {
     diplomacy: v.diplomacy ?? undefined,
     religion: v.religion ?? undefined,
     trade: v.trade ?? undefined,
+    events: v.pendingEvent ? { pending: { [v.me]: v.pendingEvent }, last: {}, nextId: 0 } : undefined,
     espionage: v.espionage ? { spies: v.espionage.spies, intel: { [v.me]: v.espionage.intel }, nextSpy: v.espionage.nextSpy } : undefined,
     wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},

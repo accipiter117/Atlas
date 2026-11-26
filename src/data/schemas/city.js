@@ -25,6 +25,8 @@ const buildingFields = {
     capital: bool(),
   }),
   replaces: ref('buildings', { cascade: 'clear' }),
+  // Phase 16: influence a turn towards a culture victory (wonders also get tuning.culture.influencePerWonder).
+  influence: num(0, 100),
   yields: yields(),
   adjacency,
   specialistSlots: map(oneOf(YIELDS), int(0, 5)),

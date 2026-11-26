@@ -252,6 +252,7 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
   if (ruleset.techs) addResearch(state, ruleset, factionId, science, events);
   else faction.stocks.science += science;
   // Culture fills the civics tree (section 3.7), the same way science fills the techs.
+  faction.lifetimeCulture = (faction.lifetimeCulture ?? 0) + culture;
   if (ruleset.civics) addResearch(state, ruleset, factionId, culture, events, 'civics');
   else faction.stocks.culture += culture;
   updateVisibility(state, ruleset, factionId);

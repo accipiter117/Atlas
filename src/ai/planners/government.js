@@ -73,7 +73,9 @@ export function effectValue(e, facts, ruleset, view, memory) {
 }
 
 export function policyValue(id, facts, ruleset, view, memory) {
-  return (ruleset.policies[id]?.effects ?? []).reduce((n, e) => n + effectValue(e, facts, ruleset, view, memory), 0);
+  // Influence (phase 16) counts towards the culture victory.
+  const influence = (ruleset.policies[id]?.influence ?? 0) * categoryWeight(ruleset, view, memory, 'influence') * (weightsOf(ruleset, 'policy').influence ?? 2);
+  return (ruleset.policies[id]?.effects ?? []).reduce((n, e) => n + effectValue(e, facts, ruleset, view, memory), influence);
 }
 
 /** The best cards for a government's slots: { layout, value }. Wildcards take the best cards left over. */

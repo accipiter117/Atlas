@@ -4,7 +4,7 @@ import { createGame, applyCommand, view, currentFactionId } from '../../src/sim/
 import { createAi, runAiTurn } from '../../src/ai/index.js';
 
 export function aiGame(ruleset, { seed, players = 4, size = 'small', type = 'continents', turns = 100, raiders = 'on', speed = 'standard', onTurn = null }) {
-  const setup = { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, raiders, speed };
+  const setup = { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, raiders, speed, events: 'occasional' };
   let state = createGame(ruleset, setup);
   const ais = Object.fromEntries(state.factions.map((f) => [f.id, createAi(ruleset, f.id)]));
   const times = [];

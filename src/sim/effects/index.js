@@ -35,11 +35,12 @@ import borderGrowthPercent from './borderGrowthPercent.js';
 import religiousPressure from './religiousPressure.js';
 import faithPurchase from './faithPurchase.js';
 import tradeRouteYield from './tradeRouteYield.js';
+import popChange from './popChange.js';
 import { religionEffects, majorityOf } from '../religion.js';
 
 export const HANDLERS = Object.freeze(Object.fromEntries(
   [yieldBonus, yieldPercent, cityYieldPercent, tileYield, costPercent, upkeepPercent, growthPercent,
-    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad, freePolicySlot, borderGrowthPercent, religiousPressure, faithPurchase, tradeRouteYield].map((h) => [h.name, h]),
+    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad, freePolicySlot, borderGrowthPercent, religiousPressure, faithPurchase, tradeRouteYield, popChange].map((h) => [h.name, h]),
 ));
 
 /** A building's definition, whether a building or a wonder. */

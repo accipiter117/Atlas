@@ -82,6 +82,7 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
       for (const [y, n] of Object.entries(def.yields ?? {})) value += n * categoryWeight(ruleset, view, memory, y);
       for (const a of adjacencyBonus(world, ruleset, { ...city, buildings: [...city.buildings, item.id] }, item.id)) value += a.amount * categoryWeight(ruleset, view, memory, a.yield);
       value += (def.amenities ?? 0) * amen + (def.effects?.length ?? 0) * 1.2 + (def.defence ? (ctx.threatAt(city.tile) ? 4 : 0.3) : 0);
+      value += (def.influence ?? 0) * categoryWeight(ruleset, view, memory, 'influence');
       value -= (def.upkeep ?? 0) * 0.6;
       if (def.project) {
         // A science victory project: worth a lot to a science-minded AI, something to anyone.

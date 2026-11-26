@@ -53,5 +53,6 @@ export const policies = entryType('policies', {
   requires: obj({ civic: ref('civics') }),
   obsoletedBy: ref('civics', { cascade: 'clear' }),
   descriptionKey: key(),
+  influence: int(0, 100),
 });
 

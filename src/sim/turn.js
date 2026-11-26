@@ -16,6 +16,8 @@ import { startDiplomacyTurn, diplomacyRound } from './diplomacy.js';
 import { religionRound } from './religion.js';
 import { startTradeTurn } from './trade.js';
 import { startEspionageTurn } from './espionage.js';
+import { startCultureTurn } from './culture.js';
+import { startEventsTurn } from './events.js';
 import { addModifier } from './diplomacy.js';
 import { eliminate } from './elimination.js';
 
@@ -27,6 +29,8 @@ function startFactionTurn(state, factionId, events, ruleset) {
   if (ruleset?.diplomacy) startDiplomacyTurn(state, ruleset, factionId, events);
   if (ruleset?.trade) startTradeTurn(state, ruleset, factionId, events);
   if (ruleset?.espionage) startEspionageTurn(state, ruleset, factionId, events, addModifier);
+  if (ruleset?.victories?.culture) startCultureTurn(state, ruleset, factionId);
+  if (ruleset?.events && state.cities) startEventsTurn(state, ruleset, factionId, events);
   // Section 3.14: cities first (yields, growth, production, borders), then units.
   if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
   if (state.units) startUnitsTurn(state, ruleset, factionId, events);
@@ -54,6 +58,7 @@ export const endTurn = {
     if (cmd.faction !== currentFactionId(state)) {
       return { code: 'notYourTurn', message: `It is ${currentFactionId(state)}'s turn, not ${cmd.faction}'s` };
     }
+    if (state.events?.pending?.[cmd.faction]) return { code: 'eventPending', message: 'Choose what to do about the event first' };
     return null;
   },
   apply(state, cmd, events, ruleset) {

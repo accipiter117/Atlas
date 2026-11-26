@@ -14,7 +14,7 @@ export function victoryGames(seeds) {
       const g = aiGame(ruleset, { seed, speed: 'quick', turns: 10_000 });
       const s = g.state;
       assert.ok(s.winner, 'the game was won');
-      assert.ok(['conquest', 'science', 'score', 'religious'].includes(s.winner.victory));
+      assert.ok(['conquest', 'science', 'score', 'religious', 'culture'].includes(s.winner.victory));
       assert.ok(s.winner.turn <= turnLimit(s, ruleset), `won on turn ${s.winner.turn}`);
       assert.deepEqual(g.refusals, [], JSON.stringify(g.refusals.slice(0, 3)));
       const cities = Object.values(s.cities);

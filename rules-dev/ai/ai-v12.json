@@ -1,0 +1,8 @@
+{
+  "id": "ai-v12",
+  "description": "Only AIs on the conquest path: armies muster (4 units, 3 hexes away) and melee units wear cities down (ai-v5's switch); everyone else plays as ai-v10.",
+  "aiWeights": {
+    "military": { "weights": { "musterUnits": 4, "musterDistance": 3, "musterPaths": ["conquest"] } },
+    "thresholds": { "weights": { "cityMeleeMinDealt": 15, "cityMeleePaths": ["conquest"] } }
+  }
+}

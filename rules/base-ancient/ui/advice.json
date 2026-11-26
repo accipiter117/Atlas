@@ -2,6 +2,14 @@
   "contentType": "advice",
   "entries": [
     {
+      "id": "event",
+      "priority": 99,
+      "condition": "eventPending",
+      "textKey": "advice.event",
+      "actionKey": "advice.do",
+      "action": "event"
+    },
+    {
       "id": "found_first_city",
       "priority": 100,
       "condition": "noCities",

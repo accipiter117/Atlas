@@ -333,6 +333,18 @@
         }
       },
       "maxAis": 11
+    },
+    "culture": {
+      "influencePerWonder": 3
+    },
+    "events": {
+      "frequency": {
+        "off": 0,
+        "occasional": 1,
+        "frequent": 2
+      },
+      "minGap": 10,
+      "defaultTurns": 10
     }
   }
 }

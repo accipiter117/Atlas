@@ -1,0 +1,7 @@
+{
+  "id": "ai-v11",
+  "description": "Armies muster: at war, units bound for the target city wait 3 hexes away until 4 of them stand there, then go in together.",
+  "aiWeights": {
+    "military": { "weights": { "musterUnits": 4, "musterDistance": 3 } }
+  }
+}

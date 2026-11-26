@@ -17,4 +17,6 @@ export default {
   name: 'freeUnit',
   onCityFounded: (e, ctx) => (e.source?.kind !== 'building' && reachesCity(ctx.ruleset, e, ctx.city) ? give(e, ctx) : []),
   onBuilt: (e, ctx) => (e.source?.kind === 'building' && e.source.id === ctx.built ? give(e, ctx) : []),
+  // Events (phase 16): the units arrive at once.
+  instant: (e, ctx) => give(e, ctx),
 };

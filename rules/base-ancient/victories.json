@@ -3,7 +3,7 @@
   "entries": [
     { "id": "conquest", "nameKey": "victory.conquest.name", "module": "conquest", "enabled": true, "params": {}},
     { "id": "science", "nameKey": "victory.science.name", "module": "science", "enabled": true, "params": { "projects": ["great_observatory", "atlas_of_the_world", "voyage_beyond"]}},
-    { "id": "culture", "nameKey": "victory.culture.name", "module": "culture", "enabled": true, "params": {}},
+    { "id": "culture", "nameKey": "victory.culture.name", "module": "culture", "enabled": true, "params": { "minInfluence": 100 }},
     { "id": "religious", "nameKey": "victory.religious.name", "module": "religious", "enabled": true, "params": { "shareOfCities": 0.5}},
     { "id": "score", "nameKey": "victory.score.name", "module": "score", "enabled": true, "params": { "turnLimit": 330 } }
   ]

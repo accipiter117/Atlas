@@ -43,7 +43,7 @@ export function aiRulesFor(ruleset, patch) {
  */
 export async function playGame({ seed, mods = ['base-ancient'], size = 'small', type = 'continents', speed = 'quick', players = 4, turnLimit: limit, seats = null, challenger = null, champion = null }) {
   const { ruleset } = await rulesFor(mods);
-  const setup = { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, speed, raiders: 'on' };
+  const setup = { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, speed, raiders: 'on', events: 'occasional' };
   if (limit !== undefined) setup.turnLimit = limit;
   let state = createGame(ruleset, setup);
   const version = (i) => (seats?.[i] ?? 'champion');

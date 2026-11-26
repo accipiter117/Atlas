@@ -225,13 +225,52 @@ odds are 40% or better; weights in `ai/weights.json` "espionage").
   escaped, captured), and spies reach level 3.
 - Large 8-faction rounds at turn 200: about 0.66 to 1.0 s in Node.
 
+### 2026-11-26: phase 16, culture and events (ai-v10, 20 games, seeds 1000 to 1019)
+
+- With the culture path and events in, before any tuning: science 8, score 7, religious 3,
+  culture 2, conquest 0. Rome 0 of 10. 0 errors.
+
+### 2026-11-26: rules test, cities heal 10 a turn (was 20): REVERTED
+
+- Same 20 seeds: conquest still 0, Gaul and Rome 0. No gain, so back to 20.
+
+### 2026-11-26: ai-v11 against ai-v10: REVERTED
+
+- Patch: every AI at war gathers its army 3 hexes from the target until 4 units stand there
+  (`military.musterUnits`, `musterDistance`).
+- Head to head, 20 games, seeds 2050 to 2059, seats swapped: challenger won 9 of 20 (45%).
+
+### 2026-11-26: ai-v12 against ai-v10: KEPT
+
+- Patch: only AIs on the conquest path muster (`military.musterPaths`) and wear cities down
+  with melee (ai-v5's `cityMeleeMinDealt` 15 with `cityMeleePaths`).
+- Head to head, 20 games, seeds 2060 to 2069, seats swapped: challenger won 12 of 20 (60%).
+
+### 2026-11-26: phase 16 final (ai-v12, 40 games, seeds 1000 to 1039)
+
+Rules changes in this batch: Trajan's +1 production in every city; Pericles' culture bias 1.3.
+
+| Line | Result | Range |
+| --- | --- | --- |
+| Science wins | 14 (35%) | met |
+| Religious wins | 12 (30%) | met |
+| Score wins | 9 (23%) | met |
+| Culture wins | 5 (13%) | met |
+| Conquest wins | 0 | **not met** (5% needed) |
+| Average victory turn | 185 | met (150 to 260) |
+| Stalled games | 0 | met |
+| Most wins (faction) | Egypt 8 of 24 (average 5) | met (under 2x) |
+| Fewest wins (faction) | Britons and Han 3 | met (none at 0) |
+| Errors | 0 | |
+
+- Rome went from 0 to 7 wins. Slowest round 379 ms.
+- In sample games conquest AIs now capture 5 to 17 cities and knock a faction out, and one
+  ended holding two original capitals, but none takes all four before turn 220.
+
 ## Open problems
 
-- **Conquest wins 0%.** Taking every original capital in 220 Quick turns needs a sustained
-  campaign, and so far every patch that wages one loses ground to the peaceful rivals and fails
-  the head-to-head test. Next ideas: peace treaties and alliances (phase 12) so wars can end
-  and restart where they pay; armies that gather before attacking instead of arriving one by
-  one; and the culture and religious paths (phases 13 and 16) changing what peaceful play is
-  worth. The full balance pass is phase 16.
-- **Rome is weak** (2 of 22). Its trait (a free monument and roads to the capital) helps less
-  than the others'. A rules balance question for phase 16 rather than an AI one.
+- **Conquest wins 0%.** Every other range is met. Since ai-v12 conquest AIs take cities and
+  knock rivals out, but holding all four original capitals by turn 220 at Quick speed has not
+  happened yet. Ideas for later phases: a later turn limit at Quick, or conquest-minded AIs
+  making peace with distant rivals to focus on one neighbour at a time.
+

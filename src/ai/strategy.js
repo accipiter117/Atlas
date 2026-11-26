@@ -3,13 +3,12 @@
 // dither: a new path must beat the current one by switchMargin points.
 //   pathScore = progress x w.progress + feasibility x w.feasibility
 //             + leaderBias x w.bias + traitFit x w.trait - rivalLead x w.rival
-// Paths: conquest, science, score and (from phase 13) religious; culture
-// arrives with its system. lock-era's sandbox mode replaces them with "sandbox".
+// Paths: conquest, science, score, religious (phase 13) and culture (phase 16). lock-era's sandbox mode replaces them with "sandbox".
 
 import { weightsOf, personalityOf } from './evaluate.js';
 import { majorityOf } from '../sim/index.js';
 
-const PATHS = ['conquest', 'science', 'score', 'religious'];
+const PATHS = ['conquest', 'science', 'score', 'religious', 'culture'];
 
 export function pathScores(view, ruleset) {
   const w = weightsOf(ruleset, 'strategy');
@@ -36,6 +35,11 @@ export function pathScores(view, ruleset) {
       progress = mine ? view.cities.filter((c) => majorityOf(c) === mine.id).length / seen : 0;
       const left = Object.keys(view.religion?.religions ?? {}).length < Math.ceil(view.factions.length * (ruleset.tuning?.religion?.religionsPerFaction ?? 0.5));
       feasibility = mine ? 1 : left ? 0.5 : 0;
+    } else if (p === 'culture') {
+      // Our influence against the best lifetime culture among rivals.
+      const c = view.culture ?? {};
+      const best = Math.max(1, ...view.factions.filter((f) => f.id !== view.me && f.alive).map((f) => c[f.id]?.lifetime ?? 0));
+      progress = Math.min(1, (c[view.me]?.influence ?? 0) / best);
     } else {
       progress = Math.min(1, myCities.length / 8);
     }

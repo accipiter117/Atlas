@@ -10,7 +10,7 @@ export const focuses = entryType('focuses', {
 // Conditions are checks the engine knows how to make; the text and order are
 // data, so a conversion can reword or reorder the advice.
 export const ADVICE_CONDITIONS = Object.freeze([
-  'noCities', 'cityNoProduction', 'cityStarving', 'goldRunningOut', 'noResearch', 'noCivic', 'governmentReady', 'emptyPolicySlot', 'pantheonReady', 'religionReady', 'unitsNeedOrders', 'cityCanBuyTile', 'readyToEnd',
+  'eventPending', 'noCities', 'cityNoProduction', 'cityStarving', 'goldRunningOut', 'noResearch', 'noCivic', 'governmentReady', 'emptyPolicySlot', 'pantheonReady', 'religionReady', 'unitsNeedOrders', 'cityCanBuyTile', 'readyToEnd',
 ]);
 
 export const advice = entryType('advice', {
@@ -18,6 +18,6 @@ export const advice = entryType('advice', {
   condition: req(oneOf(ADVICE_CONDITIONS)),
   textKey: req(key()),
   actionKey: key(),
-  action: req(oneOf(['selectSettler', 'openCity', 'selectUnit', 'endTurn', 'research', 'civic', 'empire', 'religion'])),
+  action: req(oneOf(['selectSettler', 'openCity', 'selectUnit', 'endTurn', 'research', 'civic', 'empire', 'religion', 'event'])),
 });
 

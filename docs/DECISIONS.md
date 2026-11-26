@@ -211,6 +211,15 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Rival spies are hidden.** You learn of them only when one is caught or recognised in your city.
 - **Intel** lasts 20 turns and is shown in the Spies tab; the land around the city stays explored on your map.
 
+## Phase 16
+
+- **Influence** comes from wonders (`tuning.culture.influencePerWonder`, 3 each), buildings with an `influence` value and active policy cards with one; it builds up every turn. The culture victory needs at least `minInfluence` (100) and more influence than every living rival's lifetime culture (all culture ever earned, which now counts on each faction).
+- **Events happen at the start of your turn**, at most one at a time and no closer than 10 turns apart (`tuning.events.minGap`). Each event's chance is multiplied by the setup's frequency (Occasional 1, Frequent 2). Games without an events setting (older saves) have none.
+- **You must answer an event before ending the turn**, as with a captured city. The dialog can be closed to look at the map; the advice line reopens it.
+- **Effects of a choice** last their `turns` in that city (default 10); `popChange` and `freeUnit` happen at once; a city never drops below one citizen; an effect with a `chance` rolls the game dice.
+- **Rome's trait** (Trajan's Column) now gives +1 production in every city: a balance change, as Rome won none of 60 simulated games.
+- **Conquest is still under 5%** of simulated wins; see `docs/AI_TUNING.md`.
+
 ## Later
 
 - Nothing yet.

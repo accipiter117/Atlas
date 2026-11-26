@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 16: Culture victory, events and the balance pass
+
+What you can try: start a new game and look at the World section of the setup screen: Events (Off, Occasional or Frequent, Occasional by default) and Disasters (Off or On). Every so often something happens in one of your cities: a bountiful harvest, wandering scholars, a merchant caravan, a festival, veteran mercenaries and so on (twenty in all). A dialog tells the story and offers two choices, each saying exactly what it does ("+3 production for 8 turns"). You must choose before ending your turn; the advice line reminds you. With Disasters on, five unwelcome ones can strike too (plague, flood, earthquake, drought, great fire), each with a choice of how to cope. The culture victory is now live: wonders (3 each), the monument, amphitheatre, temple and a few others, and some policy cards earn influence every turn; once your influence is at least 100 and higher than the lifetime culture of every living rival, you win. The Victory panel shows how many rivals you have overtaken.
+
+- `culture.js` and the culture victory module; influence values on buildings and policy cards in data.
+- `events.js`: twenty events in `events.json` (five disasters) with conditions, chance and choices through the effects registry; a new `popChange` effect and an instant form of `freeUnit`; the `chooseEvent` command; the event dialog and its advice line.
+- The AI answers events (choosing what is worth most to its plans), pursues all five victory paths (a culture path that values influence), and still honours `ai.lateGameMode: sandbox`.
+- AI ai-v12: armies on the conquest path gather four strong before attacking a city, and wear cities down with melee (kept after beating ai-v10 12 games to 8).
+- Balance: Trajan's +1 production now applies in every city, not just the capital (Rome had won none of 60 games); Pericles leans towards culture.
+- Tests: 224 unit tests (events fire only when their conditions hold and never when switched off, disasters only with the option, choices apply their effects, the turn waits for a choice, the culture victory exactly at its threshold) and 57 browser tests (the event dialog, the new setup options and the culture victory on the Victory panel).
+
 ## Phase 15: Espionage
 
 What you can try: after the Recorded History civic, cities can train spies (one per faction, plus one for each era you reach). Select a new spy and tap "Post this spy", or open Empire (E) and the Spies tab: send it to one of your cities to defend it, or to any rival city you know. Each mission lists its success chance before you commit (60%, plus 10% for each level your spy has, less 15 or more for each spy defending that city), how long it takes, and the risk of being found out or caught: Gather Intel (see the land around the city and what its owner is researching), Siphon Funds (a fifth of their gold, at most 120), Steal Tech Boost (40% towards a tech they know and you do not), Sabotage Production (their current build loses its progress) and Incite Unrest (-2 amenities for 10 turns). A spy that succeeds gains a level. Recognised or caught, your spy costs you opinion with that leader ("We caught your spies"), and rival spies caught in your cities are announced to you.

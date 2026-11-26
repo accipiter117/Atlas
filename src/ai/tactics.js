@@ -5,7 +5,8 @@
 //   keeping attackMinHpAfter), or any ranged shot that does real damage.
 //   Melee units walk into a city whose defences are at 0.
 // - Garrisons: each city keeps defendersPerCity units fortified inside.
-// - At war: everyone else marches on the nearest known enemy city.
+// - At war: everyone else marches on the nearest known enemy city (gathering
+//   first a few hexes away when military.musterUnits is set).
 // - Badly hurt units go home to heal.
 // - Settlers go to the best site and found; builders improve worked land;
 //   scouts explore the nearest edge of the unknown.
@@ -140,8 +141,16 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
   // At war: march on the nearest known enemy city.
   if (ctx.warTarget) {
     const reach = combatKind(ruleset, unit) === 'ranged' ? rangeOf(ruleset, unit) : 1;
+    // While the army musters, units stop ctx.muster hexes away and wait for the rest.
+    const muster = ctx.muster ?? 0;
+    if (muster && dist(view.map, unit.tile, ctx.warTarget) <= muster) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.muster', params: {} };
     if (dist(view.map, unit.tile, ctx.warTarget) > reach) {
       const spot = approach(world, view, ruleset, unit, ctx.warTarget, reach);
+      if (spot !== null && muster) {
+        // The first hex on the way that is close enough to wait in.
+        const wait = pathTo(world, view, ruleset, unit, spot)?.tiles?.find((t) => dist(view.map, t, ctx.warTarget) <= muster);
+        if (wait !== undefined && wait !== unit.tile) return move(view, unit, wait, 'ai.reason.muster', {}, 1);
+      }
       if (spot !== null) return move(view, unit, spot, 'ai.reason.march', {}, 1);
     }
   }

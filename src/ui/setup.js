@@ -45,6 +45,8 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
     speed: preset.speed ?? 'standard',
     startEra: Object.values(ruleset.eras ?? {}).sort((a, b) => a.index - b.index)[0]?.id ?? null,
     raiders: 'on',
+    events: 'occasional',
+    disasters: 'off',
     fog: 'on',
     recordAI: 'on',
     autosave: 'every',
@@ -70,6 +72,8 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     victories: cfg.victories.slice(),
     speed: cfg.speed,
     raiders: cfg.raiders,
+    events: cfg.events ?? 'occasional',
+    disasters: cfg.disasters ?? 'off',
     fog: cfg.fog,
     recordAI: cfg.recordAI,
     autosave: cfg.autosave,
@@ -170,7 +174,7 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
     const ready = v.enabled && VICTORY_MODULES[v.module];
     return el(doc, 'label', { class: 'tick' },
       el(doc, 'input', { type: 'checkbox', name: `victory-${v.id}`, checked: ready && cfg.victories.includes(v.id), disabled: !ready, onchange: (e) => { cfg.victories = e.target.checked ? [...cfg.victories, v.id] : cfg.victories.filter((x) => x !== v.id); rerender(); } }),
-      el(doc, 'span', {}, say(v.nameKey, v.id)), !v.enabled ? el(doc, 'span', { class: 'later' }, tt('setup.offByMod')) : !ready ? later(v.id === 'religious' ? 13 : 16) : null);
+      el(doc, 'span', {}, say(v.nameKey, v.id)), !v.enabled ? el(doc, 'span', { class: 'later' }, tt('setup.offByMod')) : !ready ? later(16) : null);
   });
   const speedDefault = ruleset.tuning?.victory?.turnLimits?.[cfg.speed];
   const victory = group(tt('setup.group.victory'),
@@ -193,8 +197,8 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
     el(doc, 'p', { class: 'small muted' }, tt('setup.princeNote')));
   const world = group(tt('setup.group.world'),
     row(tt('setup.raiders'), select('raiders', cfg.raiders, choose('setup.raidersOpt', ['off', 'on', 'raging']), (v) => { cfg.raiders = v; })),
-    row(tt('setup.events'), select('events', 'off', [{ value: 'off', label: tt('setup.off') }], () => {}, { disabled: true }), later(16)),
-    row(tt('setup.disasters'), select('disasters', 'off', [{ value: 'off', label: tt('setup.off') }], () => {}, { disabled: true }), later(16)));
+    row(tt('setup.events'), select('events', cfg.events ?? 'occasional', choose('setup.eventsOpt', ['off', 'occasional', 'frequent']), (v) => { cfg.events = v; })),
+    row(tt('setup.disasters'), select('disasters', cfg.disasters ?? 'off', choose('setup.raidersOpt', ['off', 'on']), (v) => { cfg.disasters = v; })));
   const battles = group(tt('setup.group.battles'),
     row(tt('setup.battleMode'), select('battleMode', 'auto', [{ value: 'auto', label: tt('setup.battleAuto') }, { value: 'ask', label: tt('setup.battleAsk'), disabled: true }, { value: 'fight', label: tt('setup.battleFight'), disabled: true }], () => {}), el(doc, 'span', { class: 'later' }, tt('setup.battleNote'))),
     row(tt('setup.battleModule'), select('battleModule', 'auto', [{ value: 'auto', label: tt('setup.moduleAuto') }], () => {}, { disabled: true })));

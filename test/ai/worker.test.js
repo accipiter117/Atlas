@@ -30,7 +30,9 @@ test('worker and direct runs give identical fingerprints over five rounds', asyn
   await talk(worker, { type: 'init', ruleset, factions: others, memories: {} }, (m) => m.type === 'ready');
   try {
     for (let round = 0; round < 5; round += 1) {
-      // "You" just end your turn; then the rivals play both ways from the same state.
+      // "You" answer any event (phase 16) and end your turn; then the rivals play both ways from the same state.
+      const ev = state.events?.pending?.[human];
+      if (ev) state = applyCommand(state, { type: 'chooseEvent', faction: human, event: ev.id, choice: 0 }, ruleset).state;
       state = applyCommand(state, { type: 'endTurn', faction: human }, ruleset).state;
       const a = direct.play(state, { stopAt: human });
       const b = await talk(worker, { type: 'play', id: round, state, stopAt: human }, (m) => m.id === round);

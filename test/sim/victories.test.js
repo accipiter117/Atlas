@@ -128,7 +128,8 @@ test('victory progress reports every faction on every active path, in range', ()
   const s = twoCapitals();
   s.projects = { f0: ['great_observatory'] };
   const p = Object.fromEntries(victoryProgress(s, ruleset).map((v) => [v.id, v.rows]));
-  assert.deepEqual(Object.keys(p).sort(), ['conquest', 'religious', 'science', 'score']);
+  assert.deepEqual(Object.keys(p).sort(), ['conquest', 'culture', 'religious', 'science', 'score']);
+  for (const r of p.culture) assert.ok(r.value >= 0 && r.value <= r.target);
   assert.deepEqual(p.conquest.map((r) => [r.value, r.target]), [[1, 2], [1, 2]]);
   assert.deepEqual(p.science.map((r) => [r.value, r.target]), [[1, 3], [0, 3]]);
   for (const r of p.score) assert.ok(Number.isFinite(r.value) && r.value > 0 && r.turnsLeft >= 0);
