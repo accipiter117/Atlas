@@ -34,6 +34,30 @@
       "action": "research"
     },
     {
+      "id": "civic",
+      "priority": 72,
+      "condition": "noCivic",
+      "textKey": "advice.civic",
+      "actionKey": "advice.civic.do",
+      "action": "civic"
+    },
+    {
+      "id": "government",
+      "priority": 70,
+      "condition": "governmentReady",
+      "textKey": "advice.government",
+      "actionKey": "advice.empire.do",
+      "action": "empire"
+    },
+    {
+      "id": "policy_slot",
+      "priority": 60,
+      "condition": "emptyPolicySlot",
+      "textKey": "advice.policy",
+      "actionKey": "advice.empire.do",
+      "action": "empire"
+    },
+    {
       "id": "choose_production",
       "priority": 80,
       "condition": "cityNoProduction",

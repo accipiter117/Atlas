@@ -187,6 +187,7 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
   const faction = state.factions.find((f) => f.id === factionId);
   let income = 0;
   let science = 0;
+  let culture = 0;
   for (const city of citiesOf(state, factionId)) {
     // A city being razed loses a citizen each turn and is gone at zero.
     if (city.razing) {
@@ -207,7 +208,7 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
     income += y.total.gold;
     science += y.total.science;
     faction.stocks.faith += y.total.faith;
-    faction.stocks.culture += y.total.culture;
+    culture += y.total.culture;
 
     // Growth: river, growthPercent effects and the city's mood all scale a food surplus.
     const nearRiver = state.map.river[city.tile] !== 0;
@@ -250,5 +251,8 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
   payUpkeep(state, ruleset, factionId, income, events);
   if (ruleset.techs) addResearch(state, ruleset, factionId, science, events);
   else faction.stocks.science += science;
+  // Culture fills the civics tree (section 3.7), the same way science fills the techs.
+  if (ruleset.civics) addResearch(state, ruleset, factionId, culture, events, 'civics');
+  else faction.stocks.culture += culture;
   updateVisibility(state, ruleset, factionId);
 }

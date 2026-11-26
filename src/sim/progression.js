@@ -144,14 +144,17 @@ export function applyBoosts(state, ruleset, events, tree = 'techs') {
   events.push(...out);
 }
 
-/** Give a faction every tech of the eras before `eraId` (lock-era, later start eras). */
+/** Give a faction every tech and civic of the eras before `eraId` (lock-era, later start eras). */
 export function grantErasBefore(state, ruleset, factionId, eraId) {
   const era = ruleset.eras?.[eraId];
   if (!era) return;
   const f = state.factions.find((x) => x.id === factionId);
-  const r = researchOf(f);
-  for (const t of Object.values(ruleset.techs ?? {})) {
-    if ((ruleset.eras[t.era]?.index ?? 0) < era.index && !r.known.includes(t.id)) r.known.push(t.id);
+  for (const tree of ['techs', 'civics']) {
+    if (!ruleset[tree] || (tree === 'civics' && !f[FIELD.civics])) continue;
+    const r = researchOf(f, tree);
+    for (const t of Object.values(ruleset[tree])) {
+      if ((ruleset.eras[t.era]?.index ?? 0) < era.index && !r.known.includes(t.id)) r.known.push(t.id);
+    }
   }
 }
 

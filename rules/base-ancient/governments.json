@@ -1,0 +1,9 @@
+{
+  "contentType": "governments",
+  "entries": [
+    {"id": "chiefdom", "nameKey": "government.chiefdom.name", "descriptionKey": "government.chiefdom.text", "slots": {"military": 1, "economic": 1}, "requires": {"civic": "code_of_laws"}},
+    {"id": "autocracy", "nameKey": "government.autocracy.name", "descriptionKey": "government.autocracy.text", "slots": {"military": 2, "economic": 1, "diplomatic": 1, "wildcard": 1}, "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 2, "scope": "capital"}, {"effect": "yieldBonus", "yield": "gold", "amount": 1, "scope": "capital"}, {"effect": "costPercent", "target": "landUnits", "amount": -10}], "requires": {"civic": "political_philosophy"}},
+    {"id": "republic", "nameKey": "government.republic.name", "descriptionKey": "government.republic.text", "slots": {"military": 1, "economic": 2, "diplomatic": 1, "wildcard": 1}, "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1, "scope": "everyCity"}, {"effect": "yieldPercent", "yield": "science", "amount": 5}], "requires": {"civic": "political_philosophy"}},
+    {"id": "monarchy", "nameKey": "government.monarchy.name", "descriptionKey": "government.monarchy.text", "slots": {"military": 2, "economic": 2, "diplomatic": 1, "wildcard": 1}, "effects": [{"effect": "costPercent", "target": "walls", "amount": -50}, {"effect": "yieldBonus", "yield": "culture", "amount": 2, "scope": "capital"}], "requires": {"civic": "divine_right"}}
+  ]
+}

@@ -76,7 +76,7 @@ test('a save that will not fit says so instead of failing silently', async () =>
 
 test('every command type survives the short storage keys', () => {
   for (const type of Object.keys(COMMANDS)) {
-    const cmd = { type, faction: 'f0', unit: 'u_0001', to: 12, city: 'c_0001', item: { kind: 'unit', id: 'warrior' }, tile: 3, target: 'f1', choice: 'keep', promotion: 'p', focus: 'food', improvement: 'farm', tree: 'techs', result: { winner: 'a' }, extra: 1 };
+    const cmd = { type, faction: 'f0', unit: 'u_0001', to: 12, city: 'c_0001', item: { kind: 'unit', id: 'warrior' }, tile: 3, target: 'f1', choice: 'keep', promotion: 'p', focus: 'food', improvement: 'farm', tree: 'techs', result: { winner: 'a' }, government: 'republic', policy: 'agoge', slot: 'military', index: 1, extra: 1 };
     const packed = packCommand(cmd);
     assert.ok(JSON.stringify(packed).length < JSON.stringify(cmd).length);
     assert.deepEqual(unpackCommand(packed), cmd);

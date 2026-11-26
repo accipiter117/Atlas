@@ -9,6 +9,7 @@
 import { hexDistance } from '../core/hex.js';
 import { neighbourCache, tileHex } from './map.js';
 import { tileYields, factionEffects } from './yields.js';
+import { sumHook } from './effects/index.js';
 
 export function borderCost(city, tuning) {
   const b = tuning?.borders ?? { baseCost: 10, perTileCost: 6 };
@@ -57,7 +58,9 @@ export function claimTile(state, city, t) {
 
 /** Add this turn's culture; claim a tile when the box fills. Returns the tile claimed, or -1. */
 export function growBorders(state, ruleset, city, culture) {
-  city.culture += culture;
+  // borderGrowthPercent effects (policy cards) make culture count for more here.
+  const pct = sumHook('borderGrowth', state, ruleset, city.faction, { city });
+  city.culture += culture * (1 + pct / 100);
   const cost = borderCost(city, ruleset.tuning);
   if (city.culture < cost) return -1;
   const t = bestClaim(state, ruleset, city);

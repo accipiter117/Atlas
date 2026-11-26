@@ -17,7 +17,8 @@ export function view(state, factionId, ruleset = null) {
     me: factionId,
     current: state.seatOrder[state.seatIndex],
     seatOrder: state.seatOrder.slice(),
-    factions: state.factions.map((f) => ({ id: f.id, name: f.name, kind: f.kind, alive: f.alive, civ: f.civ ?? null })),
+    // Everyone's government is public knowledge (as in the board game); cards and research are not.
+    factions: state.factions.map((f) => ({ id: f.id, name: f.name, kind: f.kind, alive: f.alive, civ: f.civ ?? null, government: f.government?.id ?? null })),
     cities: [],
     map: null,
     fog: null,
@@ -60,6 +61,9 @@ export function view(state, factionId, ruleset = null) {
   out.stocks = mine.stocks ? { ...mine.stocks } : null;
   out.lastNetGold = mine.lastNetGold ?? null;
   out.research = mine.research ? JSON.parse(JSON.stringify(mine.research)) : null;
+  out.civicResearch = mine.civicResearch ? JSON.parse(JSON.stringify(mine.civicResearch)) : null;
+  out.government = mine.government ? JSON.parse(JSON.stringify(mine.government)) : null;
+  out.pendingGovernment = mine.pendingGovernment ? JSON.parse(JSON.stringify(mine.pendingGovernment)) : null;
   out.setup = JSON.parse(JSON.stringify(state.setup ?? {}));
   out.wars = (state.wars ?? []).filter((w) => w.split('|').includes(factionId));
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
@@ -91,7 +95,7 @@ export function worldFromView(v) {
     units: Object.fromEntries(v.units.map((u) => [u.id, u])),
     cities: Object.fromEntries(v.cities.map((c) => [c.id, c])),
     owner: v.map?.owner ?? null,
-    factions: v.factions.map((f) => (f.id === v.me ? { ...f, research: v.research, stocks: v.stocks } : f)),
+    factions: v.factions.map((f) => (f.id === v.me ? { ...f, research: v.research, civicResearch: v.civicResearch, government: v.government, pendingGovernment: v.pendingGovernment, stocks: v.stocks } : f)),
     turn: v.turn,
     seatOrder: v.seatOrder,
     seatIndex: v.seatOrder.indexOf(v.current),

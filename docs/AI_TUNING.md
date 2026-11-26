@@ -30,7 +30,9 @@ recorded here, kept or reverted. Raw results for each batch (every game, seed by
 | Errors | 0 refused AI commands, 0 NaN, 0 crashes |
 | Round time | Under 2 s on a Large 8-faction map (`npm run perf`) |
 
-## Current state (champion ai-v2, 40 games, seeds 1000 to 1039)
+## Phase 10 state (champion ai-v2, 40 games, seeds 1000 to 1039)
+
+The latest batch is phase 11's, below.
 
 Wins by faction (wins / games played):
 
@@ -104,6 +106,31 @@ Wins by victory type:
 
 The switches added for ai-v4 and ai-v5 stay in the code, off unless the data sets them, so a
 later patch can use them.
+
+### 2026-11-26: phase 11, civics and governments (ai-v6, 40 games, seeds 1000 to 1039)
+
+Not a head-to-head: the rules themselves changed (a civics tree, governments and policy
+cards), so this compares the same 40 seeds before (ai-v2, phase 10) and after (ai-v6, the new
+civics and policy planner, weights in `ai/weights.json` "policy").
+
+| Line | Before (ai-v2) | After (ai-v6) |
+| --- | --- | --- |
+| Score wins | 36 (90%) | 23 (57%) |
+| Science wins | 4 (10%) | 17 (43%) |
+| Conquest wins | 0 | 0 |
+| Average victory turn | 219 | 212 |
+| Persia | 9 of 26 (35%) | 11 of 26 (42%) |
+| Rome | 2 of 22 | 4 of 22 |
+| Errors | 0 | 0 |
+| Slowest round (Small) | 310 ms | 516 ms |
+
+- Every AI adopts Chiefdom early (turns 8 to 24), then Republic or Autocracy around turns
+  42 to 66, and fills its card slots. In the first trial everyone chose Republic, so the
+  governments were rebalanced in data (Autocracy gains a wildcard slot and cheaper land units;
+  Monarchy trades a military slot for an economic one); both are now chosen.
+- Civics and cards speed up building empires, so science victories rose from 10% to 43%.
+- Conquest is still 0% (see below). Persia is within twice the average (42% against 24%).
+- Large 8-faction rounds at turn 200: 386 to 630 ms in Node (target under 2 s).
 
 ## Open problems
 

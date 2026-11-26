@@ -10,6 +10,7 @@ import { clone, deepFreeze } from '../core/clone.js';
 import { generateMap } from './mapgen.js';
 import { placeStartingUnits } from './units.js';
 import { emptyResearch, grantErasBefore } from './progression.js';
+import { emptyGovernment } from './government.js';
 import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
@@ -79,6 +80,7 @@ export function createGame(ruleset, setup) {
   }
   for (const f of factions) {
     f.stocks = { gold: ruleset?.tuning?.economy?.startingGold ?? 0, science: 0, culture: 0, faith: 0 };
+    if (ruleset?.civics) f.civicResearch = emptyResearch();
     if (ruleset?.techs) {
       f.research = emptyResearch();
       const before = ruleset.tuning?.start?.grantErasBefore;
@@ -86,6 +88,7 @@ export function createGame(ruleset, setup) {
       // Setup "starting era": every tech of the eras before it is known from the start.
       if (setup.startEra && ruleset.eras?.[setup.startEra]) grantErasBefore({ factions }, ruleset, f.id, setup.startEra);
     }
+    if (ruleset?.governments) { f.government = emptyGovernment(); f.pendingGovernment = null; }
   }
   state.wars = [];
 

@@ -9,13 +9,14 @@
 import {
   createGame, applyCommand, view, worldFromView, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
-  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf,
+  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf, slotsOf, workingGovernment, governmentAvailable, policyAvailable,
   atWar, buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 import { factionCard } from './factionCards.js';
-import { createSeatRunner, rankTechs } from '../ai/index.js';
+import { createSeatRunner, rankTechs, rankCivics } from '../ai/index.js';
 import { renderTrees } from './trees.js';
+import { renderEmpire } from './empire.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
 import { renderGameMenu, codeBox } from './gameMenu.js';
@@ -209,6 +210,20 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         w.terminate();
         return { direct: fingerprint(direct.state), worker: fingerprint(reply.state), commands: [direct.commands.length, reply.commands?.length] };
       },
+      /** Know these techs or civics at once (tree: 'techs' or 'civics'). */
+      learn(tree, ids) {
+        const next = JSON.parse(JSON.stringify(state));
+        const f = next.factions.find((x) => x.id === human);
+        const r = tree === 'civics' ? f.civicResearch : f.research;
+        for (const id of ids) if (!r.known.includes(id)) r.known.push(id);
+        state = next;
+        refresh();
+      },
+      /** What an item costs in your capital right now (unit costs show the effect of policy cards). */
+      cost(kind, id) {
+        const c = state.cities && Object.values(state.cities).find((x) => x.faction === human && x.capital);
+        return c ? itemCost(ruleset, { kind, id }, state, c) : null;
+      },
       setXp(unitId, xp) {
         const next = JSON.parse(JSON.stringify(state));
         next.units[unitId].xp = xp;
@@ -233,6 +248,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const netGold = () => myCities().reduce((n, c) => n + yieldsOf(c).total.gold, 0) - upkeepOf(knownWorld(v), ruleset, human).total;
   const goldTurnsLeft = () => { const net = netGold(); return net < 0 ? Math.floor((v.stocks?.gold ?? 0) / -net) + 1 : Infinity; };
   const techName = (id) => ruleset.text[ruleset.techs?.[id]?.nameKey] ?? id;
+  const civicName = (id) => ruleset.text[ruleset.civics?.[id]?.nameKey] ?? id;
   const civName = (factionId) => { const f = v.factions.find((x) => x.id === factionId); return ruleset.text[ruleset.factions?.[f?.civ]?.nameKey] ?? f?.name ?? ''; };
   const starving = () => myCities().filter((c) => yieldsOf(c).surplus < 0);
 
@@ -319,8 +335,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     for (const e of events) {
       if (e.type === 'battle') battleReport(e);
       if (e.type === 'warDeclared' && (e.faction === human || e.target === human || v.cities.some((c) => c.faction === e.faction))) toast(tt('game.warDeclared', { faction: civName(e.faction), target: civName(e.target) }));
-      if (e.type === 'boost' && e.faction === human) toast(tt('game.boost', { item: techName(e.item), pct: Math.round((ruleset.tuning?.progression?.boostShare ?? 0.4) * 100) }));
+      if (e.type === 'boost' && e.faction === human) toast(tt('game.boost', { item: e.tree === 'civics' ? civicName(e.item) : techName(e.item), pct: Math.round((ruleset.tuning?.progression?.boostShare ?? 0.4) * 100) }));
       if (e.type === 'techLearned' && e.faction === human) toast(tt('game.techLearned', { item: techName(e.item) }));
+      if (e.type === 'civicLearned' && e.faction === human) toast(tt('game.civicLearned', { item: civicName(e.item) }));
+      if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'cityCaptured' && e.from === human) toast(tt('battle.cityLost', { city: e.name, faction: civName(e.faction) }));
       if (e.type === 'campCleared' && e.faction === human) toast(tt('battle.campCleared', { gold: e.gold }));
@@ -655,9 +673,31 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       el(doc, 'span', { class: 'y era' }, tt('game.era', { era: ruleset.text[ruleset.eras?.[eraOf(knownWorld(v), ruleset, human)]?.nameKey] ?? '' })),
       el(doc, 'button', { type: 'button', class: 'y science link-like', dataset: { action: 'trees' }, onclick: openTrees },
         v.research?.current ? tt('game.bar.science', { rate: signed(total.science), item: techName(v.research.current) }) : tt('game.bar.noResearch', { rate: signed(total.science) })),
-      el(doc, 'span', { class: 'y culture' }, tt('game.bar.culture', { rate: signed(total.culture) })),
+      ruleset.civics ? el(doc, 'button', { type: 'button', class: 'y culture link-like', dataset: { action: 'civics' }, onclick: () => openTrees('civics') },
+        v.civicResearch?.current ? tt('game.bar.civic', { rate: signed(total.culture), item: civicName(v.civicResearch.current) }) : tt('game.bar.noCivic', { rate: signed(total.culture) }))
+        : el(doc, 'span', { class: 'y culture' }, tt('game.bar.culture', { rate: signed(total.culture) })),
       el(doc, 'span', { class: 'y faith' }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
     );
+  }
+
+  /** The civic the AI's planner would pick in your place. */
+  function civicSuggestion() {
+    return ruleset.civics ? rankCivics(knownWorld(v), v, ruleset, { path: 'score' })[0]?.cmd.item ?? null : null;
+  }
+  /** A government you could adopt and have not (only when you have none yet). */
+  function readyGovernment() {
+    if (!ruleset.governments || v.government?.id || v.government?.anarchy || v.pendingGovernment) return null;
+    return Object.values(ruleset.governments).find((g) => governmentAvailable(knownWorld(v), ruleset, human, g.id))?.id ?? null;
+  }
+  /** Is a policy slot of your working government empty while a card could fill it? */
+  function emptySlot() {
+    const world = knownWorld(v);
+    const work = workingGovernment(world, human);
+    if (!work.id) return false;
+    const slots = slotsOf(world, ruleset, human, work.id);
+    const inUse = new Set(Object.values(work.policies).flat().filter(Boolean));
+    const cards = Object.values(ruleset.policies ?? {}).filter((p) => !inUse.has(p.id) && policyAvailable(world, ruleset, human, p.id));
+    return Object.entries(slots).some(([kind, n]) => (work.policies[kind] ?? []).filter(Boolean).length < n && cards.some((p) => kind === 'wildcard' || p.slot === kind));
   }
 
   /** The tech the AI's own science planner would pick in your place. */
@@ -672,6 +712,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       cityStarving: () => starving().length && { city: starving()[0].name, target: starving()[0].id },
       cityNoProduction: () => noProduction().length && { city: noProduction()[0].name, target: noProduction()[0].id },
       noResearch: () => ruleset.techs && !v.research?.current && !(v.research?.queue ?? []).length && suggestion() && { tech: techName(suggestion()) },
+      noCivic: () => ruleset.civics && !v.civicResearch?.current && !(v.civicResearch?.queue ?? []).length && civicSuggestion() && { civic: civicName(civicSuggestion()) },
+      governmentReady: () => readyGovernment() && { government: ruleset.text[ruleset.governments[readyGovernment()].nameKey] },
+      emptyPolicySlot: () => emptySlot() && {},
       goldRunningOut: () => goldTurnsLeft() <= (ruleset.tuning?.economy?.bankruptcyWarningTurns ?? 2) && { n: goldTurnsLeft() },
       unitsNeedOrders: () => idle().length && { n: idle().length },
       cityCanBuyTile: () => false,
@@ -691,6 +734,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (a.action === 'selectUnit') selectNextIdle();
     else if (a.action === 'endTurn') endTurn();
     else if (a.action === 'research') run({ type: 'setResearch', faction: human, item: suggestion() });
+    else if (a.action === 'civic') run({ type: 'setResearch', faction: human, item: civicSuggestion(), tree: 'civics' });
+    else if (a.action === 'empire') openEmpire();
   }
 
   function renderAdvice() {
@@ -931,7 +976,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       ' ': () => selectNextIdle(),
       Enter: () => { if (!e.target.closest?.('button')) next(); else return false; },
       b: () => { const u = selectedUnit(); if (u && isFounder(u)) act('foundCity'); else return false; },
-      r: () => openTrees(),
+      r: () => openTrees('techs'),
+      c: () => (ruleset.civics ? openTrees('civics') : false),
+      e: () => (ruleset.governments ? openEmpire() : false),
       j: () => openJournal(),
       v: () => openVictory(),
       f: () => act('fortify'),
@@ -944,13 +991,28 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   });
   $('[data-action="next"]').onclick = next;
   const panel = doc.querySelector('[data-field="panel"]');
-  function openTrees() {
-    const science = myCities().reduce((n, c) => n + yieldsOf(c).total.science, 0);
+  let lastTree = 'techs';
+  function openTrees(tree = lastTree) {
+    lastTree = tree === 'civics' && ruleset.civics ? 'civics' : 'techs';
+    const rate = myCities().reduce((n, c) => n + yieldsOf(c).total[lastTree === 'civics' ? 'culture' : 'science'], 0);
+    const civ = lastTree === 'civics' ? { tree: 'civics' } : {};
     renderTrees(doc, panel.querySelector('[data-field="panel-body"]'), {
-      world: knownWorld(v), view: v, ruleset, text, science,
-      onResearch: (id) => { run({ type: 'setResearch', faction: human, item: id }); openTrees(); },
-      onQueue: (id) => { run({ type: 'queueResearch', faction: human, item: id }); openTrees(); },
+      world: knownWorld(v), view: v, ruleset, text, tree: lastTree, rate,
+      onResearch: (id) => { run({ type: 'setResearch', faction: human, item: id, ...civ }); openTrees(lastTree); },
+      onQueue: (id) => { run({ type: 'queueResearch', faction: human, item: id, ...civ }); openTrees(lastTree); },
+      onTab: (t2) => openTrees(t2),
       onClose: () => { panel.hidden = true; },
+    });
+    panel.hidden = false;
+  }
+  let pickSlot = null;
+  function openEmpire() {
+    renderEmpire(doc, panel.querySelector('[data-field="panel-body"]'), {
+      world: knownWorld(v), view: v, ruleset, text, pick: pickSlot,
+      onGovernment: (id) => { pickSlot = null; run({ type: 'setGovernment', faction: human, government: id }); openEmpire(); },
+      onPolicy: (kind, index, policy) => { pickSlot = null; run({ type: 'setPolicy', faction: human, slot: kind, index, policy }); openEmpire(); },
+      onPick: (slot) => { pickSlot = slot; openEmpire(); },
+      onClose: () => { pickSlot = null; panel.hidden = true; },
     });
     panel.hidden = false;
   }
@@ -961,6 +1023,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     panel.hidden = false;
   }
   $('[data-action="journal"]').onclick = openJournal;
+  $('[data-action="empire"]').onclick = openEmpire;
   const nameOf = (id) => (id === human ? tt('victory.you', { faction: civName(id) }) : civName(id));
   function openVictory() {
     renderVictory(doc, panel.querySelector('[data-field="panel-body"]'), { state, ruleset, text, human, name: nameOf, colours, onClose: () => { panel.hidden = true; } });

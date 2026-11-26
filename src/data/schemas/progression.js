@@ -43,6 +43,7 @@ const SLOTS = ['military', 'economic', 'diplomatic', 'wildcard'];
 export const governments = entryType('governments', {
   slots: req(map(oneOf(SLOTS), int(0, 6))),
   effects: effects(),
+  descriptionKey: key(),
   requires: obj({ civic: ref('civics') }),
 });
 

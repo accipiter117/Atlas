@@ -37,3 +37,6 @@ export { selfPlay } from './selfplay.js';
 
 /** Research the AI would choose in your place, for the advice line. */
 export { rankTechs } from './planners/science.js';
+
+/** Civics the AI would choose in your place. */
+export { rankCivics } from './planners/government.js';

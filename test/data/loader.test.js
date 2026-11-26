@@ -142,8 +142,10 @@ test('base-ancient loads cleanly; lock-era warns until techs exist; the test pai
 
   const locked = await loadReal(['base-ancient', 'lock-era', 'no-religious-victory']);
   assert.equal(locked.ok, true);
-  // Civics do not exist yet; wonders do, but none come after the Classical era.
-  assert.deepEqual(codes(locked, 'warning'), ['contentTypeMissing', 'noMatch']);
+  // Civics exist since phase 11 (later ones are removed too); one removal still matches nothing.
+  assert.deepEqual(codes(locked, 'warning'), ['noMatch']);
+  assert.ok(Object.values(locked.ruleset.civics).every((c) => locked.ruleset.eras[c.era].index <= 1), 'later civics removed');
+  assert.ok(Object.keys(locked.ruleset.civics).length >= 10);
   assert.ok(Object.values(locked.ruleset.techs).every((t) => locked.ruleset.eras[t.era].index <= 1), 'later techs removed');
   assert.ok(!locked.ruleset.units.knight, 'and the units they unlock (cascade)');
   assert.equal(locked.ruleset.victories.religious.enabled, false);

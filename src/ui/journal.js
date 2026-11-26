@@ -20,6 +20,9 @@ function named(ruleset, text, factionName, params) {
   const out = { ...params };
   const say = (k) => text[k] ?? k;
   if (out.tech) out.tech = say(ruleset.techs?.[out.tech]?.nameKey) ?? out.tech;
+  if (out.civic) out.civic = say(ruleset.civics?.[out.civic]?.nameKey) ?? out.civic;
+  if (out.government) out.government = say(ruleset.governments?.[out.government]?.nameKey) ?? out.government;
+  if (out.policy) out.policy = say(ruleset.policies?.[out.policy]?.nameKey) ?? out.policy;
   for (const k of ['item', 'from', 'unit']) {
     const id = out[k];
     if (!id) continue;
@@ -41,7 +44,7 @@ export function sentence(ruleset, text, factionName, entry) {
 /** A short name for an option the AI weighed: the tech, item or path itself. */
 function shortName(ruleset, text, factionName, entry) {
   const p = named(ruleset, text, factionName, entry.params ?? {});
-  return p.tech ?? p.item ?? p.path ?? p.improvement ?? p.promotion ?? p.target ?? sentence(ruleset, text, factionName, entry);
+  return p.tech ?? p.civic ?? p.government ?? p.policy ?? p.item ?? p.path ?? p.improvement ?? p.promotion ?? p.target ?? sentence(ruleset, text, factionName, entry);
 }
 
 /** Merge repeats on the same turn ("A unit explores the unknown" four times becomes one line). */

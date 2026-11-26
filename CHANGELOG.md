@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 11: Culture, civics and government
+
+What you can try: press C (or tap the culture figure in the top bar) for the Civics tree, which culture fills just as science fills the techs, with boosts and queueing. Code of Laws unlocks Chiefdom; press E (or Empire) and adopt it, then tap a slot and pick a card from the short list. Political Philosophy brings Autocracy and Republic, Divine Right brings Monarchy. Changes take effect at the start of your next turn, and switching from one government to another means one turn of anarchy (no government or cards), so choose with care. Try Autocracy with Agoge in a military slot: a warrior's cost drops by 40% from your next turn. The advice line now suggests a civic, a government to adopt and empty slots to fill. In the AI journal (J) you can watch rivals study civics, adopt governments and slot cards.
+
+- 25 civics, 4 governments (Chiefdom, Autocracy, Republic, Monarchy) and 32 policy cards in base-ancient, all as data, all working through the effects registry.
+- Two new effects: `freePolicySlot` (the palace now gives every faction one wildcard slot) and `borderGrowthPercent` (Frontier Grants grows borders 50% faster).
+- Commands `setGovernment` and `setPolicy`; a starting era now grants earlier civics too, and lock-era removes later ones.
+- The Empire overlay (E) with its Government tab.
+- The AI's civics and policy planner: civics ranked like techs, cards valued by what their effects add to the empire as it is, governments chosen by their best possible layout, with a margin before switching. Science victories rose from 10% to 43% of AI games (see `docs/AI_TUNING.md`).
+- Tests: 185 unit tests (civic costs and boosts, slot counts, one-turn changes and anarchy, card effects stacking and coming off cleanly, the AI never slotting an invalid card) and 39 browser tests (the civics tree, adopting Autocracy and seeing a unit's cost fall).
+
 ## Phase 10: Simulator, speed and the first tuning pass
 
 What you can try: start a Standard game (a Large map with 7 rivals) and end a turn. The rivals now move in the background ("Rivals are moving..." in the advice line) while you can still pan the map, and their turns are 4 to 5 times quicker than before. The setup screen's Difficulty now works, from Settler to Deity, and shows exactly what each level gives (Emperor: AI +20% production, science, culture and gold; +1 settler, +1 warrior). On the developer page (Settings, Developer mode, then the map viewer link) open Simulation tools: Mini-simulation plays AI-only games and shows who won and how; Jump turns plays to any turn and shows how long each of the last rounds took. `docs/AI_TUNING.md` has the win tables by faction and victory type.

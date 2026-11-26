@@ -154,6 +154,18 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The size and speed checks run in CI**: `check-size --full` (the Large 330-turn save) and `npm run perf` (Large rounds at turn 200). Locally, `npm run check` keeps the faster Small save check.
 - **Persia** won half the baseline games; with the ai-v2 AI it wins about a third (within range), so its trait (every land unit moves one hex further) is unchanged for now. Faction balance is phase 16's job.
 
+## Phase 11
+
+- **Changes take a turn.** The plan asks for "a one-turn change cost". A new government or card is pending and becomes active at the start of your next turn; changing from one government to another also means anarchy until then (no government and no cards). Adopting your first government has no anarchy. This keeps the rule easy to explain and needs no gold costs.
+- **Cards come with you** when you change government, as far as they fit the new slots (wildcards first take nothing extra). At the start of each turn cards that no longer fit (a lost palace, say) drop out.
+- **The palace gives one wildcard slot** to every faction (`freePolicySlot`). Slots from a policy card itself are ignored, so a card can never make room for itself.
+- **Diplomatic cards** have no diplomacy to act on until phase 12, so the four in base-ancient give culture, gold and amenities for now.
+- **Governments were rebalanced after the first AI trial**, where every AI chose Republic: Autocracy gained a wildcard slot and 10% cheaper land units, and Monarchy has two military and two economic slots (it had three military). Both Republic and Autocracy are now chosen.
+- **Everyone's government is public** in each player's view (as in the board game); cards and research are not.
+- **The Empire overlay** has only its Government tab for now; religion, trade routes, spies and the city list join it in later phases.
+- **Content order:** `tools/gen/base-ancient-civics.py` runs after the techs script (it also gives the palace its slot).
+- **The AI version is now ai-v6** (the civics and policy planner). This was not a head-to-head test, because the rules changed underneath; `docs/AI_TUNING.md` compares the same 40 seeds before and after.
+
 ## Later
 
 - Nothing yet.

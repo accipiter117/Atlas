@@ -11,10 +11,13 @@ import { runRaiders } from './raiders.js';
 import { runBattle } from './combatCommands.js';
 import { updateAllVisibility } from './visibility.js';
 import { checkVictory } from './victories/index.js';
+import { startGovernmentTurn } from './government.js';
 import { eliminate } from './elimination.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
+  // Pending government and card changes become active first, so this turn's yields use them.
+  if (ruleset?.governments) startGovernmentTurn(state, ruleset, factionId, events);
   // Section 3.14: cities first (yields, growth, production, borders), then units.
   if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
   if (state.units) startUnitsTurn(state, ruleset, factionId, events);

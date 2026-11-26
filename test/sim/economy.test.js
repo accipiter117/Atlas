@@ -24,8 +24,8 @@ function cityGame(rules = ruleset, rows = LAND, extra = []) {
   return { s, city: Object.values(s.cities)[0] };
 }
 
-test('the registry has exactly the 14 phase 6 effect handlers', () => {
-  assert.deepEqual(Object.keys(HANDLERS).sort(), ['amenityBonus', 'autoRoad', 'cityYieldPercent', 'costPercent', 'freeBuilding', 'freeUnit', 'growthPercent',
+test('the registry has the 14 phase 6 effect handlers plus the 2 from phase 11', () => {
+  assert.deepEqual(Object.keys(HANDLERS).sort(), ['amenityBonus', 'autoRoad', 'borderGrowthPercent', 'cityYieldPercent', 'costPercent', 'freeBuilding', 'freePolicySlot', 'freeUnit', 'growthPercent',
     'healBonus', 'moveBonus', 'sightBonus', 'tileYield', 'upkeepPercent', 'yieldBonus', 'yieldPercent']);
 });
 

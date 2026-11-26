@@ -30,10 +30,12 @@ import moveBonus from './moveBonus.js';
 import sightBonus from './sightBonus.js';
 import healBonus from './healBonus.js';
 import autoRoad from './autoRoad.js';
+import freePolicySlot from './freePolicySlot.js';
+import borderGrowthPercent from './borderGrowthPercent.js';
 
 export const HANDLERS = Object.freeze(Object.fromEntries(
   [yieldBonus, yieldPercent, cityYieldPercent, tileYield, costPercent, upkeepPercent, growthPercent,
-    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad].map((h) => [h.name, h]),
+    amenityBonus, freeBuilding, freeUnit, moveBonus, sightBonus, healBonus, autoRoad, freePolicySlot, borderGrowthPercent].map((h) => [h.name, h]),
 ));
 
 /** A building's definition, whether a building or a wonder. */
@@ -67,6 +69,16 @@ export function effectsFor(state, ruleset, factionId) {
   // Difficulty (section 9.5): the labelled bonuses from difficulty.json, the only advantages anyone gets.
   const level = difficultyOf(state, ruleset);
   for (const e of (f?.kind === 'human' ? level?.humanEffects : f?.kind === 'ai' ? level?.aiEffects : null) ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'difficulty', id: level.id } });
+  // Government and policy cards (section 3.7): only the active ones; none during anarchy.
+  const gov = f?.government;
+  if (gov?.id && ruleset.governments?.[gov.id]) {
+    for (const e of ruleset.governments[gov.id].effects ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'government', id: gov.id } });
+    for (const list of Object.values(gov.policies ?? {})) {
+      for (const id of list ?? []) {
+        for (const e of ruleset.policies?.[id]?.effects ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'policy', id } });
+      }
+    }
+  }
   for (const city of Object.values(state.cities ?? {})) {
     if (city.faction !== factionId) continue;
     for (const b of city.buildings ?? []) {

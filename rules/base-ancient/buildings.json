@@ -1,7 +1,7 @@
 {
   "contentType": "buildings",
   "entries": [
-    {"id": "palace", "nameKey": "building.palace.name", "descriptionKey": "building.palace.text", "era": "ancient", "cost": 1, "upkeep": 0, "icon": "building.palace", "yields": {"production": 2, "gold": 4, "science": 2, "culture": 1}, "amenities": 1, "requires": {"capital": true}},
+    {"id": "palace", "nameKey": "building.palace.name", "descriptionKey": "building.palace.text", "era": "ancient", "cost": 1, "upkeep": 0, "icon": "building.palace", "yields": {"production": 2, "gold": 4, "science": 2, "culture": 1}, "amenities": 1, "requires": {"capital": true}, "effects": [{"effect": "freePolicySlot", "slot": "wildcard", "amount": 1}]},
     {"id": "monument", "nameKey": "building.monument.name", "descriptionKey": "building.monument.text", "era": "ancient", "cost": 60, "upkeep": 1, "icon": "building.monument", "yields": {"culture": 2}},
     {"id": "granary", "nameKey": "building.granary.name", "descriptionKey": "building.granary.text", "era": "ancient", "cost": 65, "upkeep": 1, "icon": "building.granary", "yields": {"food": 2}, "requires": {"tech": "pottery"}},
     {"id": "shrine", "nameKey": "building.shrine.name", "descriptionKey": "building.shrine.text", "era": "ancient", "cost": 70, "upkeep": 1, "icon": "building.shrine", "yields": {"faith": 2}, "requires": {"tech": "astrology"}},

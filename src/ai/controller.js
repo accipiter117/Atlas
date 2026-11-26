@@ -12,6 +12,7 @@ import { worldFromView, COMMANDS, buyPrice, promotionOptions, amenitiesFor, comb
 import { record } from './recorder.js';
 import { updateStrategy } from './strategy.js';
 import { rankTechs } from './planners/science.js';
+import { rankCivics, considerGovernment, nextPolicy } from './planners/government.js';
 import { scanSites } from './planners/expansion.js';
 import { rankProduction } from './planners/economy.js';
 import { threatMap, considerWar } from './planners/military.js';
@@ -144,6 +145,24 @@ export function createAi(ruleset, factionId, memory = {}) {
       memory.done.research = true;
       const ranked = rankTechs(world, view, ruleset, memory).filter((c) => valid(world, c.cmd));
       if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
+    }
+
+    // 2b. Civics, government and policy cards (phase 11).
+    if (ruleset.civics && !memory.done.civic && !view.civicResearch?.current && !(view.civicResearch?.queue ?? []).length) {
+      memory.done.civic = true;
+      const ranked = rankCivics(world, view, ruleset, memory).filter((c) => valid(world, c.cmd));
+      if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
+    }
+    if (ruleset.governments && !memory.done.government) {
+      memory.done.government = true;
+      const g = considerGovernment(world, view, ruleset, memory);
+      if (g && valid(world, g.cmd)) return issue(view, world, g, g.alternatives);
+    }
+    if (ruleset.policies && (memory.done.policies ?? 0) < 12) {
+      memory.done.policies = (memory.done.policies ?? 0) + 1;
+      const p = nextPolicy(world, view, ruleset, memory);
+      if (p && valid(world, p.cmd)) return issue(view, world, p);
+      memory.done.policies = 99;
     }
 
     // 3. War.

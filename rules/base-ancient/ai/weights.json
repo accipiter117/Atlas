@@ -104,6 +104,31 @@
       }
     },
     {
+      "id": "policy",
+      "planner": "policy",
+      "weights": {
+        "flatYield": 1,
+        "percentYield": 1,
+        "unitCost": 4,
+        "settlerCost": 8,
+        "builderCost": 4,
+        "wonderCost": 5,
+        "buildingCost": 2,
+        "upkeep": 1,
+        "growth": 3,
+        "amenity": 1.5,
+        "heal": 1,
+        "movement": 0.4,
+        "borders": 1,
+        "slot": 3,
+        "civicPerSlot": 2,
+        "civicPerCard": 0.6,
+        "switchMargin": 0.25,
+        "switchMinGain": 2,
+        "minTurnsBetweenChanges": 25
+      }
+    },
+    {
       "id": "thresholds",
       "planner": "thresholds",
       "weights": {
