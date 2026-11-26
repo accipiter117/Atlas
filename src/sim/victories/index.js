@@ -24,10 +24,13 @@ export function activeVictories(state, ruleset) {
 export function turnLimit(state, ruleset) {
   if (state.setup?.turnLimit === null || state.setup?.turnLimit === 'none') return null;
   if (Number.isInteger(state.setup?.turnLimit)) return state.setup.turnLimit;
+  // A mod can switch the default limit off (lock-era sets the score victory's turnLimit to null).
+  const params = ruleset.victories?.score?.params ?? {};
+  if (Object.hasOwn(params, 'turnLimit') && params.turnLimit === null) return null;
   const speed = state.setup?.speed ?? 'standard';
   const byTuning = ruleset.tuning?.victory?.turnLimits?.[speed];
   if (byTuning) return byTuning;
-  const base = ruleset.victories?.score?.params?.turnLimit ?? null;
+  const base = params.turnLimit ?? null;
   return base ? Math.round(base * (ruleset.tuning?.speeds?.[speed] ?? 1)) : null;
 }
 

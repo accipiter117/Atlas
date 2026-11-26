@@ -147,7 +147,13 @@
       "decayAmount": 1
     },
     "victory": {
-      "turnLimit": 330
+      "turnLimits": {
+        "online": 165,
+        "quick": 220,
+        "standard": 330,
+        "epic": 500,
+        "marathon": 990
+      }
     },
     "sight": {
       "default": 2,
@@ -231,23 +237,14 @@
       "standard": 1,
       "epic": 1.5,
       "marathon": 3
-    }
-  },
-  "score": {
-    "perCitizen": 1,
-    "perCity": 5,
-    "perTech": 3,
-    "perWonder": 10,
-    "perBuilding": 1,
-    "perProject": 25
-  },
-  "victory": {
-    "turnLimits": {
-      "online": 165,
-      "quick": 220,
-      "standard": 330,
-      "epic": 500,
-      "marathon": 990
+    },
+    "score": {
+      "perCitizen": 1,
+      "perCity": 5,
+      "perTech": 3,
+      "perWonder": 10,
+      "perBuilding": 1,
+      "perProject": 25
     }
   }
 }

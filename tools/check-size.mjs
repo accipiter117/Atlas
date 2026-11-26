@@ -4,15 +4,23 @@
 // Live now: the first page load (HTML, CSS and our own JavaScript, no art)
 // must stay under 1 MB, so the game opens quickly on a slow connection.
 //
-// Stub until phase 9: the late-game save budget (1.5 MB for a 330-turn game).
-// It needs saves with real content in them, which arrive with the playable core.
+// Live from phase 9: the late-game save budget. A 330-turn AI game is played
+// headless, saved exactly as the browser saves it (short command keys, gzip,
+// base64) and must come in under 1.5 MB (section 8.2). By default this plays a
+// Small 4-faction game (under a minute); --full plays the Large 8-faction game
+// the budget is really about (several minutes until the phase 10 speed work),
+// which CI runs on every push.
 //
-// Run:  node tools/check-size.mjs [root]
+// Run:  node tools/check-size.mjs [--full] [--skip-save] [root]
 
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { stat } from 'node:fs/promises';
 import { listFiles } from './lib-files.mjs';
+import { loadReal } from '../test/data/helpers.js';
+import { aiGame } from '../test/ai/harness.js';
+import { createSave, packSave, SAVE_BUDGET } from '../src/save/save.js';
+import { createCodec } from '../src/save/codec.js';
 
 export const FIRST_LOAD_BUDGET = 1_000_000;
 
@@ -24,13 +32,33 @@ export async function firstLoadBytes(root) {
   return { total, files: files.length };
 }
 
+/** Play a full-length AI game and measure its save exactly as the browser stores it. */
+export async function lateGameSaveBytes({ full = false } = {}) {
+  const { ruleset } = await loadReal(['base-ancient']);
+  const opts = full ? { seed: 3, players: 8, size: 'large' } : { seed: 3, players: 4, size: 'small' };
+  const g = aiGame(ruleset, { ...opts, turns: 330 });
+  const { bytes } = await packSave(createSave({ state: g.state, log: g.log, label: 'size check' }), createCodec('zlib'));
+  return { bytes, turn: g.state.turn, commands: g.log.length, ...opts };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const root = process.argv[2] ?? join(dirname(fileURLToPath(import.meta.url)), '..');
+  const args = process.argv.slice(2);
+  const root = args.find((a) => !a.startsWith('--')) ?? join(dirname(fileURLToPath(import.meta.url)), '..');
   const { total, files } = await firstLoadBytes(root);
   const kb = Math.floor(total / 1000);
   if (total > FIRST_LOAD_BUDGET) {
     console.error(`check-size: first load is ${kb} KB across ${files} files, over the 1,000 KB budget`);
     process.exit(1);
   }
-  console.log(`check-size: ok (first load ${kb} KB of 1,000 KB; save budget check arrives in phase 9)`);
+  let saveNote = 'save check skipped';
+  if (!args.includes('--skip-save')) {
+    const r = await lateGameSaveBytes({ full: args.includes('--full') });
+    const saveKb = Math.ceil(r.bytes / 1000);
+    if (r.bytes > SAVE_BUDGET) {
+      console.error(`check-size: a ${r.turn}-turn ${r.size} ${r.players}-faction save is ${saveKb} KB, over the 1,500 KB budget`);
+      process.exit(1);
+    }
+    saveNote = `${r.size} ${r.players}-faction save at turn ${r.turn} with ${r.commands} commands is ${saveKb} KB of 1,500 KB`;
+  }
+  console.log(`check-size: ok (first load ${kb} KB of 1,000 KB; ${saveNote})`);
 }
