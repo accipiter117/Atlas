@@ -1,34 +1,13 @@
 {
   "contentType": "factions",
   "entries": [
-    {
-      "id": "rome",
-      "nameKey": "faction.rome.name",
-      "adjectiveKey": "faction.rome.adj",
-      "colours": { "primary": "#8c1c13", "secondary": "#e8c36a" },
-      "leaders": ["trajan"],
-      "startBias": { "terrain": ["plains", "grassland"], "avoid": ["tundra"] },
-      "trait": { "id": "all_roads", "effects": [
-        { "effect": "autoRoad", "scope": "cityToCapital" },
-        { "effect": "yieldBonus", "yield": "production", "amount": 1, "scope": "capital" }
-      ]},
-      "uniqueUnits": [],
-      "cityNames": "rome",
-      "tags": ["historical", "mediterranean", "test"]
-    },
-    {
-      "id": "egypt",
-      "nameKey": "faction.egypt.name",
-      "adjectiveKey": "faction.egypt.adj",
-      "colours": { "primary": "#1f5fa8", "secondary": "#e6c34a" },
-      "leaders": ["hatshepsut"],
-      "startBias": { "terrain": ["desert", "plains"], "avoid": ["tundra", "snow"] },
-      "trait": { "id": "gifts_of_the_river", "effects": [
-        { "effect": "tileYield", "yield": "food", "amount": 1, "feature": "floodplain" }
-      ]},
-      "uniqueUnits": [],
-      "cityNames": "egypt",
-      "tags": ["historical", "mediterranean", "test"]
-    }
+    {"id": "rome", "nameKey": "faction.rome.name", "adjectiveKey": "faction.rome.adj", "colours": {"primary": "#8c1c13", "secondary": "#e8c36a"}, "leaders": ["trajan"], "startBias": {"terrain": ["plains", "grassland"], "avoid": ["tundra"]}, "trait": {"id": "all_roads", "nameKey": "trait.all_roads.name", "descriptionKey": "trait.all_roads.text", "effects": [{"effect": "freeBuilding", "building": "monument"}, {"effect": "autoRoad", "scope": "cityToCapital"}]}, "uniqueUnits": ["legionary"], "uniqueBuildings": ["bath"], "cityNames": "rome", "tags": ["historical"]},
+    {"id": "greece", "nameKey": "faction.greece.name", "adjectiveKey": "faction.greece.adj", "colours": {"primary": "#2c5aa0", "secondary": "#f2f2f2"}, "leaders": ["pericles"], "startBias": {"terrain": ["grassland"], "avoid": []}, "trait": {"id": "plato_republic", "nameKey": "trait.plato_republic.name", "descriptionKey": "trait.plato_republic.text", "effects": [{"effect": "yieldBonus", "yield": "culture", "amount": 1}]}, "uniqueUnits": ["hoplite"], "uniqueBuildings": ["acropolis"], "cityNames": "greece", "tags": ["historical"]},
+    {"id": "egypt", "nameKey": "faction.egypt.name", "adjectiveKey": "faction.egypt.adj", "colours": {"primary": "#1f5fa8", "secondary": "#e6c34a"}, "leaders": ["hatshepsut"], "startBias": {"terrain": ["desert", "plains"], "avoid": ["tundra", "snow"]}, "trait": {"id": "gifts_of_the_river", "nameKey": "trait.gifts_of_the_river.name", "descriptionKey": "trait.gifts_of_the_river.text", "effects": [{"effect": "tileYield", "yield": "food", "amount": 1, "feature": "floodplain"}, {"effect": "costPercent", "target": "wonders", "amount": -15}]}, "uniqueUnits": ["maryannu"], "uniqueBuildings": ["mortuary_temple"], "cityNames": "egypt", "tags": ["historical"]},
+    {"id": "persia", "nameKey": "faction.persia.name", "adjectiveKey": "faction.persia.adj", "colours": {"primary": "#6b3a8c", "secondary": "#f0c05a"}, "leaders": ["cyrus"], "startBias": {"terrain": ["plains", "desert"], "avoid": []}, "trait": {"id": "satrapies", "nameKey": "trait.satrapies.name", "descriptionKey": "trait.satrapies.text", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 2, "scope": "capital"}, {"effect": "moveBonus", "amount": 1, "domain": "land"}]}, "uniqueUnits": ["immortal"], "uniqueBuildings": ["pairidaeza"], "cityNames": "persia", "tags": ["historical"]},
+    {"id": "carthage", "nameKey": "faction.carthage.name", "adjectiveKey": "faction.carthage.adj", "colours": {"primary": "#7a2e8c", "secondary": "#e4e4e4"}, "leaders": ["dido"], "startBias": {"terrain": ["coast", "plains"], "avoid": []}, "trait": {"id": "merchant_republic", "nameKey": "trait.merchant_republic.name", "descriptionKey": "trait.merchant_republic.text", "effects": [{"effect": "costPercent", "target": "harbour", "amount": -50}, {"effect": "costPercent", "target": "lighthouse", "amount": -50}, {"effect": "moveBonus", "amount": 1, "domain": "sea"}]}, "uniqueUnits": ["quinquereme"], "uniqueBuildings": ["cothon"], "cityNames": "carthage", "tags": ["historical"]},
+    {"id": "gaul", "nameKey": "faction.gaul.name", "adjectiveKey": "faction.gaul.adj", "colours": {"primary": "#2f7a3f", "secondary": "#d9a441"}, "leaders": ["ambiorix"], "startBias": {"terrain": ["grassland"], "avoid": ["desert"]}, "trait": {"id": "hallstatt_smiths", "nameKey": "trait.hallstatt_smiths.name", "descriptionKey": "trait.hallstatt_smiths.text", "effects": [{"effect": "tileYield", "yield": "production", "amount": 1, "improvement": "mine"}, {"effect": "costPercent", "target": "builder", "amount": -15}]}, "uniqueUnits": ["gaesatae"], "uniqueBuildings": ["oppidum"], "cityNames": "gaul", "tags": ["historical"]},
+    {"id": "britons", "nameKey": "faction.britons.name", "adjectiveKey": "faction.britons.adj", "colours": {"primary": "#3a6a7a", "secondary": "#c9d6dc"}, "leaders": ["boudica"], "startBias": {"terrain": ["grassland", "tundra"], "avoid": ["desert"]}, "trait": {"id": "island_folk", "nameKey": "trait.island_folk.name", "descriptionKey": "trait.island_folk.text", "effects": [{"effect": "healBonus", "amount": 5}, {"effect": "growthPercent", "amount": 10}]}, "uniqueUnits": ["woad_raider"], "uniqueBuildings": ["roundhouse"], "cityNames": "britons", "tags": ["historical"]},
+    {"id": "han", "nameKey": "faction.han.name", "adjectiveKey": "faction.han.adj", "colours": {"primary": "#b8860b", "secondary": "#7a1f1f"}, "leaders": ["emperor_wu"], "startBias": {"terrain": ["grassland", "plains"], "avoid": []}, "trait": {"id": "mandate_of_heaven", "nameKey": "trait.mandate_of_heaven.name", "descriptionKey": "trait.mandate_of_heaven.text", "effects": [{"effect": "yieldBonus", "yield": "science", "amount": 1}, {"effect": "costPercent", "target": "builder", "amount": -25}]}, "uniqueUnits": ["crossbowman"], "uniqueBuildings": ["examination_hall"], "cityNames": "han", "tags": ["historical"]}
   ]
 }

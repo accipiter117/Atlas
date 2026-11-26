@@ -4,6 +4,8 @@
 
 import { currentFactionId } from './queries.js';
 import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf } from './cities.js';
+import { payUpkeep } from './economy.js';
+import { effectsFor, sumHook } from './effects/index.js';
 import { cityYields } from './yields.js';
 import { applyGrowth } from './growth.js';
 import { growBorders, claimable, tilePrice, claimTile } from './borders.js';
@@ -26,7 +28,7 @@ function ownCity(state, cmd) {
 }
 
 function validItem(item) {
-  return item && (item.kind === 'unit' || item.kind === 'building') && typeof item.id === 'string';
+  return item && ['unit', 'building', 'wonder'].includes(item.kind) && typeof item.id === 'string';
 }
 
 export const foundCity = {
@@ -44,8 +46,8 @@ export const foundCity = {
   apply(state, cmd, events, ruleset) {
     const unit = state.units[cmd.unit];
     delete state.units[cmd.unit];
-    const city = found(state, ruleset, cmd.faction, unit.tile);
-    events.push({ type: 'cityFounded', city: city.id, name: city.name, faction: cmd.faction, tile: city.tile });
+    const { city, events: extra } = found(state, ruleset, cmd.faction, unit.tile);
+    events.push({ type: 'cityFounded', city: city.id, name: city.name, faction: cmd.faction, tile: city.tile }, ...extra);
     updateVisibility(state, ruleset, cmd.faction);
   },
 };
@@ -78,10 +80,11 @@ export const queueProduction = {
   },
 };
 
-export function buyPrice(ruleset, city) {
+/** Gold to finish the item at the head of the queue now (wonders cannot be bought). */
+export function buyPrice(ruleset, city, state = null) {
   const item = city.queue[0];
-  if (!item) return null;
-  return Math.ceil((itemCost(ruleset, item) - city.progress) * (ruleset.tuning?.economy?.goldPerProduction ?? 2));
+  if (!item || item.kind === 'wonder') return null;
+  return Math.ceil(Math.max(0, itemCost(ruleset, item, state, city) - city.progress) * (ruleset.tuning?.economy?.goldPerProduction ?? 2));
 }
 
 export const buyItem = {
@@ -89,8 +92,9 @@ export const buyItem = {
     const [city, problem] = ownCity(state, cmd);
     if (problem) return problem;
     if (!city.queue.length) return refuse('nothingToBuy', 'Choose something to build first');
+    if (city.queue[0].kind === 'wonder') return refuse('cannotBuyWonder', 'Wonders cannot be bought');
     const faction = state.factions.find((f) => f.id === cmd.faction);
-    if (faction.stocks.gold < buyPrice(ruleset, city)) return refuse('notEnoughGold', 'Not enough gold');
+    if (faction.stocks.gold < buyPrice(ruleset, city, state)) return refuse('notEnoughGold', 'Not enough gold');
     const item = city.queue[0];
     if (item.kind === 'unit') {
       const spots = [city.tile, ...neighbourCache(state.map)[city.tile].filter((j) => j >= 0)];
@@ -102,13 +106,13 @@ export const buyItem = {
   apply(state, cmd, events, ruleset) {
     const city = state.cities[cmd.city];
     const faction = state.factions.find((f) => f.id === cmd.faction);
-    const price = buyPrice(ruleset, city);
-    const done = completeItem(state, ruleset, city, city.queue[0]);
-    if (!done) return;
+    const price = buyPrice(ruleset, city, state);
+    const item = city.queue.shift();
+    const done = completeItem(state, ruleset, city, item);
+    if (!done) { city.queue.unshift(item); return; }
     faction.stocks.gold -= price;
-    city.queue.shift();
     city.progress = 0;
-    events.push({ ...done, bought: true, price });
+    events.push(...done.map((e, i) => (i === 0 ? { ...e, bought: true, price } : e)));
     updateVisibility(state, ruleset, cmd.faction);
   },
 };
@@ -177,33 +181,44 @@ export const buyTile = {
   },
 };
 
-/** Start of a faction's turn (section 3.14): collect yields, grow or starve, production, borders. */
+/** Start of a faction's turn (section 3.14): yields, growth, production, borders, then gold and upkeep. */
 export function startCitiesTurn(state, ruleset, factionId, events) {
   const faction = state.factions.find((f) => f.id === factionId);
+  let income = 0;
   for (const city of citiesOf(state, factionId)) {
-    const y = cityYields(state, ruleset, city);
-    faction.stocks.gold += y.total.gold;
+    const effects = effectsFor(state, ruleset, factionId);
+    const y = cityYields(state, ruleset, city, effects);
+    income += y.total.gold;
     faction.stocks.science += y.total.science;
     faction.stocks.faith += y.total.faith;
     faction.stocks.culture += y.total.culture;
 
-    // A river on any edge of the city's tile means the city sits beside it.
+    // Growth: river, growthPercent effects and the city's mood all scale a food surplus.
     const nearRiver = state.map.river[city.tile] !== 0;
-    const grew = applyGrowth(city, y.surplus, ruleset.tuning, nearRiver);
+    const growthPct = sumHook('growth', state, ruleset, factionId, { city }, effects) + (y.amenities?.threshold?.growthPercent ?? 0);
+    const grew = applyGrowth(city, y.surplus, ruleset.tuning, nearRiver, growthPct);
     if (grew) {
       assignCitizens(state, ruleset, city);
       events.push({ type: grew === 'grew' ? 'cityGrew' : 'cityStarved', city: city.id, pop: city.pop, faction: factionId });
     }
 
     if (city.queue.length) {
-      city.progress += y.total.production;
       const item = city.queue[0];
-      if (city.progress >= itemCost(ruleset, item)) {
-        const done = completeItem(state, ruleset, city, item);
-        if (done) {
-          city.progress -= itemCost(ruleset, item);
+      if (!canBuild(state, ruleset, city, item)) {
+        // Someone else finished this wonder, or a prerequisite was lost: drop it.
+        city.queue.shift();
+      } else {
+        city.progress += y.total.production;
+        const cost = itemCost(ruleset, item, state, city);
+        if (city.progress >= cost) {
           city.queue.shift();
-          events.push(done);
+          const done = completeItem(state, ruleset, city, item);
+          if (done) {
+            city.progress -= cost;
+            events.push(...done);
+          } else {
+            city.queue.unshift(item);
+          }
         }
       }
     }
@@ -213,6 +228,9 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
       assignCitizens(state, ruleset, city);
       events.push({ type: 'borderGrew', city: city.id, tile: claimed, faction: factionId });
     }
+    for (const t of city.timed ?? []) t.turns -= 1;
+    if (city.timed) city.timed = city.timed.filter((t) => t.turns > 0);
   }
+  payUpkeep(state, ruleset, factionId, income, events);
   updateVisibility(state, ruleset, factionId);
 }

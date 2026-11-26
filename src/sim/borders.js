@@ -36,7 +36,7 @@ export function claimable(state, ruleset, city) {
 
 /** How good a tile is to own: its yields, with resources and food favoured. */
 export function tileValue(state, ruleset, city, t) {
-  const y = tileYields(state, ruleset, t, factionEffects(state, ruleset, city.faction));
+  const y = tileYields(state, ruleset, t, factionEffects(state, ruleset, city.faction), city.faction);
   return y.food * 2 + y.production * 1.5 + y.gold + y.science + y.culture + y.faith + (state.map.resource[t] >= 0 ? 2 : 0);
 }
 

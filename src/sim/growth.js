@@ -23,10 +23,14 @@ export function foodToGrow(pop, tuning) {
   return Math.floor(g.base + g.linear * n + powHalf(n, g.exponent));
 }
 
-/** Apply one turn of food. Returns 'grew', 'starved' or null. City is a working copy. */
-export function applyGrowth(city, surplus, tuning, nearRiver) {
+/**
+ * Apply one turn of food. A surplus is scaled by the river bonus and by
+ * growthPercent (effects and the city's mood); a shortfall is not.
+ * Returns 'grew', 'starved' or null. City is a working copy.
+ */
+export function applyGrowth(city, surplus, tuning, nearRiver, growthPercent = 0) {
   let gain = surplus;
-  if (gain > 0 && nearRiver) gain *= 1 + (tuning?.map?.riverGrowthBonus ?? 0);
+  if (gain > 0) gain *= Math.max(0, 1 + (nearRiver ? tuning?.map?.riverGrowthBonus ?? 0 : 0) + growthPercent / 100);
   city.food += gain;
   if (city.food < 0) {
     if (city.pop > 1) {

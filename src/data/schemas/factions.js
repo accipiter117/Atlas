@@ -2,10 +2,11 @@
 
 import { entryType, req, key, ref, refs, obj, colour, effects, str, list, num, int, oneOf } from './fields.js';
 
-const trait = obj({ id: req(str()), effects: effects() });
+const trait = obj({ id: req(str()), nameKey: key(), descriptionKey: key(), effects: effects() });
 
 export const factions = entryType('factions', {
   adjectiveKey: key(),
+  descriptionKey: key(),
   colours: req(obj({ primary: req(colour()), secondary: req(colour()) })),
   leaders: req(refs('leaders')),
   startBias: obj({ terrain: refs('terrain'), avoid: refs('terrain') }),
@@ -20,7 +21,7 @@ const VICTORIES = ['conquest', 'science', 'culture', 'religious', 'score'];
 export const leaders = entryType('leaders', {
   faction: req(ref('factions')),
   trait,
-  agenda: obj({ id: req(str()), likes: str(), hates: str(), weight: int(0, 20) }),
+  agenda: obj({ id: req(str()), nameKey: key(), descriptionKey: key(), likes: str(), hates: str(), weight: int(0, 20) }),
   ai: obj({
     personality: ref('aiPersonalities', { cascade: 'clear' }),
     victoryBias: obj(Object.fromEntries(VICTORIES.map((v) => [v, num(0, 5)])), { open: true }),

@@ -19,7 +19,8 @@
       },
       "baseCulture": 1,
       "capitalName": true,
-      "queueLength": 8
+      "queueLength": 8,
+      "capitalBuilding": "palace"
     },
     "growth": {
       "base": 15,
@@ -34,7 +35,10 @@
     },
     "economy": {
       "goldPerProduction": 2,
-      "bankruptcyWarningTurns": 2
+      "bankruptcyWarningTurns": 2,
+      "startingGold": 10,
+      "freeUpkeep": 2,
+      "freeUpkeepPerCity": 1
     },
     "amenities": {
       "citizensPerAmenity": 2,
@@ -176,6 +180,9 @@
     },
     "yields": {
       "hillsProduction": 1
+    },
+    "specialists": {
+      "yield": 2
     }
   }
 }

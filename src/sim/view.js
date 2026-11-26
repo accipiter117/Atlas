@@ -42,6 +42,8 @@ export function view(state, factionId) {
     resource: mask(map.resource),
     river: mask(map.river, 0),
     road: map.road ? mask(map.road, 0) : null,
+    improvementIds: (map.improvementIds ?? []).slice(),
+    improvement: map.improvement ? mask(map.improvement) : null,
     owner: state.owner ? mask(state.owner, null) : null,
   };
   // Cities: your own in full; others where you have explored, outside details only.
@@ -52,6 +54,8 @@ export function view(state, factionId) {
   }
   const mine = state.factions.find((f) => f.id === factionId);
   out.stocks = mine.stocks ? { ...mine.stocks } : null;
+  out.lastNetGold = mine.lastNetGold ?? null;
+  out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
   for (const u of Object.values(state.units ?? {})) {
     if (u.faction === factionId) {
       out.units.push({ ...u });

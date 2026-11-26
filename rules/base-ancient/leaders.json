@@ -1,23 +1,13 @@
 {
   "contentType": "leaders",
   "entries": [
-    {
-      "id": "trajan",
-      "faction": "rome",
-      "nameKey": "leader.trajan.name",
-      "trait": { "id": "trajans_column", "effects": [{ "effect": "freePolicySlot", "slot": "military", "amount": 1 }] },
-      "agenda": { "id": "optimus_princeps", "likes": "largeEmpire", "hates": "fewCities", "weight": 6 },
-      "ai": { "victoryBias": { "conquest": 1.3, "science": 0.9, "culture": 1.0, "religious": 0.6, "score": 1.0 } },
-      "portrait": "leader.trajan"
-    },
-    {
-      "id": "hatshepsut",
-      "faction": "egypt",
-      "nameKey": "leader.hatshepsut.name",
-      "trait": { "id": "expedition_to_punt", "effects": [{ "effect": "tradeRouteYield", "yield": "gold", "amount": 2, "kind": "foreign" }] },
-      "agenda": { "id": "great_builder", "likes": "wonders", "hates": "razing", "weight": 5 },
-      "ai": { "victoryBias": { "conquest": 0.8, "science": 1.0, "culture": 1.3, "religious": 1.0, "score": 1.0 } },
-      "portrait": "leader.hatshepsut"
-    }
+    {"id": "trajan", "faction": "rome", "nameKey": "leader.trajan.name", "trait": {"id": "trajans_column", "nameKey": "trait.trajans_column.name", "descriptionKey": "trait.trajans_column.text", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 1, "scope": "capital"}]}, "agenda": {"id": "optimus_princeps", "nameKey": "agenda.optimus_princeps.name", "descriptionKey": "agenda.optimus_princeps.text", "likes": "largeEmpire", "hates": "fewCities", "weight": 6}, "portrait": "leader.trajan"},
+    {"id": "pericles", "faction": "greece", "nameKey": "leader.pericles.name", "trait": {"id": "golden_age", "nameKey": "trait.golden_age.name", "descriptionKey": "trait.golden_age.text", "effects": [{"effect": "yieldPercent", "yield": "culture", "amount": 10}]}, "agenda": {"id": "delian_league", "nameKey": "agenda.delian_league.name", "descriptionKey": "agenda.delian_league.text", "likes": "manyFriends", "hates": "isolation", "weight": 6}, "portrait": "leader.pericles"},
+    {"id": "hatshepsut", "faction": "egypt", "nameKey": "leader.hatshepsut.name", "trait": {"id": "expedition_to_punt", "nameKey": "trait.expedition_to_punt.name", "descriptionKey": "trait.expedition_to_punt.text", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1}]}, "agenda": {"id": "great_builder", "nameKey": "agenda.great_builder.name", "descriptionKey": "agenda.great_builder.text", "likes": "wonders", "hates": "razing", "weight": 6}, "portrait": "leader.hatshepsut"},
+    {"id": "cyrus", "faction": "persia", "nameKey": "leader.cyrus.name", "trait": {"id": "king_of_kings", "nameKey": "trait.king_of_kings.name", "descriptionKey": "trait.king_of_kings.text", "effects": [{"effect": "upkeepPercent", "target": "units", "amount": -10}]}, "agenda": {"id": "fall_of_babylon", "nameKey": "agenda.fall_of_babylon.name", "descriptionKey": "agenda.fall_of_babylon.text", "likes": "keptPromises", "hates": "surpriseWar", "weight": 6}, "portrait": "leader.cyrus"},
+    {"id": "dido", "faction": "carthage", "nameKey": "leader.dido.name", "trait": {"id": "founder_of_carthage", "nameKey": "trait.founder_of_carthage.name", "descriptionKey": "trait.founder_of_carthage.text", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1, "scope": "capital"}, {"effect": "yieldBonus", "yield": "production", "amount": 1, "scope": "capital"}]}, "agenda": {"id": "queen_of_the_sea", "nameKey": "agenda.queen_of_the_sea.name", "descriptionKey": "agenda.queen_of_the_sea.text", "likes": "navy", "hates": "noNavy", "weight": 6}, "portrait": "leader.dido"},
+    {"id": "ambiorix", "faction": "gaul", "nameKey": "leader.ambiorix.name", "trait": {"id": "king_of_the_eburones", "nameKey": "trait.king_of_the_eburones.name", "descriptionKey": "trait.king_of_the_eburones.text", "effects": [{"effect": "costPercent", "target": "melee", "amount": -10}]}, "agenda": {"id": "war_band", "nameKey": "agenda.war_band.name", "descriptionKey": "agenda.war_band.text", "likes": "largeArmy", "hates": "weakArmy", "weight": 6}, "portrait": "leader.ambiorix"},
+    {"id": "boudica", "faction": "britons", "nameKey": "leader.boudica.name", "trait": {"id": "iceni_revolt", "nameKey": "trait.iceni_revolt.name", "descriptionKey": "trait.iceni_revolt.text", "effects": [{"effect": "amenityBonus", "amount": 1}]}, "agenda": {"id": "defender_of_the_tribes", "nameKey": "agenda.defender_of_the_tribes.name", "descriptionKey": "agenda.defender_of_the_tribes.text", "likes": "peace", "hates": "invaders", "weight": 6}, "portrait": "leader.boudica"},
+    {"id": "emperor_wu", "faction": "han", "nameKey": "leader.emperor_wu.name", "trait": {"id": "silk_road", "nameKey": "trait.silk_road.name", "descriptionKey": "trait.silk_road.text", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 1, "scope": "withBuilding:market"}]}, "agenda": {"id": "great_wall", "nameKey": "agenda.great_wall.name", "descriptionKey": "agenda.great_wall.text", "likes": "distance", "hates": "settledNear", "weight": 6}, "portrait": "leader.emperor_wu"}
   ]
 }

@@ -58,9 +58,10 @@ test('yields add up in order: tiles, then flat bonuses, then percentages last', 
   const city = Object.values(s.cities)[0];
   const y = cityYields(s, rules, city);
   assert.deepEqual(y.sources.map((x) => x.step), [...y.sources.map((x) => x.step)].sort());
-  const tiles = y.sources.find((x) => x.kind === 'tiles').yields.production;
-  assert.equal(y.total.production, (tiles + 2) * 1.5, 'the +50% applies to tiles and the flat +2');
-  assert.equal(y.total.culture, 1, 'every city makes 1 culture');
+  const before = y.sources.filter((x) => x.step < 3).reduce((n, x) => n + x.yields.production, 0);
+  assert.ok(y.sources.some((x) => x.kind === 'effects' && x.yields.production === 2), 'the flat +2 is a step 2 source');
+  assert.equal(y.total.production, before * 1.5, 'the +50% applies to tiles and every flat bonus');
+  assert.ok(y.sources.some((x) => x.kind === 'city' && x.yields.culture === 1), 'every city makes 1 culture');
   assert.equal(y.surplus, y.total.food - 2);
   // The centre tile gets at least 2 food and 1 production.
   const centre = tileYields(s, rules, city.tile);
@@ -107,8 +108,9 @@ test('growth and starvation over turns', () => {
 
 test('production finishes units; buying spends gold; queue carries on', () => {
   let { s, city } = withCity();
-  s = play(s, { type: 'setProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id: 'warrior' } }).state;
-  s = play(s, { type: 'queueProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id: 'scout' } }).state;
+  // Builder and settler: no faction replaces them with a unique unit.
+  s = play(s, { type: 'setProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id: 'builder' } }).state;
+  s = play(s, { type: 'queueProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id: 'settler' } }).state;
   assert.equal(applyCommand(s, { type: 'setProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id: 'trireme' } }, ruleset).error.code, 'cannotBuild');
   let built = null;
   for (let k = 0; k < 40 && !built; k += 1) {
@@ -120,12 +122,12 @@ test('production finishes units; buying spends gold; queue carries on', () => {
       built = built ?? r.events.find((e) => e.type === 'unitBuilt');
     } while (currentFactionId(s) !== me);
   }
-  assert.equal(built.unitType, 'warrior');
-  assert.deepEqual(s.cities[city.id].queue.map((q) => q.id), ['scout']);
+  assert.equal(built.unitType, 'builder');
+  assert.deepEqual(s.cities[city.id].queue.map((q) => q.id), ['settler']);
   assert.equal(applyCommand(s, { type: 'buyItem', faction: 'f0', city: city.id }, ruleset).error.code, 'notEnoughGold');
   s.factions[0].stocks.gold = 1000;
   const r = play(s, { type: 'buyItem', faction: 'f0', city: city.id });
-  assert.equal(r.events[0].unitType, 'scout');
+  assert.equal(r.events[0].unitType, 'settler');
   assert.ok(r.state.factions[0].stocks.gold < 1000);
   assert.deepEqual(r.state.cities[city.id].queue, []);
 });
@@ -134,8 +136,11 @@ test('borders claim the best adjacent tile when the culture box fills; tiles can
   let { s, city } = withCity();
   assert.equal(borderCost(s.cities[city.id], ruleset.tuning), 10);
   const owned = () => s.owner.filter((o) => o === city.id).length;
-  for (let k = 0; k < 10; k += 1) s = passRound(s);
-  assert.equal(owned(), 8, 'ten turns of 1 culture fills the first box of 10');
+  // Rome's capital has a palace and a free monument, so culture comes faster than the base 1 a turn.
+  let turns = 0;
+  while (owned() === 7 && turns < 12) { s = passRound(s); turns += 1; }
+  assert.equal(owned(), 8, 'the first full box of 10 culture claims one more hex');
+  assert.ok(turns < 10, `claimed after ${turns} turns`);
   assert.equal(borderCost(s.cities[city.id], ruleset.tuning), 16);
   const target = s.owner.findIndex((o, i) => o === null && Math.abs(i - city.tile) < 20);
   assert.equal(applyCommand(s, { type: 'buyTile', faction: 'f0', city: city.id, tile: 0 }, ruleset).error.code, 'cannotBuyTile');

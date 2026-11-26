@@ -1,7 +1,13 @@
 {
   "contentType": "cityNames",
   "entries": [
-    { "id": "rome", "names": ["Roma", "Antium", "Cumae", "Neapolis", "Ravenna", "Arretium", "Mediolanum", "Arpinum", "Circei", "Setia", "Satricum", "Ardea", "Ostia", "Velitrae", "Tarentum", "Brundisium"] },
-    { "id": "egypt", "names": ["Thebes", "Memphis", "Akhetaten", "Heliopolis", "Abydos", "Elephantine", "Hermopolis", "Bubastis", "Sais", "Edfu", "Kom Ombo", "Tanis", "Avaris", "Buto", "Nekhen", "Coptos"] }
+    {"id": "rome", "names": ["Roma", "Antium", "Cumae", "Neapolis", "Ravenna", "Arretium", "Mediolanum", "Arpinum", "Circei", "Setia", "Ostia", "Velitrae", "Tarentum", "Brundisium", "Capua", "Verona"]},
+    {"id": "greece", "names": ["Athens", "Sparta", "Corinth", "Argos", "Thebes of Boeotia", "Delphi", "Eretria", "Megara", "Rhodes", "Syracuse", "Miletus", "Ephesus", "Olympia", "Chalcis", "Pylos", "Mycenae"]},
+    {"id": "egypt", "names": ["Thebes", "Memphis", "Akhetaten", "Heliopolis", "Abydos", "Elephantine", "Hermopolis", "Bubastis", "Sais", "Edfu", "Kom Ombo", "Tanis", "Avaris", "Buto", "Nekhen", "Coptos"]},
+    {"id": "persia", "names": ["Pasargadae", "Persepolis", "Susa", "Ecbatana", "Babylon", "Sardis", "Gordium", "Bactra", "Arbela", "Gaza", "Tarsus", "Rhagae", "Zranka", "Hecatompylos", "Maracanda", "Carmana"]},
+    {"id": "carthage", "names": ["Qart-hadasht", "Utica", "Hippo", "Hadrumetum", "Leptis", "Gades", "Malaca", "Panormus", "Motya", "Lilybaeum", "Tharros", "Nora", "Sulcis", "Kerkouane", "Thapsus", "Ebusus"]},
+    {"id": "gaul", "names": ["Bibracte", "Alesia", "Gergovia", "Avaricum", "Cenabum", "Lutetia", "Vesontio", "Durocortorum", "Samarobriva", "Lugdunum", "Burdigala", "Tolosa", "Massalia", "Nemausus", "Genava", "Agedincum"]},
+    {"id": "britons", "names": ["Camulodunon", "Verlamion", "Eburacon", "Isca", "Venta", "Calleva", "Durnovaria", "Londinion", "Lindon", "Deva", "Corinion", "Ratae", "Viroconion", "Dubris", "Moridunon", "Luguvalion"]},
+    {"id": "han", "names": ["Chang'an", "Luoyang", "Linzi", "Handan", "Chengdu", "Wan", "Jiangling", "Shouchun", "Xuchang", "Ye", "Jinyang", "Panyu", "Xiangping", "Dunhuang", "Jiuquan", "Wuwei"]}
   ]
 }

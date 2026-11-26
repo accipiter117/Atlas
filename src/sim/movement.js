@@ -136,7 +136,7 @@ class Heap {
 export function findPath(state, ruleset, unit, target, { known = null, seen = null } = {}) {
   const map = state.map;
   const nbs = neighbourCache(map);
-  const full = maxMoves(ruleset, unit);
+  const full = maxMoves(ruleset, unit, state);
   const start = unit.tile;
   if (target === start || target < 0 || target >= map.width * map.height) return null;
   if (known && !known(target)) return null;

@@ -9,6 +9,7 @@
 import { line } from '../core/hex.js';
 import { neighbourCache, tileHex, tileIndex } from './map.js';
 import { factionUnits, unitDef } from './units.js';
+import { sumHook } from './effects/index.js';
 
 export const UNEXPLORED = 0;
 export const EXPLORED = 1;
@@ -23,7 +24,8 @@ function blocksSight(state, ruleset, t) {
 
 export function sightRange(state, ruleset, unit) {
   const base = unitDef(ruleset, unit)?.sight ?? ruleset.tuning?.sight?.default ?? 2;
-  return base + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0);
+  const bonus = state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }) : 0;
+  return base + bonus + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0);
 }
 
 /** Tiles a viewer on `from` with range `radius` can see. */

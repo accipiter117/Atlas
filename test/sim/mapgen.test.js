@@ -127,7 +127,8 @@ test('a new game builds its map from a fork of the seed, leaving the main dice u
   const setup = { seed: 777, players: [{ kind: 'human' }, { kind: 'ai' }], map: { size: 'small', type: 'pangaea' } };
   const state = createGame(ruleset, setup);
   assert.equal(state.rng, 777);
-  const { road, ...generated } = state.map;
+  const { road, improvement, improvementIds, ...generated } = state.map;
+  assert.ok(improvement.every((x) => x === -1) && improvementIds.length >= 0, 'no improvements yet');
   assert.ok(road.every((r) => r === 0), 'no roads yet');
   assert.equal(hashValue(generated), hashValue(generateMap(ruleset, { seed: 777, size: 'small', type: 'pangaea', factions: 2 })));
   assert.equal(state.map.starts.length, 2);

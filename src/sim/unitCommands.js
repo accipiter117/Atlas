@@ -6,6 +6,9 @@ import { findPath, stepMoves, canStop, passable } from './movement.js';
 import { updateVisibility, UNEXPLORED, VISIBLE } from './visibility.js';
 import { currentFactionId } from './queries.js';
 import { maxMoves, slotOf, unitsAt, isEnemy } from './units.js';
+import { sumHook } from './effects/index.js';
+import { improvementProblem, builderTargets, placeImprovement } from './improvements.js';
+import { assignCitizens } from './cities.js';
 
 const refuse = (code, message) => ({ code, message });
 
@@ -37,7 +40,7 @@ export function advanceUnit(state, ruleset, unit, target, events) {
     events.push({ type: 'unitBlocked', unit: unit.id, faction: unit.faction, target });
     return [];
   }
-  const full = maxMoves(ruleset, unit);
+  const full = maxMoves(ruleset, unit, state);
   const walked = [unit.tile];
   let lastStop = { tile: unit.tile, moves: unit.moves };
   for (const next of plan.tiles) {
@@ -47,6 +50,7 @@ export function advanceUnit(state, ruleset, unit, target, events) {
     if (left === null) break;
     unit.tile = next;
     unit.moves = left;
+    unit.acted = true;
     walked.push(next);
     if (canStop(state, ruleset, unit, next)) lastStop = { tile: next, moves: left };
     updateVisibility(state, ruleset, unit.faction);
@@ -116,11 +120,23 @@ export const disband = {
   },
 };
 
-/** Start-of-turn work for a faction's units: refresh moves, clear skips, count fortify turns, carry on walking. */
+/** Hit points a unit regains this turn if it rested: by where it stands, plus healBonus effects. */
+export function healAmount(state, ruleset, unit) {
+  const h = ruleset.tuning?.healing ?? { neutral: 10, friendly: 15, city: 20 };
+  const owner = state.owner?.[unit.tile];
+  const city = owner ? state.cities[owner] : null;
+  let base = h.neutral;
+  if (city?.faction === unit.faction) base = city.tile === unit.tile ? h.city : h.friendly;
+  return base + sumHook('heal', state, ruleset, unit.faction, { unit });
+}
+
+/** Start-of-turn work for a faction's units: heal those that rested, refresh moves, clear skips, count fortify turns, carry on walking. */
 export function startUnitsTurn(state, ruleset, factionId, events) {
   for (const unit of Object.values(state.units ?? {})) {
     if (unit.faction !== factionId) continue;
-    unit.moves = maxMoves(ruleset, unit);
+    if (unit.hp < 100 && !unit.acted) unit.hp = Math.min(100, unit.hp + healAmount(state, ruleset, unit));
+    unit.acted = false;
+    unit.moves = maxMoves(ruleset, unit, state);
     if (unit.activity === 'skip') unit.activity = 'none';
     if (unit.activity === 'fortify') unit.fortifiedTurns += 1;
   }
@@ -128,3 +144,37 @@ export function startUnitsTurn(state, ruleset, factionId, events) {
     if (unit.faction === factionId && unit.goto !== null && state.units[unit.id]) advanceUnit(state, ruleset, unit, unit.goto, events);
   }
 }
+
+/** buildImprovement: a builder improves its own hex (or a neighbouring water hex for water improvements). */
+export const buildImprovement = {
+  validate(state, cmd, ruleset) {
+    const [unit, problem] = ownUnit(state, cmd);
+    if (problem) return problem;
+    if (!(ruleset.units[unit.type]?.tags ?? []).includes('worker')) return refuse('notBuilder', 'Only builders can improve land');
+    if (unit.moves <= 0) return refuse('noMoves', 'This unit has no moves left');
+    const def = ruleset.improvements?.[cmd.improvement];
+    if (!def) return refuse('unknownImprovement', `No improvement "${cmd.improvement}"`);
+    const tile = cmd.tile ?? unit.tile;
+    if (!builderTargets(state, ruleset, cmd.improvement, unit.tile).includes(tile)) return refuse('outOfReach', 'The builder must stand on the hex, or beside the water for boats');
+    if ((def.charges ?? 1) > (unit.charges ?? 0)) return refuse('noCharges', 'This builder has no charges left');
+    const why = improvementProblem(state, ruleset, cmd.faction, cmd.improvement, tile);
+    return why ? refuse(why, `Cannot build ${cmd.improvement} there (${why})`) : null;
+  },
+  apply(state, cmd, events, ruleset) {
+    const unit = state.units[cmd.unit];
+    const tile = cmd.tile ?? unit.tile;
+    placeImprovement(state, ruleset, cmd.improvement, tile);
+    unit.charges -= ruleset.improvements[cmd.improvement].charges ?? 1;
+    unit.moves = 0;
+    unit.acted = true;
+    events.push({ type: 'improvementBuilt', improvement: cmd.improvement, tile, unit: unit.id, faction: unit.faction, charges: unit.charges });
+    if (unit.charges <= 0 && (ruleset.improvements[cmd.improvement].charges ?? 1) > 0) {
+      delete state.units[unit.id];
+      events.push({ type: 'unitDisbanded', reason: 'charges', unit: unit.id, unitType: unit.type, faction: unit.faction, tile: unit.tile });
+    }
+    // Citizens may prefer the improved tile now.
+    const owner = state.owner?.[tile];
+    if (owner && state.cities[owner]) assignCitizens(state, ruleset, state.cities[owner]);
+    updateVisibility(state, ruleset, unit.faction);
+  },
+};

@@ -32,6 +32,7 @@ export const units = entryType('units', {
   upgradesTo: ref('units', { cascade: 'clear' }),
   abilities: effects(),
   sprite: str(),
+  descriptionKey: key(),
 });
 
 export const promotions = entryType('promotions', {

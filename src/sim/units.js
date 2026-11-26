@@ -8,6 +8,7 @@
 
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
+import { sumHook } from './effects/index.js';
 
 export const CIVILIAN = 'civilian';
 export const COMBAT = 'combat';
@@ -32,8 +33,11 @@ export function domainOf(ruleset, typeId) {
   return def?.domain ?? ruleset.unitClasses?.[def?.class]?.domain ?? 'land';
 }
 
-export function maxMoves(ruleset, unit) {
-  return unitDef(ruleset, unit)?.moves ?? 1;
+/** Moves per turn: the unit's own, plus moveBonus effects when the state is known. */
+export function maxMoves(ruleset, unit, state = null) {
+  const base = unitDef(ruleset, unit)?.moves ?? 1;
+  if (!state?.factions) return base;
+  return Math.max(1, base + sumHook('move', state, ruleset, unit.faction, { unit }));
 }
 
 /** Every unit on a tile. */
@@ -72,7 +76,9 @@ export function canStand(state, ruleset, typeId, factionId, tile, ignoreUnitId =
 export function createUnit(state, ruleset, typeId, factionId, tile) {
   const id = nextId(state, 'u');
   const unit = { id, type: typeId, faction: factionId, tile, hp: 100, moves: ruleset.units[typeId].moves, activity: 'none', fortifiedTurns: 0, goto: null };
+  if ((ruleset.units[typeId].tags ?? []).includes('worker')) unit.charges = ruleset.tuning?.builders?.charges ?? 3;
   state.units[id] = unit;
+  unit.moves = maxMoves(ruleset, unit, state);
   return unit;
 }
 

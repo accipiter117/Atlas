@@ -21,7 +21,8 @@ export function fixtureMap(rows) {
   const terrainIds = Object.keys(ruleset.terrain);
   const featureIds = Object.keys(ruleset.features);
   const map = { width, height, size: 'fixture', type: 'fixture', terrainIds, featureIds, resourceIds: Object.keys(ruleset.resources),
-    terrain: [], hills: [], feature: [], resource: [], river: [], rivers: [], starts: [], road: [] };
+    terrain: [], hills: [], feature: [], resource: [], river: [], rivers: [], starts: [], road: [],
+    improvementIds: Object.keys(ruleset.improvements ?? {}), improvement: [] };
   for (const row of rows) {
     for (const ch of row) {
       const [t, hills, f] = CODES[ch];
@@ -31,6 +32,7 @@ export function fixtureMap(rows) {
       map.resource.push(-1);
       map.river.push(0);
       map.road.push(0);
+      map.improvement.push(-1);
     }
   }
   return map;
@@ -50,7 +52,8 @@ export function addRiver(map, a, b) {
  * The seed is chosen so f0 moves first. Fog starts fully explored unless `fog: true`.
  */
 export function fixtureGame(rows, units, { fog = false, rules = ruleset } = {}) {
-  let state = createGame(rules, { seed: 3, players: [{ kind: 'human', name: 'A' }, { kind: 'ai', name: 'B' }] });
+  // Both sides play Rome, whose traits do not change movement, sight or healing.
+  let state = createGame(rules, { seed: 3, players: [{ kind: 'human', name: 'A', faction: 'rome' }, { kind: 'ai', name: 'B', faction: 'rome' }] });
   if (state.seatOrder[0] !== 'f0') state.seatOrder.reverse();
   state.map = fixtureMap(rows);
   state.units = {};
@@ -59,6 +62,7 @@ export function fixtureGame(rows, units, { fog = false, rules = ruleset } = {}) 
   units.forEach((u, i) => {
     const id = `u_${String(i + 1).padStart(4, '0')}`;
     state.units[id] = { id, type: u.type, faction: u.faction ?? 'f0', tile: u.at, hp: 100, moves: rules.units[u.type].moves, activity: 'none', fortifiedTurns: 0, goto: null };
+    if ((rules.units[u.type].tags ?? []).includes('worker')) state.units[id].charges = rules.tuning.builders.charges;
   });
   state.nextId = units.length + 1;
   updateAllVisibility(state, rules);

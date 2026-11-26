@@ -76,12 +76,15 @@ export function createGame(ruleset, setup) {
       f.civ = pool.shift();
     });
   }
-  for (const f of factions) f.stocks = { gold: 0, science: 0, culture: 0, faith: 0 };
+  for (const f of factions) f.stocks = { gold: ruleset?.tuning?.economy?.startingGold ?? 0, science: 0, culture: 0, faith: 0 };
 
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {
     state.map = generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
     state.map.road = new Array(state.map.width * state.map.height).fill(0);
+    state.map.improvementIds = Object.keys(ruleset.improvements ?? {});
+    state.map.improvement = new Array(state.map.width * state.map.height).fill(-1);
+    state.wondersBuilt = {};
     state.units = {};
     state.cities = {};
     state.owner = new Array(state.map.width * state.map.height).fill(null);

@@ -1,15 +1,17 @@
 // Cities (section 3.2): founding, names, the tiles a city may work, citizen
-// assignment by focus with locked tiles, and production.
+// assignment by focus with locked tiles and specialists, and what a city can
+// build (units, buildings, wonders) and what it costs.
 //
 // A city in state is plain data:
 //   { id, name, faction, tile, capital, founded, pop, food, culture,
-//     tilesClaimed, focus, locks, worked, queue, progress, buildings }
+//     tilesClaimed, focus, locks, worked, specialists, queue, progress, buildings }
 
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
-import { distance, claimTile } from './borders.js';
+import { distance } from './borders.js';
 import { tileYields, factionEffects, YIELD_NAMES } from './yields.js';
-import { canStand, createUnit } from './units.js';
+import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
+import { buildingProblem, spawnUnit, claimWonder } from './buildings.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -44,6 +46,7 @@ export function nextCityName(state, ruleset, factionId) {
   return `${f?.name ?? 'City'} ${n}`;
 }
 
+/** Found a city (working copy). Returns { city, events } including anything effects give it. */
 export function foundCity(state, ruleset, factionId, tile) {
   const id = nextId(state, 'c');
   const first = citiesOf(state, factionId).length === 0;
@@ -51,7 +54,7 @@ export function foundCity(state, ruleset, factionId, tile) {
     id, name: nextCityName(state, ruleset, factionId), faction: factionId, tile, capital: first, founded: state.turn,
     pop: 1, food: 0, culture: 0, tilesClaimed: 0,
     focus: Object.values(ruleset.focuses ?? {}).find((f) => f.default)?.id ?? 'balanced',
-    locks: [], worked: [], queue: [], progress: 0, buildings: [],
+    locks: [], worked: [], specialists: {}, queue: [], progress: 0, buildings: [],
   };
   state.cities[id] = city;
   const radius = ruleset.tuning?.cities?.claimRadius ?? 1;
@@ -59,9 +62,11 @@ export function foundCity(state, ruleset, factionId, tile) {
   for (let i = 0; i < state.owner.length; i += 1) {
     if (state.owner[i] === null && distance(state.map, tile, i) <= radius) state.owner[i] = id;
   }
-  city.tilesClaimed = 0;
+  const palace = ruleset.tuning?.cities?.capitalBuilding;
+  if (first && palace && ruleset.buildings?.[palace]) city.buildings.push(palace);
+  const events = runHook('onCityFounded', state, ruleset, effectsFor(state, ruleset, factionId), { city });
   assignCitizens(state, ruleset, city);
-  return city;
+  return { city, events };
 }
 
 /** Tiles the city could work: its own land within workRadius, not the centre, not impassable, not worked by another city. */
@@ -79,6 +84,15 @@ export function workable(state, ruleset, city) {
   return out;
 }
 
+/** Specialist slots from the city's buildings: { science: 1, gold: 1 }. */
+export function specialistSlots(ruleset, city) {
+  const out = {};
+  for (const b of city.buildings ?? []) {
+    for (const [y, n] of Object.entries(buildingDef(ruleset, b)?.specialistSlots ?? {})) out[y] = (out[y] ?? 0) + n;
+  }
+  return out;
+}
+
 function score(y, weights) {
   let s = 0;
   for (const k of YIELD_NAMES) s += (y[k] ?? 0) * (weights[k] ?? 1);
@@ -86,23 +100,32 @@ function score(y, weights) {
 }
 
 /**
- * Put each citizen on a tile: locked tiles first, then the best tiles for the
- * city's focus. If that would starve the city, food is weighted up until it
- * does not (unless nothing can feed it). City is a working copy.
+ * Put each citizen to work: locked tiles first, then the best of the
+ * remaining tiles and specialist slots for the city's focus. If that would
+ * starve the city, food is weighted up until it does not (where the land
+ * allows). City is a working copy.
  */
 export function assignCitizens(state, ruleset, city) {
   const options = workable(state, ruleset, city);
   const effects = factionEffects(state, ruleset, city.faction);
-  const yields = new Map(options.map((t) => [t, tileYields(state, ruleset, t, effects)]));
+  const yields = new Map(options.map((t) => [t, tileYields(state, ruleset, t, effects, city.faction)]));
   city.locks = city.locks.filter((t) => yields.has(t)).slice(0, city.pop);
   const weights = { ...(ruleset.focuses?.[city.focus]?.weights ?? {}) };
   const eat = ruleset.tuning?.cities?.foodPerCitizen ?? 2;
-  const centre = tileYields(state, ruleset, city.tile, effects);
+  const perSpecialist = ruleset.tuning?.specialists?.yield ?? 2;
+  const centre = tileYields(state, ruleset, city.tile, effects, city.faction);
   const centreFood = Math.max(centre.food, ruleset.tuning?.cities?.centreMinimum?.food ?? 0);
+  const slots = [];
+  for (const [y, n] of Object.entries(specialistSlots(ruleset, city))) for (let k = 0; k < n; k += 1) slots.push({ special: y, yields: { [y]: perSpecialist } });
   for (let attempt = 0; attempt < 4; attempt += 1) {
-    const free = options.filter((t) => !city.locks.includes(t))
-      .sort((a, b) => score(yields.get(b), weights) - score(yields.get(a), weights) || a - b);
-    city.worked = [...city.locks, ...free.slice(0, city.pop - city.locks.length)];
+    const free = [
+      ...options.filter((t) => !city.locks.includes(t)).map((t) => ({ tile: t, yields: yields.get(t) })),
+      ...slots,
+    ].sort((a, b) => score(b.yields, weights) - score(a.yields, weights) || (a.tile ?? 1e9) - (b.tile ?? 1e9) || (a.special ?? '').localeCompare(b.special ?? ''));
+    const chosen = free.slice(0, Math.max(0, city.pop - city.locks.length));
+    city.worked = [...city.locks, ...chosen.filter((c) => c.tile !== undefined).map((c) => c.tile)];
+    city.specialists = {};
+    for (const c of chosen) if (c.special) city.specialists[c.special] = (city.specialists[c.special] ?? 0) + 1;
     const food = centreFood + city.worked.reduce((s, t) => s + yields.get(t).food, 0);
     if (food >= city.pop * eat) break;
     weights.food = (weights.food ?? 1) + 2;
@@ -110,14 +133,30 @@ export function assignCitizens(state, ruleset, city) {
   city.worked.sort((a, b) => a - b);
 }
 
-/** Can this faction build this item at all right now? */
+/** Does the faction have this strategic resource improved somewhere in its land? */
+export function hasResource(state, ruleset, factionId, resourceId) {
+  const map = state.map;
+  const want = ruleset.resources[resourceId];
+  if (!want || !map.improvement) return false;
+  for (let i = 0; i < state.owner.length; i += 1) {
+    const o = state.owner[i];
+    if (o === null || state.cities[o]?.faction !== factionId) continue;
+    if (map.resource[i] < 0 || map.resourceIds[map.resource[i]] !== resourceId) continue;
+    if (map.improvement[i] >= 0 && map.improvementIds[map.improvement[i]] === want.improvement) return true;
+  }
+  return false;
+}
+
+/** Can this city build this item right now? */
 export function canBuild(state, ruleset, city, item) {
   if (item.kind === 'unit') {
     const def = ruleset.units[item.id];
     if (!def) return false;
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
-    if (def.requires?.tech || def.requires?.civic || def.requires?.building || def.requires?.resource) return false; // arrive with techs and economy
+    if (def.requires?.tech || def.requires?.civic) return false; // arrive with techs and civics
+    if (def.requires?.building && !city.buildings.includes(def.requires.building)) return false;
+    if (def.requires?.resource && !hasResource(state, ruleset, city.faction, def.requires.resource)) return false;
     // A faction's unique unit hides the unit it replaces.
     for (const u of Object.values(ruleset.units)) {
       if (u.replaces === item.id && u.requires?.faction === f?.civ) return false;
@@ -129,15 +168,23 @@ export function canBuild(state, ruleset, city, item) {
     }
     return true;
   }
-  if (item.kind === 'building') {
-    const def = ruleset.buildings?.[item.id];
-    return Boolean(def) && !city.buildings.includes(item.id);
-  }
+  if (item.kind === 'building' || item.kind === 'wonder') return buildingProblem(state, ruleset, city, item.id, item.kind) === null;
   return false;
 }
 
-export function itemCost(ruleset, item) {
-  return item.kind === 'unit' ? ruleset.units[item.id].cost : ruleset.buildings[item.id].cost;
+/** Base production cost of an item. */
+export function baseCost(ruleset, item) {
+  if (item.kind === 'unit') return ruleset.units[item.id].cost;
+  if (item.kind === 'wonder') return ruleset.wonders[item.id].cost;
+  return ruleset.buildings[item.id].cost;
+}
+
+/** Production cost in this city after costPercent effects (with state), or the base cost (without). */
+export function itemCost(ruleset, item, state = null, city = null) {
+  const base = baseCost(ruleset, item);
+  if (!state || !city) return base;
+  const pct = sumHook('cost', state, ruleset, city.faction, { city, item });
+  return Math.max(1, Math.round(base * (1 + pct / 100)));
 }
 
 /** Everything the city can build now. */
@@ -145,21 +192,21 @@ export function buildOptions(state, ruleset, city) {
   const out = [];
   for (const id of Object.keys(ruleset.units)) if (canBuild(state, ruleset, city, { kind: 'unit', id })) out.push({ kind: 'unit', id });
   for (const id of Object.keys(ruleset.buildings ?? {})) if (canBuild(state, ruleset, city, { kind: 'building', id })) out.push({ kind: 'building', id });
+  for (const id of Object.keys(ruleset.wonders ?? {})) if (canBuild(state, ruleset, city, { kind: 'wonder', id })) out.push({ kind: 'wonder', id });
   return out;
 }
 
-/** Finish the item at the head of the queue. Returns the event, or null if a unit has nowhere to stand. */
+/** Finish an item. Returns the events, or null if a unit has nowhere to stand. */
 export function completeItem(state, ruleset, city, item) {
   if (item.kind === 'unit') {
-    const nbs = neighbourCache(state.map);
-    const spots = [city.tile, ...nbs[city.tile].filter((j) => j >= 0)];
-    const spot = spots.find((t) => canStand(state, ruleset, item.id, city.faction, t));
-    if (spot === undefined) return null;
-    const unit = createUnit(state, ruleset, item.id, city.faction, spot);
-    return { type: 'unitBuilt', city: city.id, unit: unit.id, unitType: item.id, faction: city.faction, tile: spot };
+    const ev = spawnUnit(state, ruleset, city, item.id);
+    return ev ? [ev] : null;
   }
+  const events = [];
   city.buildings.push(item.id);
-  return { type: 'buildingBuilt', city: city.id, building: item.id, faction: city.faction };
+  events.push({ type: item.kind === 'wonder' ? 'wonderCompleted' : 'buildingBuilt', city: city.id, building: item.id, faction: city.faction });
+  if (item.kind === 'wonder') claimWonder(state, city, item.id, events);
+  events.push(...runHook('onBuilt', state, ruleset, effectsFor(state, ruleset, city.faction), { city, built: item.id }));
+  assignCitizens(state, ruleset, city);
+  return events;
 }
-
-export { claimTile };

@@ -1,0 +1,13 @@
+{
+  "contentType": "wonders",
+  "entries": [
+    {"id": "pyramids", "nameKey": "wonder.pyramids.name", "descriptionKey": "wonder.pyramids.text", "era": "ancient", "cost": 220, "upkeep": 0, "icon": "wonder.pyramids", "yields": {"production": 2}, "effects": [{"effect": "costPercent", "target": "builder", "amount": -25, "scope": "everyCity"}]},
+    {"id": "hanging_gardens", "nameKey": "wonder.hanging_gardens.name", "descriptionKey": "wonder.hanging_gardens.text", "era": "ancient", "cost": 240, "upkeep": 0, "icon": "wonder.hanging_gardens", "effects": [{"effect": "growthPercent", "amount": 15, "scope": "everyCity"}]},
+    {"id": "colossus", "nameKey": "wonder.colossus.name", "descriptionKey": "wonder.colossus.text", "era": "ancient", "cost": 200, "upkeep": 0, "icon": "wonder.colossus", "yields": {"gold": 4}, "requires": {"nearTerrain": "coast"}},
+    {"id": "great_library", "nameKey": "wonder.great_library.name", "descriptionKey": "wonder.great_library.text", "era": "classical", "cost": 300, "upkeep": 0, "icon": "wonder.great_library", "yields": {"science": 4}, "specialistSlots": {"science": 2}},
+    {"id": "temple_of_artemis", "nameKey": "wonder.temple_of_artemis.name", "descriptionKey": "wonder.temple_of_artemis.text", "era": "ancient", "cost": 260, "upkeep": 0, "icon": "wonder.temple_of_artemis", "effects": [{"effect": "amenityBonus", "amount": 1, "scope": "everyCity"}]},
+    {"id": "stonehenge", "nameKey": "wonder.stonehenge.name", "descriptionKey": "wonder.stonehenge.text", "era": "ancient", "cost": 180, "upkeep": 0, "icon": "wonder.stonehenge", "yields": {"faith": 4}},
+    {"id": "oracle", "nameKey": "wonder.oracle.name", "descriptionKey": "wonder.oracle.text", "era": "classical", "cost": 250, "upkeep": 0, "icon": "wonder.oracle", "yields": {"culture": 3, "faith": 2}},
+    {"id": "great_lighthouse", "nameKey": "wonder.great_lighthouse.name", "descriptionKey": "wonder.great_lighthouse.text", "era": "ancient", "cost": 230, "upkeep": 0, "icon": "wonder.great_lighthouse", "requires": {"nearTerrain": "coast"}, "effects": [{"effect": "moveBonus", "amount": 1, "domain": "sea", "scope": "everyCity"}]}
+  ]
+}
