@@ -1,16 +1,63 @@
 {
   "mods": [
-    { "id": "base-ancient", "path": "rules/base-ancient/" },
-    { "id": "lock-era", "path": "rules/lock-era/" },
-    { "id": "no-religious-victory", "path": "rules/no-religious-victory/" },
-    { "id": "test-swift-scouts", "path": "rules/test-swift-scouts/", "dev": true },
-    { "id": "test-slow-scouts", "path": "rules/test-slow-scouts/", "dev": true }
+    {
+      "id": "base-ancient",
+      "path": "rules/base-ancient/"
+    },
+    {
+      "id": "witcher",
+      "path": "rules/witcher/"
+    },
+    {
+      "id": "lock-era",
+      "path": "rules/lock-era/"
+    },
+    {
+      "id": "no-religious-victory",
+      "path": "rules/no-religious-victory/"
+    },
+    {
+      "id": "test-swift-scouts",
+      "path": "rules/test-swift-scouts/",
+      "dev": true
+    },
+    {
+      "id": "test-slow-scouts",
+      "path": "rules/test-slow-scouts/",
+      "dev": true
+    }
   ],
   "stacks": [
-    ["base-ancient"],
-    ["base-ancient", "lock-era"],
-    ["base-ancient", "no-religious-victory"],
-    ["base-ancient", "lock-era", "no-religious-victory"],
-    ["base-ancient", "test-swift-scouts", "test-slow-scouts"]
+    [
+      "base-ancient"
+    ],
+    [
+      "base-ancient",
+      "lock-era"
+    ],
+    [
+      "base-ancient",
+      "no-religious-victory"
+    ],
+    [
+      "base-ancient",
+      "lock-era",
+      "no-religious-victory"
+    ],
+    [
+      "base-ancient",
+      "test-swift-scouts",
+      "test-slow-scouts"
+    ],
+    [
+      "base-ancient",
+      "witcher"
+    ],
+    [
+      "base-ancient",
+      "witcher",
+      "lock-era",
+      "no-religious-victory"
+    ]
   ]
 }

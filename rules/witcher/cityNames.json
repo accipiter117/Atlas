@@ -1,0 +1,14 @@
+{
+  "contentType": "cityNames",
+  "entries": [
+    {"op": "remove", "where": {"tags": {"has": "historical"}}},
+    {"id": "w_temeria", "names": ["Vizima", "Maribor", "Gors Velen", "Ellander", "Carreras", "Wyzima Castle", "White Bridge", "Anchor", "Dorian", "Tegmond", "Acorn Bay", "Findetann", "Murky Waters", "White Orchard", "Brenna", "Mayena"]},
+    {"id": "w_redania", "names": ["Tretogor", "Novigrad", "Oxenfurt", "Rinde", "Gelibol", "Montecalvo", "Murivel", "Blaviken", "Luton", "Roggeven", "Baldhorn", "Coppertown", "Pindal", "Jamurlak", "Egremont", "Drakenborg"]},
+    {"id": "w_kaedwen", "names": ["Ard Carraigh", "Vattweir", "Daevon", "Leyda", "Ban Glean", "Ban Ard", "Kaer Morhen", "Est Haemlet", "Tiel", "Kalkar", "Hagge Pass", "Grey Rock", "Kestrel Ford", "Pinewatch", "Coldwell", "Blue Mountain"]},
+    {"id": "w_aedirn", "names": ["Vengerberg", "Vergen", "Hagge", "Asheberg", "Gulet", "Eysenlaan", "Aldersberg", "Hoshberg", "Spalla", "Scala", "Dillmoor", "Ratsburg", "Lyria", "Rivia", "Riverbend", "Stonecross"]},
+    {"id": "w_nilfgaard", "names": ["City of Golden Towers", "Nazair", "Metinna", "Vellmont", "Rhys-Rhun", "Wyndhal", "Assengard", "Tergano", "Dun Turga", "Corvaine", "Ebbing", "Tarnmouth", "Fennick", "Saltreeve", "Cintra", "Attre"]},
+    {"id": "w_skellige", "names": ["Kaer Trolde", "Arinbjorn", "Holmstein's Port", "Kaer Muire", "Svorlag", "Larvik", "Fyresdal", "Urialla", "Rogne", "Lofoten", "Harviken", "Gedyneith", "Kaer Gelen", "Spikeroog", "An Skellig", "Hindarsfjall"]},
+    {"id": "w_kovir", "names": ["Pont Vanis", "Lan Exeter", "Talgar", "Tridam", "Hengfors", "Malleore", "Creyden", "Crinfrid", "Barefield", "Tancarville", "Narok", "Velhad", "Toyne", "Ard Gaeth", "Caingorn", "Gelibol Sound"]},
+    {"id": "w_scoiatael", "names": ["Dol Blathanna", "Ban Blathanna", "Lower Posada", "Duen Canell", "Shaerrawedd", "Loc Muinne", "Tir Tochair", "Ard Modron", "Aen Arse", "Brokilon Glade", "Elder Grove", "Silverleaf", "Mahakam Gate", "Mount Carbon", "Glevitzingen", "Mirefall"]}
+  ]
+}

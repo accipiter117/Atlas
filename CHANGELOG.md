@@ -1,5 +1,17 @@
 # Changelog
 
+## Phase 17: The Witcher conversion and the full mod manager (version 1)
+
+What you can try: on the setup screen, set Conversion to "The Witcher: Northern Wars". The faction lists switch to the eight setting factions (Temeria, Redania, Kaedwen, Aedirn, Nilfgaard, Skellige, Kovir and the Scoia'tael), each with its own leader, trait, agenda, unique unit, unique building, colours and city names. Faiths become the setting's (the Eternal Fire, Melitele, the Old Ways and others), raiders become Monsters (drowners first, wyverns later), and any city with a witcher school can train witchers, who fight better against monsters. Tick "Lock to one era", pick its era, and tick "No religious victory": the tweaks load in the order shown, with up and down arrows, and the Victory and turn limit options show what the mods switch off. On the Mods screen, mods with options show them when ticked, and Stack check loads the ticked mods and lets the computer play five rounds of a small game with them.
+
+- `rules/witcher/` (written by `tools/gen/witcher.py`): 8 factions, 8 leaders, 8 unique units and 8 unique buildings, witchers and the witcher school, 4 monsters, 7 religions, 5 setting events (monster nests, the Wild Hunt, witch hunters), monster raiders, setting names for the base wonders, and a colder skin with each faction in its own colours. All words are original.
+- Engine: units can be `raiderOnly`; raiders take their name from the rules (`tuning.raiders.nameKey`); a skin can ask for faction colours; the game screen wears the conversion's colour tokens.
+- Setup screen: the Conversion picker, ordered tweaks with their options, and the faction, victory and turn limit choices following the loaded mods.
+- Mods screen: options for ticked mods and the Stack check button.
+- `docs/MODDING.md`, a guide to writing a mod; `docs/ART_STATUS.md`, every art id each ruleset and conversion uses (written by `npm run check`).
+- Base data: religions are tagged `base` and city name lists `historical`, so a conversion can remove them in one line.
+- Tests: the "stack everything" load (base-ancient, witcher, lock-era at Classical, no-religious-victory: 0 errors), five 150-turn AI-only Witcher games with 0 errors, no base wording that names the real world showing through, monsters only for raiders and the witcher's bonus; browser tests for the Witcher setup and the Stack check.
+
 ## Phase 16: Culture victory, events and the balance pass
 
 What you can try: start a new game and look at the World section of the setup screen: Events (Off, Occasional or Frequent, Occasional by default) and Disasters (Off or On). Every so often something happens in one of your cities: a bountiful harvest, wandering scholars, a merchant caravan, a festival, veteran mercenaries and so on (twenty in all). A dialog tells the story and offers two choices, each saying exactly what it does ("+3 production for 8 turns"). You must choose before ending your turn; the advice line reminds you. With Disasters on, five unwelcome ones can strike too (plague, flood, earthquake, drought, great fire), each with a choice of how to cope. The culture victory is now live: wonders (3 each), the monument, amphitheatre, temple and a few others, and some policy cards earn influence every turn; once your influence is at least 100 and higher than the lifetime culture of every living rival, you win. The Victory panel shows how many rivals you have overtaken.

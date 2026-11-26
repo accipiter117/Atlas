@@ -412,3 +412,16 @@ body {
 .spy-card { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel); }
 .spy-odds { font-weight: 700; color: #2f6fbf; }
 .card-option:disabled { opacity: 0.55; cursor: default; }
+
+/* Phase 17: mod options, the Stack check, and ordered tweaks on the setup screen. */
+.mod-row { flex-wrap: wrap; }
+.mod-options { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 0 12px 10px 46px; }
+.mod-option { display: flex; align-items: center; gap: 8px; }
+.mod-option select { min-height: var(--target); }
+.stack-check { display: flex; flex-direction: column; gap: 6px; margin: 0 0 12px; }
+.stack-check .btn { align-self: flex-start; }
+.stack-check .ok { color: #2f7a3f; }
+.stack-check .blocked { color: var(--accent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack-check .ok { color: #7cc48b; } }
+.setup-tweak .tweak-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.setup-tweak.on { border-left: 3px solid var(--accent); padding-left: 8px; }

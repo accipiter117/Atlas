@@ -815,6 +815,7 @@
     "event.great_fire.choice2": "Rebuild quickly (lose 1 citizen).",
     "ai.reason.event": "Answers the event: {event}.",
     "advice.event": "An event in {city} needs your answer.",
-    "ai.reason.muster": "A unit gathers with the army before the attack."
+    "ai.reason.muster": "A unit gathers with the army before the attack.",
+    "raiders.name": "Raiders"
   }
 }

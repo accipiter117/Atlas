@@ -296,7 +296,8 @@
           "fromTurn": 80,
           "unit": "horseman"
         }
-      ]
+      ],
+      "nameKey": "raiders.name"
     },
     "speeds": {
       "online": 0.5,

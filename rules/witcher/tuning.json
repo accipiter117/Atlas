@@ -1,0 +1,26 @@
+{
+  "contentType": "tuning",
+  "set": {
+    "raiders.nameKey": "raiders.monsters",
+    "raiders.spawnEvery": 5,
+    "raiders.campEvery": 8,
+    "raiders.units": [
+      {
+        "fromTurn": 0,
+        "unit": "drowner"
+      },
+      {
+        "fromTurn": 30,
+        "unit": "nekker"
+      },
+      {
+        "fromTurn": 60,
+        "unit": "ghoul"
+      },
+      {
+        "fromTurn": 100,
+        "unit": "wyvern"
+      }
+    ]
+  }
+}

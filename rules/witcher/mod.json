@@ -1,0 +1,27 @@
+{
+  "id": "witcher",
+  "name": "The Witcher: Northern Wars",
+  "version": "1.0.0",
+  "type": "conversion",
+  "engine": ">=0.1.0",
+  "description": "The Northern Kingdoms and the Empire instead of the ancient world: eight setting factions, the setting's faiths, monsters for raiders and witchers to hunt them.",
+  "dependsOn": [
+    "base-ancient"
+  ],
+  "loadAfter": [],
+  "incompatibleWith": [],
+  "options": [],
+  "files": [
+    "factions.json",
+    "leaders.json",
+    "units.json",
+    "buildings.json",
+    "cityNames.json",
+    "religions.json",
+    "events.json",
+    "tuning.json",
+    "text/en-GB.json",
+    "skin/skin.json"
+  ],
+  "credits": "Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the books or games."
+}

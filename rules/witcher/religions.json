@@ -1,0 +1,13 @@
+{
+  "contentType": "religions",
+  "entries": [
+    {"op": "remove", "where": {"tags": {"has": "base"}}},
+    {"id": "eternal_fire", "nameKey": "religion.eternal_fire.name", "colour": "#e2582a", "tags": ["witcher"]},
+    {"id": "melitele", "nameKey": "religion.melitele.name", "colour": "#7fb069", "tags": ["witcher"]},
+    {"id": "old_ways", "nameKey": "religion.old_ways.name", "colour": "#5d7a3a", "tags": ["witcher"]},
+    {"id": "great_sun", "nameKey": "religion.great_sun.name", "colour": "#d4a017", "tags": ["witcher"]},
+    {"id": "kreve", "nameKey": "religion.kreve.name", "colour": "#8c3b2f", "tags": ["witcher"]},
+    {"id": "lebioda", "nameKey": "religion.lebioda.name", "colour": "#5f7fb0", "tags": ["witcher"]},
+    {"id": "freya", "nameKey": "religion.freya.name", "colour": "#3f7f8f", "tags": ["witcher"]}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "contentType": "skin",
+  "values": {
+    "id": "witcher",
+    "palette": {
+      "ink": "#1b1d22",
+      "paper": "#e7e2d4",
+      "accent": "#7a1f1f",
+      "water": "#2a4f66",
+      "land": "#7d8a5a"
+    },
+    "fonts": {
+      "display": "Cinzel",
+      "body": "Inter"
+    },
+    "art": {},
+    "sounds": {},
+    "factionColours": true,
+    "raiderColour": "#2b2b2b"
+  }
+}

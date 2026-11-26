@@ -220,6 +220,16 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Rome's trait** (Trajan's Column) now gives +1 production in every city: a balance change, as Rome won none of 60 simulated games.
 - **Conquest is still under 5%** of simulated wins; see `docs/AI_TUNING.md`.
 
+## Phase 17
+
+- **The Witcher conversion is generated** by `tools/gen/witcher.py`, like the base content, so names and numbers live in one place. Setting names come from the Northern Wars project's data; every sentence is new.
+- **Monsters are raider-only units** (`raiderOnly`), so no city can train them, and the raiders' name comes from `tuning.raiders.nameKey` (base-ancient: Raiders; Witcher: Monsters). A raider-only unit shows its own name ("Drowner"), others keep the prefix ("Raiders warrior").
+- **Base religions are removed by tag** (`base`), and base city name lists by `historical`, matching how factions are removed. The plan's extract tagged religions `historical`, but base-ancient's faiths are invented, so `base` is the honest tag.
+- **Base wonders keep their effects** in the Witcher game but take setting names (the Oxenfurt Library, the Shrine of Hindarsfjall); a test fails if any base wording that names a real place, people or ruler is still shown.
+- **Colours:** a skin with `factionColours` gives each faction its own primary colour on the map (its secondary when the primary is too dark to see, as with Nilfgaard's black); the page's colour tokens follow the conversion's skin on the game screen only.
+- **Stack check** plays five rounds of a small AI-only game on the Mods screen after loading, rather than only re-reading the report, so it shows the combination really plays.
+- **Faction choices reset** when the conversion changes, since the old factions no longer exist.
+
 ## Later
 
 - Nothing yet.

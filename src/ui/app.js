@@ -11,7 +11,7 @@ import { t } from '../data/text.js';
 import { createGameScreen } from './game.js';
 import { showFactionPicker } from './factionCards.js';
 import { createModManager } from './modManager.js';
-import { renderSetup, defaultSetup, toSetup } from './setup.js';
+import { renderSetup, defaultSetup, toSetup, selectionOf, optionsOf } from './setup.js';
 import { codeBox } from './gameMenu.js';
 import {
   createSave, saveToSlot, autosave, listSaves, latestSave, loadSave, deleteSave, exportCode, importCode, memoryStorage, modCheck, SaveTooBigError,
@@ -36,6 +36,8 @@ function toast(doc, message) {
 }
 
 function show(doc, id) {
+  // A conversion's skin (its colour tokens in css/tokens.css) dresses the game screen only.
+  if (id !== 'game') delete doc.documentElement.dataset.skin;
   for (const screen of doc.querySelectorAll('.screen')) screen.hidden = screen.id !== id;
   const first = doc.querySelector(`#${id} .btn:not(:disabled)`);
   first?.focus({ preventScroll: true });
@@ -159,6 +161,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const sheets = await loadSheets(loaded.ruleset.skin.art);
     game?.destroy();
     show(doc, 'game');
+    if (loaded.ruleset.skin?.id && loaded.ruleset.skin.id !== 'ancient') doc.documentElement.dataset.skin = loaded.ruleset.skin.id;
     game = createGameScreen(doc, gameScreen, {
       ruleset: loaded.ruleset, text: loaded.text, sheets, toast: say, setup, resume, debug: params.has('debug'), hooks: makeHooks(), ...(quick ?? {}),
     });
@@ -217,30 +220,53 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
 
   // ---------- Setup ----------
   async function openSetup() {
-    const loaded = await rulesFor(['base-ancient']);
-    if (loaded.error) { say(loaded.error); return; }
-    const { ruleset, text, src } = loaded;
+    const base = await rulesFor(['base-ancient']);
+    if (base.error) { say(base.error); return; }
+    const { src } = base;
     const manifests = Object.fromEntries(Object.entries(src.available).map(([id, m]) => { try { return [id, JSON.parse(m.manifest)]; } catch { return [id, {}]; } }));
     const devIds = new Set(src.index.mods.filter((m) => m.dev).map((m) => m.id));
     const mods = Object.values(manifests).filter((m) => m.type === 'tweak' && !devIds.has(m.id));
-    setupCfg ??= defaultSetup(ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous: readLastSetup() });
+    const conversions = Object.values(manifests).filter((m) => m.type === 'conversion' && !devIds.has(m.id));
+    setupCfg ??= defaultSetup(base.ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous: readLastSetup() });
+    // Mods that are no longer installed drop out of a remembered setup.
+    if (setupCfg.conversion && setupCfg.conversion !== 'none' && !manifests[setupCfg.conversion]) setupCfg.conversion = 'none';
+    setupCfg.tweaks = (setupCfg.tweaks ?? []).filter((id) => mods.some((m) => m.id === id));
     const host = doc.querySelector('[data-field="setup-body"]');
-    const draw = () => renderSetup(doc, host, {
-      ruleset, text, mods, cfg: setupCfg, newSeed, limit: { maxAis: ruleset.tuning?.setup?.maxAis ?? 11 },
-      onBack: () => { setupCfg = null; show(doc, 'title'); },
-      onPickFaction: (cfg) => {
-        returnTo = 'setup';
-        show(doc, 'pick');
-        showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, (civ) => { cfg.faction = civ; returnTo = 'title'; show(doc, 'setup'); draw(); });
-      },
-      onStart: async (cfg) => {
-        const { setup, selection, options } = toSetup(ruleset, cfg, { manifests, text });
-        rememberSetup(cfg);
-        setupCfg = null;
-        await startGame({ setup, selection, options });
-      },
-    });
-    draw();
+    // The rules for the chosen mods, reloaded only when the choice changes.
+    let loaded = null;
+    let loadedKey = null;
+    async function rulesForCfg(cfg) {
+      const key = JSON.stringify([selectionOf(cfg), optionsOf(cfg)]);
+      if (key === loadedKey) return loaded;
+      const next = await rulesFor(selectionOf(cfg), optionsOf(cfg));
+      if (next.error) { say(next.error); return loaded; }
+      loaded = next;
+      loadedKey = key;
+      // Faction picks from other rules no longer apply.
+      if (cfg.faction && !loaded.ruleset.factions[cfg.faction]) cfg.faction = null;
+      cfg.aiFactions = (cfg.aiFactions ?? []).map((f) => (f && loaded.ruleset.factions[f] ? f : null));
+      return loaded;
+    }
+    const draw = async () => {
+      const { ruleset, text } = await rulesForCfg(setupCfg);
+      renderSetup(doc, host, {
+        ruleset, text, mods, conversions, cfg: setupCfg, newSeed, limit: { maxAis: ruleset.tuning?.setup?.maxAis ?? 11 },
+        onRulesChange: () => { draw(); },
+        onBack: () => { setupCfg = null; show(doc, 'title'); },
+        onPickFaction: (cfg) => {
+          returnTo = 'setup';
+          show(doc, 'pick');
+          showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, (civ) => { cfg.faction = civ; returnTo = 'title'; show(doc, 'setup'); draw(); });
+        },
+        onStart: async (cfg) => {
+          const { setup, selection, options } = toSetup(ruleset, cfg, { manifests, text });
+          rememberSetup(cfg);
+          setupCfg = null;
+          await startGame({ setup, selection, options });
+        },
+      });
+    };
+    await draw();
     show(doc, 'setup');
   }
   function readLastSetup() {

@@ -35,6 +35,8 @@ export const units = entryType('units', {
   descriptionKey: key(),
   // Phase 13: units bought only with faith (missionaries), and uses before they are spent.
   faithOnly: bool(),
+  // Phase 17: units only raiders field (a conversion's monsters); no city can train them.
+  raiderOnly: bool(),
   charges: int(1, 20),
 });
 

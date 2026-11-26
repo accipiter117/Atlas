@@ -45,6 +45,43 @@
   }
 }
 
+/* The Witcher skin (rules/witcher/skin): colder paper, iron and old blood. */
+:root[data-skin="witcher"] {
+  --ink: #1b1d22;
+  --ink-soft: #464b55;
+  --paper: #e7e2d4;
+  --paper-deep: #d3ccba;
+  --panel: rgba(236, 232, 222, 0.94);
+  --line: #a9a28f;
+  --accent: #7a1f1f;
+  --accent-hover: #922a2a;
+  --muted: #847e70;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-skin="witcher"]:not([data-theme="light"]) {
+    --ink: #dcd8cc;
+    --ink-soft: #a6a293;
+    --paper: #101215;
+    --paper-deep: #0a0b0d;
+    --panel: rgba(24, 26, 31, 0.94);
+    --line: #33373f;
+    --accent: #b8473f;
+    --accent-hover: #cc5a51;
+    --muted: #7a7d84;
+  }
+}
+:root[data-skin="witcher"][data-theme="dark"] {
+  --ink: #dcd8cc;
+  --ink-soft: #a6a293;
+  --paper: #101215;
+  --paper-deep: #0a0b0d;
+  --panel: rgba(24, 26, 31, 0.94);
+  --line: #33373f;
+  --accent: #b8473f;
+  --accent-hover: #cc5a51;
+  --muted: #7a7d84;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root { --speed: 0ms; }
 }

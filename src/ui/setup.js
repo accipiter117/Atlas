@@ -30,6 +30,7 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
   const size = preset.size ?? sizes.find((s) => s.default)?.id ?? sizes[0]?.id;
   const base = {
     preset: conf.defaultPreset ?? 'standard',
+    conversion: 'none',
     tweaks: [],
     modOptions: {},
     map: { type: Object.keys(ruleset.mapTypes ?? {})[0] ?? 'continents', size, seaLevel: 'normal', resources: 'standard', age: 'standard' },
@@ -55,21 +56,32 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
   return previous ? { ...base, ...previous, seed } : base;
 }
 
+/** The mods a setup loads, in order: the ruleset, the conversion (if any), then the ticked tweaks in their order. */
+export function selectionOf(cfg) {
+  return ['base-ancient', ...(cfg.conversion && cfg.conversion !== 'none' ? [cfg.conversion] : []), ...cfg.tweaks];
+}
+
+/** The options of the ticked mods only. */
+export function optionsOf(cfg) {
+  return Object.fromEntries(cfg.tweaks.filter((id) => cfg.modOptions[id]).map((id) => [id, cfg.modOptions[id]]));
+}
+
 /** Turn the screen's choices into state.setup (section 6) plus the mods to load. */
 export function toSetup(ruleset, cfg, { manifests, text }) {
   const tt = (k, a) => t(text, k, a);
   const firstEra = Object.values(ruleset.eras ?? {}).sort((a, b) => a.index - b.index)[0]?.id;
-  const selection = ['base-ancient', ...cfg.tweaks];
+  const selection = selectionOf(cfg);
   const setup = {
     seed: cfg.seed,
     mods: selection.map((id) => `${id}@${manifests[id]?.version ?? '0.0.0'}`),
-    modOptions: Object.fromEntries(cfg.tweaks.filter((id) => cfg.modOptions[id]).map((id) => [id, cfg.modOptions[id]])),
+    modOptions: optionsOf(cfg),
     map: { ...cfg.map },
     players: [
       { kind: 'human', name: tt('game.you'), ...(cfg.faction ? { faction: cfg.faction } : {}), ...(cfg.teams?.[0] ? { team: cfg.teams[0] } : {}) },
       ...Array.from({ length: cfg.ais }, (_, i) => ({ kind: 'ai', name: tt('game.rival', { n: i + 1 }), ...(cfg.aiFactions[i] ? { faction: cfg.aiFactions[i] } : {}), ...(cfg.teams?.[i + 1] ? { team: cfg.teams[i + 1] } : {}) })),
     ],
-    victories: cfg.victories.slice(),
+    // Only victories the loaded mods leave switched on (lock-era turns science off).
+    victories: cfg.victories.filter((id) => ruleset.victories?.[id]?.enabled !== false),
     speed: cfg.speed,
     raiders: cfg.raiders,
     events: cfg.events ?? 'occasional',
@@ -92,12 +104,14 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
  * mods: [{ id, name, description, version, options }] (tweak mods on offer)
  * onStart(cfg), onBack(), onPickFaction(cfg) (opens the faction cards), newSeed()
  */
-export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBack, onPickFaction, newSeed, limit }) {
+export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange = null }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key, fallback) => text[key] ?? ruleset.text?.[key] ?? fallback;
   const conf = ruleset.tuning?.setup ?? {};
   const later = (phase) => el(doc, 'span', { class: 'later' }, tt('setup.later', { phase }));
-  const rerender = () => renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBack, onPickFaction, newSeed, limit });
+  const rerender = () => renderSetup(doc, host, { ruleset, text, mods, conversions, cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange });
+  // A change to the mods reloads the rules (the factions, eras and victories on offer follow).
+  const rulesChanged = () => (onRulesChange ? onRulesChange(cfg) : rerender());
 
   function select(name, value, options, onChange, { disabled = false } = {}) {
     return el(doc, 'select', { name, disabled, onchange: (e) => { onChange(e.target.value); rerender(); } },
@@ -120,23 +134,49 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
   const factionName = (id) => say(ruleset.factions[id]?.nameKey, id);
   const taken = (except) => new Set([cfg.faction, ...cfg.aiFactions].filter((f, i) => f && i !== except));
 
-  // Rules.
-  const tweakRows = mods.map((m) => {
+  // Rules: the conversion, then tweaks (ticked ones in load order, with up and down buttons and their options).
+  const tickedFirst = [...cfg.tweaks.map((id) => mods.find((m) => m.id === id)).filter(Boolean), ...mods.filter((m) => !cfg.tweaks.includes(m.id))];
+  const moveTweak = (id, d) => {
+    const i = cfg.tweaks.indexOf(id);
+    const j = i + d;
+    if (i < 0 || j < 0 || j >= cfg.tweaks.length) return;
+    [cfg.tweaks[i], cfg.tweaks[j]] = [cfg.tweaks[j], cfg.tweaks[i]];
+    rulesChanged();
+  };
+  const tweakRows = tickedFirst.map((m) => {
     const on = cfg.tweaks.includes(m.id);
+    const at = cfg.tweaks.indexOf(m.id);
     const opts = on ? (m.options ?? []).filter((o) => o.type === 'choice' && o.source && ruleset[o.source]).map((o) => {
       const current = cfg.modOptions[m.id]?.[o.id] ?? o.default;
-      return row(say(o.labelKey, o.id), select(`opt-${m.id}-${o.id}`, current, Object.values(ruleset[o.source]).map((x) => ({ value: x.id, label: say(x.nameKey, x.id) })), (v) => { cfg.modOptions[m.id] = { ...(cfg.modOptions[m.id] ?? {}), [o.id]: v }; }));
+      const choices = Object.values(ruleset[o.source]).sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).map((x) => ({ value: x.id, label: say(x.nameKey, x.id) }));
+      return el(doc, 'label', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, say(o.labelKey, o.id)),
+        el(doc, 'select', { name: `opt-${m.id}-${o.id}`, onchange: (e) => { cfg.modOptions[m.id] = { ...(cfg.modOptions[m.id] ?? {}), [o.id]: e.target.value }; rulesChanged(); } },
+          ...choices.map((c) => el(doc, 'option', { value: c.value, selected: c.value === current }, c.label))));
     }) : [];
-    return el(doc, 'div', { class: 'setup-tweak' },
-      el(doc, 'label', { class: 'tick' },
-        el(doc, 'input', { type: 'checkbox', name: `mod-${m.id}`, checked: on, onchange: (e) => { cfg.tweaks = e.target.checked ? [...cfg.tweaks, m.id] : cfg.tweaks.filter((x) => x !== m.id); rerender(); } }),
-        el(doc, 'span', {}, el(doc, 'strong', {}, m.name), el(doc, 'span', { class: 'small muted' }, ` ${m.description ?? ''}`))),
+    return el(doc, 'div', { class: `setup-tweak${on ? ' on' : ''}`, dataset: { tweak: m.id } },
+      el(doc, 'div', { class: 'tweak-head' },
+        el(doc, 'label', { class: 'tick' },
+          el(doc, 'input', { type: 'checkbox', name: `mod-${m.id}`, checked: on, onchange: (e) => { cfg.tweaks = e.target.checked ? [...cfg.tweaks, m.id] : cfg.tweaks.filter((x) => x !== m.id); rulesChanged(); } }),
+          el(doc, 'span', {}, el(doc, 'strong', {}, m.name), el(doc, 'span', { class: 'small muted' }, ` ${m.description ?? ''}`))),
+        on ? el(doc, 'span', { class: 'mod-order' },
+          el(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': tt('mods.up', { name: m.name }), disabled: at === 0, dataset: { move: 'up' }, onclick: () => moveTweak(m.id, -1) }, '▲'),
+          el(doc, 'button', { type: 'button', class: 'icon-btn', 'aria-label': tt('mods.down', { name: m.name }), disabled: at === cfg.tweaks.length - 1, dataset: { move: 'down' }, onclick: () => moveTweak(m.id, 1) }, '▼')) : null),
       ...opts);
   });
+  const conversionChoices = [{ value: 'none', label: tt('setup.none') }, ...conversions.map((m) => ({ value: m.id, label: m.name }))];
+  const conversionNote = conversions.find((m) => m.id === cfg.conversion)?.description ?? null;
   const rules = group(tt('setup.group.rules'),
     row(tt('setup.ruleset'), select('ruleset', 'base-ancient', [{ value: 'base-ancient', label: tt('setup.baseAncient') }], () => {}, { disabled: true })),
-    row(tt('setup.conversion'), select('conversion', 'none', [{ value: 'none', label: tt('setup.none') }], () => {}, { disabled: true }), later(17)),
-    el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.tweaks')), el(doc, 'div', { class: 'setup-tweaks' }, ...tweakRows)));
+    row(tt('setup.conversion'), el(doc, 'select', { name: 'conversion', onchange: (e) => {
+      cfg.conversion = e.target.value;
+      // Factions belong to the rules: picks from the old ones no longer apply.
+      cfg.faction = null;
+      cfg.aiFactions = [];
+      rulesChanged();
+    } }, ...conversionChoices.map((o) => el(doc, 'option', { value: o.value, selected: o.value === (cfg.conversion ?? 'none') }, o.label))),
+    conversionNote ? el(doc, 'p', { class: 'small muted' }, conversionNote) : null),
+    el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.tweaks')), el(doc, 'div', { class: 'setup-tweaks' }, ...tweakRows)),
+    el(doc, 'p', { class: 'small muted' }, tt('setup.tweaksOrder')));
 
   // Map.
   const sizeIds = Object.values(ruleset.mapSizes ?? {}).map((s) => s.id);
@@ -176,11 +216,14 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
       el(doc, 'input', { type: 'checkbox', name: `victory-${v.id}`, checked: ready && cfg.victories.includes(v.id), disabled: !ready, onchange: (e) => { cfg.victories = e.target.checked ? [...cfg.victories, v.id] : cfg.victories.filter((x) => x !== v.id); rerender(); } }),
       el(doc, 'span', {}, say(v.nameKey, v.id)), !v.enabled ? el(doc, 'span', { class: 'later' }, tt('setup.offByMod')) : !ready ? later(16) : null);
   });
+  // A mod may switch the default limit off (lock-era sets the score victory's turnLimit to null).
+  const scoreParams = ruleset.victories?.score?.params ?? {};
+  const limitOff = Object.hasOwn(scoreParams, 'turnLimit') && scoreParams.turnLimit === null;
   const speedDefault = ruleset.tuning?.victory?.turnLimits?.[cfg.speed];
   const victory = group(tt('setup.group.victory'),
     el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.victories')), el(doc, 'div', { class: 'setup-ticks' }, ...victoryRows)),
     row(tt('setup.turnLimit'), el(doc, 'span', { class: 'seed-row' },
-      select('turnLimit', cfg.turnLimit, [{ value: 'default', label: tt('setup.turnDefault', { n: speedDefault ?? '' }) }, { value: 'custom', label: tt('setup.custom') }, { value: 'none', label: tt('setup.noLimit') }], (v) => { cfg.turnLimit = v; }),
+      select('turnLimit', cfg.turnLimit, [{ value: 'default', label: limitOff ? tt('setup.turnDefaultOff') : tt('setup.turnDefault', { n: speedDefault ?? '' }) }, { value: 'custom', label: tt('setup.custom') }, { value: 'none', label: tt('setup.noLimit') }], (v) => { cfg.turnLimit = v; }),
       cfg.turnLimit === 'custom' ? el(doc, 'input', { type: 'number', name: 'customTurns', min: '10', max: '2000', value: String(cfg.customTurns), onchange: (e) => { cfg.customTurns = e.target.value; } }) : null)),
     cfg.victories.length ? null : el(doc, 'p', { class: 'warn' }, tt('setup.noVictory')));
 

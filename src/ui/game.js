@@ -117,7 +117,17 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
   const human = state.factions.find((f) => f.kind === 'human')?.id ?? 'f0';
   const palette = ruleset.skin.seatColours ?? ['#c23b22', '#2f6fbf', '#e0a526', '#6a4c9c'];
-  const colours = Object.fromEntries(state.factions.map((f, i) => [f.id, palette[i % palette.length]]));
+  // A skin may ask for each faction's own colours (skin.factionColours): its primary, or its
+  // secondary when the primary is too dark to see on the map; a repeat falls back to the seat palette.
+  const lum = (hex) => { const n = Number.parseInt(String(hex).slice(1), 16); return ((n >> 16) * 0.299 + ((n >> 8) & 255) * 0.587 + (n & 255) * 0.114) / 255; };
+  const usedColours = new Set();
+  const colours = Object.fromEntries(state.factions.map((f, i) => {
+    const own = ruleset.skin.factionColours ? ruleset.factions?.[f.civ]?.colours : null;
+    let c = own ? (lum(own.primary) < 0.15 ? own.secondary : own.primary) : null;
+    if (!c || usedColours.has(c)) c = palette[i % palette.length];
+    usedColours.add(c);
+    return [f.id, c];
+  }));
   colours.raiders = ruleset.skin.raiderColour ?? '#3d3d3d';
   const $ = (sel) => root.querySelector(sel);
   // The computer seats. They play in a Web Worker when the browser allows
@@ -366,7 +376,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     render();
   }
 
-  const nameOfUnit = (type, faction) => (faction === 'raiders' ? `${tt('game.raiders')} ${unitName({ type }).toLowerCase()}` : unitName({ type }));
+  // Raiders keep a conversion's own name for them (tuning.raiders.nameKey: Monsters in the Witcher);
+  // a unit only raiders field (a drowner) needs no prefix.
+  const raidersName = () => ruleset.text[ruleset.tuning?.raiders?.nameKey] ?? tt('game.raiders');
+  const nameOfUnit = (type, faction) => (faction === 'raiders' && !ruleset.units[type]?.raiderOnly ? `${raidersName()} ${unitName({ type }).toLowerCase()}` : unitName({ type }));
 
   function battleReport(e) {
     if (e.attackerFaction !== human && e.defenderFaction !== human) return;
@@ -1204,7 +1217,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
   function openJournal() {
     renderJournal(doc, panel.querySelector('[data-field="panel-body"]'), {
-      ais: Object.fromEntries(Object.entries(journals).map(([id, journal]) => [id, { memory: { journal } }])), factions: v.factions, ruleset, text, factionName: (id) => (id === 'raiders' ? tt('game.raiders') : civName(id)), onClose: () => { panel.hidden = true; },
+      ais: Object.fromEntries(Object.entries(journals).map(([id, journal]) => [id, { memory: { journal } }])), factions: v.factions, ruleset, text, factionName: (id) => (id === 'raiders' ? raidersName() : civName(id)), onClose: () => { panel.hidden = true; },
     });
     panel.hidden = false;
   }

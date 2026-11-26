@@ -1,0 +1,14 @@
+{
+  "contentType": "buildings",
+  "entries": [
+    {"id": "royal_granary", "nameKey": "building.royal_granary.name", "descriptionKey": "building.royal_granary.text", "era": "ancient", "cost": 65, "upkeep": 1, "icon": "building.royal_granary", "yields": {"food": 3, "gold": 1}, "requires": {"faction": "temeria", "tech": "pottery"}, "replaces": "granary"},
+    {"id": "oxenfurt_college", "nameKey": "building.oxenfurt_college.name", "descriptionKey": "building.oxenfurt_college.text", "era": "classical", "cost": 240, "upkeep": 1, "icon": "building.oxenfurt_college", "yields": {"science": 5, "culture": 1}, "requires": {"faction": "redania", "tech": "education"}, "replaces": "university"},
+    {"id": "border_keep", "nameKey": "building.border_keep.name", "descriptionKey": "building.border_keep.text", "era": "ancient", "cost": 80, "upkeep": 1, "icon": "building.border_keep", "yields": {"production": 1}, "defence": 100, "requires": {"faction": "kaedwen", "tech": "masonry"}, "replaces": "walls"},
+    {"id": "guild_exchange", "nameKey": "building.guild_exchange.name", "descriptionKey": "building.guild_exchange.text", "era": "ancient", "cost": 90, "upkeep": 1, "icon": "building.guild_exchange", "yields": {"gold": 4}, "requires": {"faction": "aedirn", "tech": "currency"}, "replaces": "market"},
+    {"id": "imperial_garrison", "nameKey": "building.imperial_garrison.name", "descriptionKey": "building.imperial_garrison.text", "era": "ancient", "cost": 70, "upkeep": 1, "icon": "building.imperial_garrison", "yields": {"production": 1}, "amenities": 1, "requires": {"faction": "nilfgaard", "tech": "bronze_working"}, "replaces": "barracks"},
+    {"id": "mead_hall", "nameKey": "building.mead_hall.name", "descriptionKey": "building.mead_hall.text", "era": "ancient", "cost": 90, "upkeep": 1, "icon": "building.mead_hall", "yields": {"faith": 1}, "amenities": 2, "requires": {"faction": "skellige", "tech": "construction"}, "replaces": "arena"},
+    {"id": "counting_house", "nameKey": "building.counting_house.name", "descriptionKey": "building.counting_house.text", "era": "classical", "cost": 240, "upkeep": 1, "icon": "building.counting_house", "yields": {"gold": 5}, "requires": {"faction": "kovir", "tech": "banking"}, "replaces": "bank"},
+    {"id": "aen_seidhe_garden", "nameKey": "building.aen_seidhe_garden.name", "descriptionKey": "building.aen_seidhe_garden.text", "era": "ancient", "cost": 110, "upkeep": 1, "icon": "building.aen_seidhe_garden", "yields": {"culture": 4}, "amenities": 1, "influence": 2, "requires": {"faction": "scoiatael", "tech": "drama_poetry", "buildings": ["monument"]}, "replaces": "amphitheatre"},
+    {"id": "witcher_school", "nameKey": "building.witcher_school.name", "descriptionKey": "building.witcher_school.text", "era": "ancient", "cost": 90, "upkeep": 1, "icon": "building.witcher_school", "yields": {"science": 1}, "requires": {"tech": "bronze_working"}}
+  ]
+}

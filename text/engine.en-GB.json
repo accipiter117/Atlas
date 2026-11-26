@@ -667,6 +667,11 @@
     "event.title": "An event",
     "event.inCity": "In {city}",
     "event.choose": "Choose what to do. You must decide before ending your turn.",
-    "event.chosen": "{event}: your choice is made."
+    "event.chosen": "{event}: your choice is made.",
+    "mods.checkBlocked": "Stack check: {n} errors stop this combination loading. See the report.",
+    "mods.checkDone": "Stack check: loaded with {errors} errors and {warnings} warnings, then the computer played {rounds} rounds of a small game with {refused} refused moves. Factions: {factions}.",
+    "mods.checkCrashed": "Stack check: the test game stopped with an error ({error}).",
+    "setup.tweaksOrder": "Ticked tweaks load in the order shown; a later one wins when two change the same thing.",
+    "setup.turnDefaultOff": "No limit (switched off by a mod)"
   }
 }
