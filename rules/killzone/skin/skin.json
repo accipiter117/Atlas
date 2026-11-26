@@ -1,0 +1,21 @@
+{
+  "contentType": "skin",
+  "values": {
+    "id": "killzone",
+    "palette": {
+      "ink": "#16181c",
+      "paper": "#d9dcdf",
+      "accent": "#b8321f",
+      "water": "#2a3f4f",
+      "land": "#6d6f5e"
+    },
+    "fonts": {
+      "display": "Cinzel",
+      "body": "Inter"
+    },
+    "art": {},
+    "sounds": {},
+    "factionColours": true,
+    "raiderColour": "#2b2b2b"
+  }
+}

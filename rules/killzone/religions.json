@@ -1,0 +1,6 @@
+{
+  "contentType": "religions",
+  "entries": [
+    {"op": "remove", "where": {"tags": {"has": "base"}}}
+  ]
+}

@@ -44,3 +44,4 @@ export { spyCap, spyCount, missionOdds, outcomeChances, cityDefence } from './es
 export { majorityOf, religionLimit, foundedBy, pantheonOf, takenBeliefs, followerCities, faithPrice, holyCityOptions, preachTarget, missionaryFaith, pantheonFaith, foundFaith } from './religion.js';
 export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './victories/index.js';
 export { damage, strengths } from '../battles/index.js';
+export { frontlineOn, sideOf, frontShares, buildPresetMap } from './frontline.js';

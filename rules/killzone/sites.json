@@ -1,0 +1,8 @@
+{
+  "contentType": "sites",
+  "entries": [
+    {"id": "factory", "nameKey": "site.factory.name", "descriptionKey": "site.factory.text", "icon": "site.factory", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 2}]},
+    {"id": "power_plant", "nameKey": "site.power_plant.name", "descriptionKey": "site.power_plant.text", "icon": "site.power_plant", "effects": [{"effect": "yieldBonus", "yield": "science", "amount": 2}, {"effect": "yieldBonus", "yield": "production", "amount": 1}]},
+    {"id": "refinery", "nameKey": "site.refinery.name", "descriptionKey": "site.refinery.text", "icon": "site.refinery", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 3}]}
+  ]
+}

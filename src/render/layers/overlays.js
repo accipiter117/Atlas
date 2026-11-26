@@ -1,7 +1,7 @@
 // Things drawn fresh each frame on top of the terrain: the hex grid and
 // markers (start positions in the dev viewer, later selection and paths).
 
-import { HEX_SCREEN, cornerOffsets, tileCentre, tracePath } from '../hexDraw.js';
+import { HEX_SCREEN, cornerOffsets, edgeCorners, tileCentre, tracePath } from '../hexDraw.js';
 
 export function drawGrid(ctx, map, cam, view) {
   const corners = cornerOffsets(HEX_SCREEN * cam.zoom);
@@ -123,4 +123,85 @@ export function drawPath(ctx, map, cam, from, plan) {
     ctx.textBaseline = 'middle';
     ctx.fillText(String(plan.turns[k] + 1), p.x, p.y + 0.5);
   });
+}
+
+/**
+ * The front line (phase 19): each land tile tinted towards the side that holds
+ * it (stronger the firmer its control), a bold line where control changes
+ * hands, and each site as a marker in its holder's colour with its letter.
+ * front: { control, sites, colours: [side 0, side 1], letters: { siteId: 'F' } }.
+ */
+export function drawFront(ctx, map, cam, view, front, nbs) {
+  if (!front) return;
+  const corners = cornerOffsets(HEX_SCREEN * cam.zoom * 0.98);
+  const rowH = HEX_SCREEN * 1.5;
+  const colW = HEX_SCREEN * Math.sqrt(3);
+  const r0 = Math.max(0, Math.floor(view.y / rowH) - 1);
+  const r1 = Math.min(map.height - 1, Math.ceil((view.y + view.h) / rowH) + 1);
+  const c0 = Math.max(0, Math.floor(view.x / colW) - 1);
+  const c1 = Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1);
+  const { control } = front;
+  const sideOf = (v) => (v > 0 ? 0 : v < 0 ? 1 : null);
+  for (let r = r0; r <= r1; r += 1) {
+    for (let c = c0; c <= c1; c += 1) {
+      const i = r * map.width + c;
+      const v = control[i] ?? 0;
+      if (!v) continue;
+      const p = tileCentre(map, i);
+      const x = (p.x - cam.x) * cam.zoom;
+      const y = (p.y - cam.y) * cam.zoom;
+      ctx.globalAlpha = 0.08 + (Math.abs(v) / 100) * 0.2;
+      ctx.fillStyle = front.colours[sideOf(v)];
+      ctx.beginPath();
+      ctx.moveTo(x + corners[0].x, y + corners[0].y);
+      for (let k = 1; k < 6; k += 1) ctx.lineTo(x + corners[k].x, y + corners[k].y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  // The line itself: every edge between tiles held by different sides.
+  ctx.strokeStyle = '#f4ecd8';
+  ctx.lineWidth = Math.max(2, 3.5 * cam.zoom);
+  ctx.lineCap = 'round';
+  ctx.setLineDash([Math.max(4, 8 * cam.zoom), Math.max(3, 5 * cam.zoom)]);
+  ctx.beginPath();
+  for (let r = r0; r <= r1; r += 1) {
+    for (let c = c0; c <= c1; c += 1) {
+      const i = r * map.width + c;
+      const s = sideOf(control[i] ?? 0);
+      if (s === null) continue;
+      const p = tileCentre(map, i);
+      const x = (p.x - cam.x) * cam.zoom;
+      const y = (p.y - cam.y) * cam.zoom;
+      for (let d = 0; d < 3; d += 1) {
+        const j = nbs[i][d];
+        if (j < 0) continue;
+        const o = sideOf(control[j] ?? 0);
+        if (o === null || o === s) continue;
+        const [a, b] = edgeCorners(d);
+        ctx.moveTo(x + corners[a].x, y + corners[a].y);
+        ctx.lineTo(x + corners[b].x, y + corners[b].y);
+      }
+    }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Sites.
+  const size = Math.max(10, 16 * cam.zoom);
+  ctx.font = `bold ${Math.round(size * 0.7)}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const s of Object.values(front.sites ?? {})) {
+    const p = tileCentre(map, s.tile);
+    const x = (p.x - cam.x) * cam.zoom;
+    const y = (p.y - cam.y) * cam.zoom - size * 0.9;
+    ctx.fillStyle = s.owner === null || s.owner === undefined ? '#d8d2c0' : front.colours[s.owner];
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 2;
+    ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    ctx.strokeRect(x - size / 2, y - size / 2, size, size);
+    ctx.fillStyle = '#111';
+    ctx.fillText(front.letters?.[s.site] ?? '?', x, y + 1);
+  }
 }

@@ -13,6 +13,7 @@ import { attackProblem, buildSpec, buildCitySpec, seedBattle, applyResult, promo
 import { updateVisibility, VISIBLE } from './visibility.js';
 import { distance } from './borders.js';
 import { unitDef } from './units.js';
+import { frontlineBattle } from './frontline.js';
 
 const refuse = (code, message) => ({ code, message });
 
@@ -40,6 +41,7 @@ export function runBattle(state, ruleset, spec, events, { forceAuto = false } = 
   const problem = validateResult(spec, result);
   if (problem) throw new Error(`Battle module ${mod.id} returned a bad result: ${problem}`);
   applyResult(state, ruleset, spec, result, events);
+  if (state.frontline) frontlineBattle(state, ruleset, spec, result, events);
   state.battleLog ??= [];
   state.battleLog.push({ battleId: spec.battleId, module: mod.id, result });
   return 'done';
@@ -115,6 +117,7 @@ export const resolveBattle = {
     const { spec, module } = state.pendingBattle;
     state.pendingBattle = null;
     applyResult(state, ruleset, spec, cmd.result, events);
+    if (state.frontline) frontlineBattle(state, ruleset, spec, cmd.result, events);
     state.battleLog ??= [];
     state.battleLog.push({ battleId: spec.battleId, module, result: cmd.result });
     for (const f of [spec.attacker.faction, spec.defender.faction]) if (state.fog?.[f]) updateVisibility(state, ruleset, f);
@@ -130,6 +133,7 @@ export const autoResolveBattle = {
     state.pendingBattle = null;
     const result = autoModule().resolve(spec, createRng(spec.seed).next);
     applyResult(state, ruleset, spec, result, events);
+    if (state.frontline) frontlineBattle(state, ruleset, spec, result, events);
     state.battleLog ??= [];
     state.battleLog.push({ battleId: spec.battleId, module: 'auto', result });
     for (const f of [spec.attacker.faction, spec.defender.faction]) if (state.fog?.[f]) updateVisibility(state, ruleset, f);

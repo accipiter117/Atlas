@@ -241,6 +241,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         state = next;
         refresh();
       },
+      /** Issue a command as you would by tapping (tests): { ok } or null if refused. */
+      run(cmd) { const r = run(cmd); return r ? { ok: true } : null; },
       /** Choose how your battles are fought (battle tests): 'auto', 'ask' or 'fight'. */
       battleMode(mode, module = 'tactical') {
         const next = JSON.parse(JSON.stringify(state));
@@ -380,6 +382,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
     if (religionLens) mapView.setReligionLens(lensData());
+    if (v.frontline) mapView.setFront(frontData());
     if (v.pendingBattle) showBattleCard();
     else if (v.pendingCapture) showCaptureDialog();
     else if (v.pendingEvent) showEventDialog();
@@ -450,6 +453,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'improvementBuilt') toast(tt('game.improvementBuilt', { name: ruleset.text[ruleset.improvements[e.improvement]?.nameKey] ?? e.improvement, n: Math.max(0, e.charges) }));
       if (e.type === 'cityFounded') toast(tt('game.cityFounded', { city: e.name }));
       if (e.type === 'projectCompleted') toast(tt('game.projectCompleted', { faction: civName(e.faction), project: ruleset.text[ruleset.wonders[e.project]?.nameKey] ?? e.project, n: (state.projects?.[e.faction] ?? []).length }));
+      if (e.type === 'siteCaptured' && e.side !== null) {
+        const holder = v.factions.find((f) => ruleset.factions?.[f.civ]?.frontSide === e.side);
+        toast(tt('front.siteCaptured', { side: holder ? civName(holder.id) : '', site: (ruleset.text[ruleset.sites?.[e.site]?.nameKey] ?? e.site).toLowerCase() }));
+      }
       if (e.type === 'factionEliminated') toast(tt(e.faction === human ? 'game.youEliminated' : 'game.eliminated', { faction: civName(e.faction) }));
       if (e.type === 'unitBuilt' && !e.bought) toast(tt('game.unitBuilt', { city: city?.name ?? '', unit: itemName({ kind: 'unit', id: e.unitType }) }));
     }
@@ -955,6 +962,14 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     overlay.querySelector('[data-action="close-overlay"]').hidden = true;
     overlay.hidden = false;
     body.querySelector('[data-capture="keep"]').focus();
+  }
+
+  // ---------- The front line (phase 19) ----------
+  /** Each side's colour (its first faction's), the control and sites, and each site's letter. */
+  function frontData() {
+    const sideColour = [0, 1].map((side) => colours[v.factions.find((f) => ruleset.factions?.[f.civ]?.frontSide === side)?.id ?? v.factions[side]?.id] ?? '#888');
+    const letters = Object.fromEntries(Object.values(ruleset.sites ?? {}).map((s) => [s.id, (ruleset.text[s.nameKey] ?? s.id).trim().charAt(0).toUpperCase()]));
+    return { control: v.frontline.control, sites: v.frontline.sites, colours: sideColour, letters };
   }
 
   // ---------- Battles you fight yourself (phase 18) ----------

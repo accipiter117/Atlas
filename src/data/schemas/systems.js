@@ -2,7 +2,7 @@
 // Their systems arrive in phases 9 to 16; the schemas exist now so mods can be
 // checked against them from day one.
 
-import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields, refs } from './fields.js';
+import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields, refs, ref } from './fields.js';
 
 export const trade = entryType('trade', {
   kind: req(oneOf(['domestic', 'foreign'])),
@@ -59,4 +59,27 @@ export const victories = entryType('victories', {
   module: req(str()),
   enabled: req(bool()),
   params: obj({}, { open: true }),
+});
+
+// Phase 19: the optional front-line system (tuning.frontline.enabled).
+// Capturable sites (a factory, a power plant) and the bonuses their holder's
+// side enjoys, through the effects registry.
+export const sites = entryType('sites', {
+  descriptionKey: key(),
+  icon: str(),
+  effects: effects(),
+});
+
+// Fixed maps for front-line games: rows of map letters (legend says what each
+// letter is), where the front starts (a column), each side's cities and
+// units, and the sites on the map.
+const placed = obj({ side: req(int(0, 1)), col: req(int(0, 200)), row: req(int(0, 200)) }, { open: true });
+export const mapPresets = entryType('mapPresets', {
+  descriptionKey: key(),
+  legend: req(obj({}, { open: true })),
+  rows: req(list(str(), { min: 4 })),
+  front: req(int(0, 200)),
+  cities: req(list(placed, { min: 2 })),
+  units: list(placed),
+  sites: list(obj({ site: req(ref('sites')), col: req(int(0, 200)), row: req(int(0, 200)) })),
 });

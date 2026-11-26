@@ -8,7 +8,9 @@ import { normaliseSeed, fork } from '../core/rng.js';
 import { hashValue } from '../core/hash.js';
 import { clone, deepFreeze } from '../core/clone.js';
 import { generateMap } from './mapgen.js';
-import { placeStartingUnits } from './units.js';
+import { placeStartingUnits, createUnit } from './units.js';
+import { frontlineOn, buildPresetMap, setUpFrontline } from './frontline.js';
+import { foundCity, assignCitizens } from './cities.js';
 import { emptyResearch, grantErasBefore } from './progression.js';
 import { emptyGovernment } from './government.js';
 import { emptyDiplomacy, setUpTeams } from './diplomacy.js';
@@ -16,7 +18,7 @@ import { emptyReligion } from './religion.js';
 import { emptyTrade } from './trade.js';
 import { emptyEspionage } from './espionage.js';
 import { emptyEvents } from './events.js';
-import { updateAllVisibility } from './visibility.js';
+import { updateAllVisibility, EXPLORED } from './visibility.js';
 
 export const STATE_VERSION = 1;
 export const ENGINE_VERSION = '0.1.0';
@@ -103,8 +105,10 @@ export function createGame(ruleset, setup) {
   if (ruleset?.events) state.events = emptyEvents();
 
   // The world, when the setup asks for one and the ruleset can build it.
-  if (setup.map && ruleset?.mapSizes) {
-    state.map = generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
+  // A front-line game (phase 19) is fought on a fixed map from mapPresets.json.
+  const preset = frontlineOn(ruleset) && setup.map && ruleset.mapPresets ? (ruleset.mapPresets[setup.map.preset] ? setup.map.preset : Object.keys(ruleset.mapPresets)[0]) : null;
+  if (setup.map && (ruleset?.mapSizes || preset)) {
+    state.map = preset ? buildPresetMap(ruleset, preset) : generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
     state.map.road = new Array(state.map.width * state.map.height).fill(0);
     state.map.improvementIds = Object.keys(ruleset.improvements ?? {});
     state.map.improvement = new Array(state.map.width * state.map.height).fill(-1);
@@ -112,8 +116,11 @@ export function createGame(ruleset, setup) {
     state.units = {};
     state.cities = {};
     state.owner = new Array(state.map.width * state.map.height).fill(null);
-    placeStartingUnits(state, ruleset);
+    if (preset) setUpFrontline(state, ruleset, preset, { foundCity, createUnit, assignCitizens });
+    else placeStartingUnits(state, ruleset);
     updateAllVisibility(state, ruleset);
+    // A front-line war is fought on a known map: both sides start with every tile explored.
+    if (preset && state.fog) for (const fog of Object.values(state.fog)) for (let i = 0; i < fog.length; i += 1) if (fog[i] < EXPLORED) fog[i] = EXPLORED;
   }
   return state;
 }

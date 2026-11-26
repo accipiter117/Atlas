@@ -58,8 +58,9 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
 }
 
 /** The interactive battle module to use: the one asked for if it is interactive, else the first installed. */
-export function interactiveModule(wanted) {
+export function interactiveModule(wanted, preferred = null) {
   if (getModule(wanted)?.kind === 'interactive') return wanted;
+  if (getModule(preferred)?.kind === 'interactive') return preferred;
   return moduleIds().find((id) => getModule(id).kind === 'interactive') ?? 'auto';
 }
 
@@ -85,7 +86,7 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     map: { ...cfg.map },
     players: [
       { kind: 'human', name: tt('game.you'), ...(cfg.faction ? { faction: cfg.faction } : {}), ...(cfg.teams?.[0] ? { team: cfg.teams[0] } : {}) },
-      ...Array.from({ length: cfg.ais }, (_, i) => ({ kind: 'ai', name: tt('game.rival', { n: i + 1 }), ...(cfg.aiFactions[i] ? { faction: cfg.aiFactions[i] } : {}), ...(cfg.teams?.[i + 1] ? { team: cfg.teams[i + 1] } : {}) })),
+      ...Array.from({ length: Math.min(cfg.ais, ruleset.tuning?.setup?.maxAis ?? cfg.ais) }, (_, i) => ({ kind: 'ai', name: tt('game.rival', { n: i + 1 }), ...(cfg.aiFactions[i] ? { faction: cfg.aiFactions[i] } : {}), ...(cfg.teams?.[i + 1] ? { team: cfg.teams[i + 1] } : {}) })),
     ],
     // Only victories the loaded mods leave switched on (lock-era turns science off).
     victories: cfg.victories.filter((id) => ruleset.victories?.[id]?.enabled !== false),
@@ -96,9 +97,9 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     fog: cfg.fog,
     recordAI: cfg.recordAI,
     autosave: cfg.autosave,
-    battleMode: cfg.battleMode ?? 'auto',
-    // Fighting your own battles needs an interactive module: the chosen one, else the first installed.
-    battleModule: (cfg.battleMode ?? 'auto') === 'auto' ? 'auto' : interactiveModule(cfg.battleModule),
+    battleMode: cfg.battleMode ?? ruleset.tuning?.setup?.battleMode ?? 'auto',
+    // Fighting your own battles needs an interactive module: the chosen one, the rules' own, else the first installed.
+    battleModule: (cfg.battleMode ?? ruleset.tuning?.setup?.battleMode ?? 'auto') === 'auto' ? 'auto' : interactiveModule(cfg.battleModule, ruleset.tuning?.setup?.battleModule),
     difficulty: cfg.difficulty ?? 'prince',
   };
   if (cfg.turnLimit === 'none') setup.turnLimit = null;
@@ -116,6 +117,8 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
   const tt = (k, a) => t(text, k, a);
   const say = (key, fallback) => text[key] ?? ruleset.text?.[key] ?? fallback;
   const conf = ruleset.tuning?.setup ?? {};
+  // The rules may cap the rivals (a two-sided front-line war has one).
+  if (limit?.maxAis && cfg.ais > limit.maxAis) { cfg.ais = limit.maxAis; cfg.aiFactions = cfg.aiFactions.slice(0, cfg.ais); }
   const later = (phase) => el(doc, 'span', { class: 'later' }, tt('setup.later', { phase }));
   const rerender = () => renderSetup(doc, host, { ruleset, text, mods, conversions, cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange });
   // A change to the mods reloads the rules (the factions, eras and victories on offer follow).
@@ -188,7 +191,13 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
 
   // Map.
   const sizeIds = Object.values(ruleset.mapSizes ?? {}).map((s) => s.id);
-  const map = group(tt('setup.group.map'),
+  // A front-line game (phase 19) is fought on a fixed map from the rules instead.
+  const mapPresets = ruleset.tuning?.frontline?.enabled ? Object.values(ruleset.mapPresets ?? {}) : [];
+  if (mapPresets.length && !ruleset.mapPresets[cfg.map.preset]) cfg.map.preset = mapPresets[0].id;
+  const map = mapPresets.length ? group(tt('setup.group.map'),
+    row(tt('setup.mapPreset'), select('mapPreset', cfg.map.preset, mapPresets.map((p) => ({ value: p.id, label: say(p.nameKey, p.id) })), (v) => { cfg.map.preset = v; })),
+    el(doc, 'p', { class: 'small muted', dataset: { field: 'preset-text' } }, say(ruleset.mapPresets[cfg.map.preset]?.descriptionKey, '')),
+    el(doc, 'p', { class: 'small muted' }, tt('setup.frontNote'))) : group(tt('setup.group.map'),
     row(tt('setup.mapType'), select('mapType', cfg.map.type, Object.values(ruleset.mapTypes ?? {}).map((m) => ({ value: m.id, label: say(m.nameKey, m.id) })), (v) => { cfg.map.type = v; })),
     row(tt('setup.mapSize'), select('mapSize', cfg.map.size, sizeIds.map((id) => ({ value: id, label: say(ruleset.mapSizes[id].nameKey, id) })), (v) => { cfg.map.size = v; changed(); })),
     row(tt('setup.seaLevel'), select('seaLevel', cfg.map.seaLevel, choose('setup.sea', Object.keys(ruleset.tuning?.mapgen?.seaLevels ?? { low: 1, normal: 1, high: 1 })), (v) => { cfg.map.seaLevel = v; })),
@@ -252,10 +261,10 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     row(tt('setup.disasters'), select('disasters', cfg.disasters ?? 'off', choose('setup.raidersOpt', ['off', 'on']), (v) => { cfg.disasters = v; })));
   // Battles (phase 18): auto-resolve, or fight your own with an interactive module.
   const interactive = moduleIds().filter((id) => getModule(id).kind === 'interactive');
-  const mode = cfg.battleMode ?? 'auto';
+  const mode = cfg.battleMode ?? conf.battleMode ?? 'auto';
   const battles = group(tt('setup.group.battles'),
     row(tt('setup.battleMode'), select('battleMode', mode, [{ value: 'auto', label: tt('setup.battleAuto') }, { value: 'ask', label: tt('setup.battleAsk'), disabled: !interactive.length }, { value: 'fight', label: tt('setup.battleFight'), disabled: !interactive.length }], (v) => { cfg.battleMode = v; })),
-    row(tt('setup.battleModule'), select('battleModule', mode === 'auto' ? 'auto' : interactiveModule(cfg.battleModule), mode === 'auto' ? [{ value: 'auto', label: tt('setup.moduleAuto') }] : interactive.map((id) => ({ value: id, label: tt(`setup.module.${id}`) })), (v) => { cfg.battleModule = v; }, { disabled: mode === 'auto' })),
+    row(tt('setup.battleModule'), select('battleModule', mode === 'auto' ? 'auto' : interactiveModule(cfg.battleModule, conf.battleModule), mode === 'auto' ? [{ value: 'auto', label: tt('setup.moduleAuto') }] : interactive.map((id) => ({ value: id, label: tt(`setup.module.${id}`) })), (v) => { cfg.battleModule = v; }, { disabled: mode === 'auto' })),
     el(doc, 'p', { class: 'small muted' }, tt(mode === 'auto' ? 'setup.battleNoteAuto' : 'setup.battleNoteFight')));
   const advanced = group(tt('setup.group.advanced'),
     row(tt('setup.fog'), select('fog', cfg.fog, choose('setup.onOff', ['on', 'off']), (v) => { cfg.fog = v; })),

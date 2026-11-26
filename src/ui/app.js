@@ -225,8 +225,10 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const { src } = base;
     const manifests = Object.fromEntries(Object.entries(src.available).map(([id, m]) => { try { return [id, JSON.parse(m.manifest)]; } catch { return [id, {}]; } }));
     const devIds = new Set(src.index.mods.filter((m) => m.dev).map((m) => m.id));
-    const mods = Object.values(manifests).filter((m) => m.type === 'tweak' && !devIds.has(m.id));
-    const conversions = Object.values(manifests).filter((m) => m.type === 'conversion' && !devIds.has(m.id));
+    // In rules/index.json order, whatever order the files arrived in.
+    const listed = src.index.mods.map((m) => manifests[m.id]).filter(Boolean);
+    const mods = listed.filter((m) => m.type === 'tweak' && !devIds.has(m.id));
+    const conversions = listed.filter((m) => m.type === 'conversion' && !devIds.has(m.id));
     setupCfg ??= defaultSetup(base.ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous: readLastSetup() });
     // Mods that are no longer installed drop out of a remembered setup.
     if (setupCfg.conversion && setupCfg.conversion !== 'none' && !manifests[setupCfg.conversion]) setupCfg.conversion = 'none';

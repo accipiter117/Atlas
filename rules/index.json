@@ -9,6 +9,10 @@
       "path": "rules/witcher/"
     },
     {
+      "id": "killzone",
+      "path": "rules/killzone/"
+    },
+    {
       "id": "lock-era",
       "path": "rules/lock-era/"
     },
@@ -58,6 +62,10 @@
       "witcher",
       "lock-era",
       "no-religious-victory"
+    ],
+    [
+      "base-ancient",
+      "killzone"
     ]
   ]
 }

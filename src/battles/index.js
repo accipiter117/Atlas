@@ -8,8 +8,9 @@
 
 import auto from './auto/index.js';
 import tactical from './tactical/index.js';
+import killzone from './killzone/index.js';
 
-const MODULES = new Map([[auto.id, auto], [tactical.id, tactical]]);
+const MODULES = new Map([[auto.id, auto], [tactical.id, tactical], [killzone.id, killzone]]);
 
 /** Every module, for the setup screen's list. */
 export function moduleIds() {

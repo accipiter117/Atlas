@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Size budgets (docs/PLAN.md section 11.3).
 //
-// Live now: the first page load (HTML, CSS and our own JavaScript, no art)
-// must stay under 1 MB, so the game opens quickly on a slow connection.
+// Live now: the first page load (HTML, CSS and the JavaScript the page loads
+// at once, no art) must stay under 1 MB, so the game opens quickly on a slow
+// connection.
 //
 // Live from phase 9: the late-game save budget. A 330-turn AI game is played
 // headless, saved exactly as the browser saves it (short command keys, gzip,
@@ -14,8 +15,8 @@
 // Run:  node tools/check-size.mjs [--full] [--skip-save] [root]
 
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { stat } from 'node:fs/promises';
+import { dirname, join, posix } from 'node:path';
+import { stat, readFile } from 'node:fs/promises';
 import { listFiles } from './lib-files.mjs';
 import { loadReal } from '../test/data/helpers.js';
 import { aiGame } from '../test/ai/harness.js';
@@ -24,9 +25,28 @@ import { createCodec } from '../src/save/codec.js';
 
 export const FIRST_LOAD_BUDGET = 1_000_000;
 
+/**
+ * What the first page load really fetches: the page, its stylesheets, and every
+ * script reachable by static imports from the page's entry points (src/main.js
+ * and the computer players' worker). A module loaded later by a dynamic
+ * import() (the Killzone platoon battle, phase 19) is not part of it.
+ */
 export async function firstLoadBytes(root) {
-  const files = ['index.html', ...(await listFiles(root, join(root, 'css'))), ...(await listFiles(root, join(root, 'src')))]
-    .filter((f) => /\.(html|css|js)$/.test(f));
+  const entries = ['src/main.js', 'src/aiWorker.js'];
+  const seen = new Set();
+  const queue = [...entries];
+  while (queue.length) {
+    const file = queue.shift();
+    if (seen.has(file)) continue;
+    seen.add(file);
+    let source;
+    try { source = await readFile(join(root, file), 'utf8'); } catch { continue; }
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    for (const m of code.matchAll(/\b(?:import|export)\s+(?:[\w*{}\s,$]+\s+from\s+)?['"](\.{1,2}\/[^'"]+)['"]/g)) {
+      queue.push(posix.normalize(posix.join(posix.dirname(file), m[1])));
+    }
+  }
+  const files = ['index.html', ...(await listFiles(root, join(root, 'css'))).filter((f) => f.endsWith('.css')), ...seen];
   let total = 0;
   for (const f of files) total += (await stat(join(root, f))).size;
   return { total, files: files.length };

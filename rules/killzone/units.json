@@ -1,0 +1,7 @@
+{
+  "contentType": "units",
+  "entries": [
+    {"id": "isa_sniper", "nameKey": "unit.isa_sniper.name", "class": "ranged", "era": "ancient", "strength": 16, "rangedStrength": 30, "range": 2, "moves": 2, "cost": 70, "upkeep": 1, "requires": {"tech": "archery", "faction": "isa"}, "replaces": "archer", "sprite": "unit.isa_sniper", "tags": ["infantry"], "descriptionKey": "unit.isa_sniper.text"},
+    {"id": "helghast_heavy", "nameKey": "unit.helghast_heavy.name", "class": "melee", "era": "classical", "strength": 42, "moves": 2, "cost": 115, "upkeep": 1, "requires": {"tech": "iron_working", "resource": "iron", "faction": "helghast"}, "replaces": "swordsman", "sprite": "unit.helghast_heavy", "tags": ["infantry"], "descriptionKey": "unit.helghast_heavy.text"}
+  ]
+}

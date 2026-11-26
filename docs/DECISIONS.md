@@ -239,6 +239,16 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **One soldier for every 10 HP**, so a full-strength unit is a band of ten.
 - **Britannia's battle code** was read for ideas (bands, formations, wheeling to face, charges, the spatial picture) and rewritten from scratch to Atlas's rules and folder boundaries; nothing is copied.
 
+## Phase 19
+
+- **The Killzone battle sim is vendored, not rewritten.** The plan asks for an adapter around the Killzone project's sim (section 5.5), and it already follows Atlas's rules (no screen, no clock, one seeded stream), so its `src/sim` and `config.js` are copied unchanged into `src/battles/killzone/sim/vendor/` (excluded from Atlas's lint so it can be refreshed). Its renderer and 16 MB of sprite art are not: Atlas draws the platoon battle itself, light and code-drawn.
+- **Units become platoons**: strength (with the engine's modifiers) sets the number of squads (one per 12 points, 1 to 4), class sets their roles, health sets how many of each squad's five soldiers are present. **Survivors become health**: hp = starting hp x soldiers left / soldiers present. A side whose platoons all broke is routed (its units are lost). The Killzone AI plays for objectives, so most battles end on time with few casualties; the side that lost on points then takes a further 10%, 20% or 35% damage (narrow, clear or crushing), so winning a Killzone battle shows on the map.
+- **Control** moves by army presence each round (strength, halving with each hex of distance, out to 2 hexes), at most 20 a round, spreading 15% towards neighbours; cities hold their tile at full control and their ring at 50. **Battles** shift control by up to 40 at the battlefield (half on the ring) towards the side that lost the smaller share of health, with a bonus for an outright win.
+- **Sites** change hands when control at their tile reaches 50 either way, and give their bonus to every faction on the holder's side.
+- **A front-line map is fully known from the start**: on a fixed map both sides know the ground; without it the computer never found the enemy and the front never moved.
+- **No peace on the front**: the war is fought to the end (deals including peace are refused). **No raiders**: the two armies are the only threat.
+- **Defaults from the rules**: a conversion can set the default battle mode and module (Killzone: Ask each time, Killzone platoons) and cap the rivals (Killzone: one).
+
 ## Later
 
 - Nothing yet.

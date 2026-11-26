@@ -6,6 +6,7 @@
 //   { id, name, faction, tile, capital, founded, pop, food, culture,
 //     tilesClaimed, focus, locks, worked, specialists, queue, progress, buildings }
 
+import { frontlineOn } from './frontline.js';
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
@@ -164,6 +165,8 @@ export function canBuild(state, ruleset, city, item) {
   if (item.kind === 'unit') {
     const def = ruleset.units[item.id];
     if (!def || def.faithOnly || def.raiderOnly) return false;
+    // Front-line wars (phase 19) found no new cities.
+    if (frontlineOn(ruleset) && (def.tags ?? []).includes('founder')) return false;
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;

@@ -152,6 +152,22 @@ easiest to read the generator, but the files it produces are ordinary content fi
 Load it with lock-era and no-religious-victory on top and you get a Classical-era Northern
 Wars sandbox with no science or religious victory.
 
+
+## A front-line war: how the Killzone mod is built
+
+`rules/killzone/` switches on the engine's front-line system with one tuning line,
+`"frontline.enabled": true`, and then:
+
+- gives each faction a `frontSide` (0 or 1);
+- adds `sites.json` (a factory, a power plant, a refinery, each with effects for the side that holds it);
+- adds `mapPresets.json`: a fixed map as rows of letters with a `legend` saying what each letter is,
+  the `front` column where the two sides meet, each side's cities and starting units, and where the
+  sites stand;
+- sets `setup.maxAis` to 1, and the default battles to "Ask each time" with its own platoon module.
+
+The front's numbers (how fast armies push it, how far battles move it, when a site changes hands)
+are all under `frontline` in tuning.
+
 ## Art
 
 Pictures are asked for by id (`unit.witcher`, `building.witcher_school`, `leader.emhyr`).

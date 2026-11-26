@@ -1,0 +1,81 @@
+{
+  "contentType": "tuning",
+  "set": {
+    "frontline.enabled": true,
+    "frontline.presenceRange": 2,
+    "frontline.presenceStrength": 0.05,
+    "frontline.maxStep": 20,
+    "frontline.spread": 0.15,
+    "frontline.captureAt": 50,
+    "frontline.battleShift": 40,
+    "frontline.winBonus": 0.5,
+    "frontline.startSoftness": 25,
+    "setup.maxAis": 1,
+    "setup.battleMode": "ask",
+    "setup.battleModule": "killzone",
+    "battle.killzone": {
+      "durationSec": 300,
+      "strengthPerSquad": 12,
+      "minSquads": 1,
+      "maxSquads": 4,
+      "secondSide": [
+        "helghast"
+      ],
+      "timeLoss": {
+        "narrow": 0.1,
+        "clear": 0.2,
+        "crushing": 0.35
+      },
+      "roles": {
+        "melee": [
+          "rifle",
+          "assault",
+          "rifle",
+          "heavy"
+        ],
+        "anti_cavalry": [
+          "heavy",
+          "rifle",
+          "engineer",
+          "heavy"
+        ],
+        "ranged": [
+          "heavy",
+          "rifle",
+          "recon",
+          "heavy"
+        ],
+        "cavalry": [
+          "assault",
+          "rifle",
+          "assault",
+          "engineer"
+        ],
+        "recon": [
+          "recon",
+          "rifle",
+          "infiltrator",
+          "rifle"
+        ],
+        "siege": [
+          "heavy",
+          "engineer",
+          "heavy",
+          "rifle"
+        ],
+        "militia": [
+          "rifle",
+          "heavy",
+          "rifle",
+          "engineer"
+        ],
+        "default": [
+          "rifle",
+          "heavy",
+          "engineer",
+          "rifle"
+        ]
+      }
+    }
+  }
+}

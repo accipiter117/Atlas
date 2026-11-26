@@ -53,11 +53,11 @@ test('text lookup with arguments; missing keys are visible, not fatal', () => {
   assert.equal(formatText('{a} and {b}', { a: 1 }), '1 and {b}');
 });
 
-test('there is a schema for every content type in section 4.1 (plus difficulty.json from section 9.5), and all 24 effects', () => {
+test('there is a schema for every content type in section 4.1 (plus difficulty.json from section 9.5, sites and mapPresets from phase 19), and all 24 effects', () => {
   const planned = ['terrain', 'features', 'resources', 'mapSizes', 'mapTypes', 'units', 'unitClasses', 'promotions',
     'buildings', 'wonders', 'improvements', 'techs', 'civics', 'eras', 'governments', 'policies', 'beliefs', 'religions',
     'trade', 'espionage', 'diplomacy', 'factions', 'leaders', 'cityNames', 'events', 'victories', 'aiPersonalities', 'aiWeights',
-    'focuses', 'advice', 'tuning', 'text', 'skin', 'difficulty'];
+    'focuses', 'advice', 'tuning', 'text', 'skin', 'difficulty', 'sites', 'mapPresets'];
   assert.deepEqual([...CONTENT_TYPES].sort(), [...planned].sort());
   assert.equal(Object.keys(EFFECTS).length, 24);
   assert.equal(effectSchema('buildCharge'), null);

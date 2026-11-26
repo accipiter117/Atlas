@@ -1,0 +1,8 @@
+{
+  "contentType": "factions",
+  "entries": [
+    {"op": "remove", "where": {"tags": {"has": "historical"}}, "cascade": true},
+    {"id": "isa", "nameKey": "faction.isa.name", "adjectiveKey": "faction.isa.adj", "descriptionKey": "faction.isa.text", "colours": {"primary": "#3f7fd0", "secondary": "#e6edf5"}, "leaders": ["templar"], "startBias": {"terrain": ["grassland", "plains"]}, "trait": {"id": "alliance_logistics", "nameKey": "trait.alliance_logistics.name", "descriptionKey": "trait.alliance_logistics.text", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 1}, {"effect": "costPercent", "target": "units", "amount": -10}]}, "uniqueUnits": ["isa_sniper"], "cityNames": "k_isa", "frontSide": 0, "tags": ["killzone"]},
+    {"id": "helghast", "nameKey": "faction.helghast.name", "adjectiveKey": "faction.helghast.adj", "descriptionKey": "faction.helghast.text", "colours": {"primary": "#b8321f", "secondary": "#1b1b1b"}, "leaders": ["visari"], "startBias": {"terrain": ["plains", "desert", "tundra"]}, "trait": {"id": "forged_by_helghan", "nameKey": "trait.forged_by_helghan.name", "descriptionKey": "trait.forged_by_helghan.text", "effects": [{"effect": "healBonus", "amount": 10}, {"effect": "costPercent", "target": "melee", "amount": -15}]}, "uniqueUnits": ["helghast_heavy"], "cityNames": "k_helghast", "frontSide": 1, "tags": ["killzone"]}
+  ]
+}

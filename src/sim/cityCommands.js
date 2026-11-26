@@ -2,6 +2,7 @@
 // setFocus, lockTile, unlockTile, buyTile. Plus the start-of-turn work for a
 // faction's cities: yields, growth, production, borders and stocks.
 
+import { frontlineOn } from './frontline.js';
 import { currentFactionId } from './queries.js';
 import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf, cityHpMax } from './cities.js';
 import { payUpkeep } from './economy.js';
@@ -40,6 +41,7 @@ export const foundCity = {
     if (!unit) return refuse('unknownUnit', `No unit "${cmd.unit}"`);
     if (unit.faction !== cmd.faction) return refuse('notYourUnit', `${cmd.unit} belongs to ${unit.faction}`);
     if (!(ruleset.units[unit.type]?.tags ?? []).includes('founder')) return refuse('notFounder', 'Only settlers can found cities');
+    if (frontlineOn(ruleset)) return refuse('noSettling', 'No new cities in a front-line war');
     if (unit.moves <= 0) return refuse('noMoves', 'This unit has no moves left');
     const problem = foundingProblem(state, ruleset, cmd.faction, unit.tile);
     return problem ? refuse(problem, `Cannot found a city here (${problem})`) : null;

@@ -8,6 +8,7 @@ import { currentFactionId, getFaction } from './queries.js';
 import { startUnitsTurn } from './unitCommands.js';
 import { startCitiesTurn } from './cityCommands.js';
 import { runRaiders } from './raiders.js';
+import { frontlineRound } from './frontline.js';
 import { runBattle } from './combatCommands.js';
 import { updateAllVisibility } from './visibility.js';
 import { checkVictory } from './victories/index.js';
@@ -43,6 +44,8 @@ function startRound(state, events, ruleset) {
     updateAllVisibility(state, ruleset);
     diplomacyRound(state, ruleset, events);
     religionRound(state, ruleset, events);
+    // Phase 19: armies push the front (only in front-line games).
+    if (state.frontline) frontlineRound(state, ruleset, events);
     eliminate(state, ruleset, events);
     checkVictory(state, ruleset, events);
   }

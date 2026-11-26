@@ -235,7 +235,15 @@
       "lateGameMode": "normal"
     },
     "frontline": {
-      "enabled": false
+      "enabled": false,
+      "presenceRange": 2,
+      "presenceStrength": 0.05,
+      "maxStep": 20,
+      "spread": 0.15,
+      "captureAt": 50,
+      "battleShift": 40,
+      "winBonus": 0.5,
+      "startSoftness": 25
     },
     "mapgen": {
       "resourceDensity": 0.022,
@@ -303,6 +311,68 @@
         "chargeSpeed": 1.5,
         "flankBonus": 3,
         "flankDot": 0.5
+      },
+      "killzone": {
+        "durationSec": 300,
+        "strengthPerSquad": 12,
+        "minSquads": 1,
+        "maxSquads": 4,
+        "secondSide": [],
+        "timeLoss": {
+          "narrow": 0.1,
+          "clear": 0.2,
+          "crushing": 0.35
+        },
+        "roles": {
+          "melee": [
+            "rifle",
+            "assault",
+            "rifle",
+            "heavy"
+          ],
+          "anti_cavalry": [
+            "heavy",
+            "rifle",
+            "engineer",
+            "heavy"
+          ],
+          "ranged": [
+            "heavy",
+            "rifle",
+            "recon",
+            "heavy"
+          ],
+          "cavalry": [
+            "assault",
+            "rifle",
+            "assault",
+            "engineer"
+          ],
+          "recon": [
+            "recon",
+            "rifle",
+            "infiltrator",
+            "rifle"
+          ],
+          "siege": [
+            "heavy",
+            "engineer",
+            "heavy",
+            "rifle"
+          ],
+          "militia": [
+            "rifle",
+            "heavy",
+            "rifle",
+            "engineer"
+          ],
+          "default": [
+            "rifle",
+            "heavy",
+            "engineer",
+            "rifle"
+          ]
+        }
       }
     },
     "raiders": {
@@ -364,7 +434,9 @@
           "speed": "epic"
         }
       },
-      "maxAis": 11
+      "maxAis": 11,
+      "battleMode": "auto",
+      "battleModule": "tactical"
     },
     "culture": {
       "influencePerWonder": 3

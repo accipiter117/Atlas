@@ -1,0 +1,8 @@
+{
+  "contentType": "cityNames",
+  "entries": [
+    {"op": "remove", "where": {"tags": {"has": "historical"}}},
+    {"id": "k_isa", "names": ["Vekta Landing", "New Sun", "Kessler Ridge", "Fort Ardent", "Cobalt Bay", "Alhazen", "Blue Harbour", "Corinth Field", "Stillwater", "Grey Point", "Southgate", "Ironwood"]},
+    {"id": "k_helghast", "names": ["Pyrrhus", "Visari Square", "Tharsis", "Corinth Depot", "Suljeva", "Maelstra", "Ashfall", "Stahl Works", "Kharon", "Blackstone", "Redwater", "Cinder Bay"]}
+  ]
+}

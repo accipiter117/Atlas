@@ -1,0 +1,8 @@
+{
+  "contentType": "victories",
+  "entries": [
+    {"op": "change", "id": "science", "set": {"enabled": false}},
+    {"op": "change", "id": "culture", "set": {"enabled": false}},
+    {"op": "change", "id": "religious", "set": {"enabled": false}}
+  ]
+}

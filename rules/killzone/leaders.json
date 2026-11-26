@@ -1,0 +1,7 @@
+{
+  "contentType": "leaders",
+  "entries": [
+    {"id": "templar", "faction": "isa", "nameKey": "leader.templar.name", "trait": {"id": "steady_command", "nameKey": "trait.steady_command.name", "descriptionKey": "trait.steady_command.text", "effects": [{"effect": "healBonus", "amount": 5}]}, "agenda": {"id": "hold_the_line", "nameKey": "agenda.hold_the_line.name", "descriptionKey": "agenda.hold_the_line.text", "likes": "keptPromises", "hates": "surpriseWar", "weight": 6}, "portrait": "leader.templar", "ai": {"personality": "builder_conqueror", "victoryBias": {"conquest": 1.3, "science": 1.0, "culture": 0.8, "religious": 0.5, "score": 1.2}}},
+    {"id": "visari", "faction": "helghast", "nameKey": "leader.visari.name", "trait": {"id": "the_autarch", "nameKey": "trait.the_autarch.name", "descriptionKey": "trait.the_autarch.text", "effects": [{"effect": "yieldPercent", "yield": "production", "amount": 10}]}, "agenda": {"id": "iron_will", "nameKey": "agenda.iron_will.name", "descriptionKey": "agenda.iron_will.text", "likes": "largeArmy", "hates": "weakArmy", "weight": 6}, "portrait": "leader.visari", "ai": {"personality": "conqueror", "victoryBias": {"conquest": 1.5, "science": 0.9, "culture": 0.7, "religious": 0.5, "score": 1.0}}}
+  ]
+}

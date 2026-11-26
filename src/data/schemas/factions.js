@@ -14,6 +14,8 @@ export const factions = entryType('factions', {
   uniqueUnits: refs('units'),
   uniqueBuildings: refs('buildings'),
   cityNames: ref('cityNames', { cascade: 'clear' }),
+  // Phase 19: which side of a front-line war (0 or 1) the faction fights on.
+  frontSide: int(0, 1),
 });
 
 const VICTORIES = ['conquest', 'science', 'culture', 'religious', 'score'];

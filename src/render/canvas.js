@@ -8,7 +8,7 @@ import { worldSize, HEX_SCREEN, SQRT3 } from './hexDraw.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
-import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline } from './layers/overlays.js';
+import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline, drawFront } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
 import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/cities.js';
 import { neighbourCache } from '../sim/index.js';
@@ -78,6 +78,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const visible = { x: cam.x, y: cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom };
     view.terrain.draw(ctx, cam, visible);
     drawFog(ctx, view.map, cam, visible, view.fog);
+    if (view.front) drawFront(ctx, view.map, cam, visible, view.front, neighbourCache(view.map));
     const cityById = new Map(view.cities.map((c) => [c.id, c]));
     drawBorders(ctx, view.map, cam, view.owner, (cityId) => colours[cityById.get(cityId)?.faction] ?? '#888', neighbourCache(view.map));
     drawCityWork(ctx, view.map, cam, view.cityOverlay);
@@ -156,6 +157,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setMarkers(tiles) { view.markers = tiles; dirty = true; },
     /** The religion lens: { cityId: [{ colour, n }] } or null to hide it. */
     setReligionLens(lens) { view.religionLens = lens; dirty = true; },
+    /** The front line (phase 19): { control, sites, colours, letters }, or null. */
+    setFront(front) { view.front = front; dirty = true; },
     redraw() { dirty = true; },
     /** Draw immediately (for timing tests). */
     drawNow() { resize(); draw(); return view.lastFrameMs; },

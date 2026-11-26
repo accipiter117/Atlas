@@ -426,6 +426,8 @@ export function dealProblem(state, ruleset, deal) {
   const types = all.map((x) => x.type);
   if (types.some((x) => !DEAL_ITEMS.includes(x))) return 'badItem';
   if (types.includes('peace') && !war) return 'notAtWar';
+  // A front-line war (phase 19) is fought to the end: the two sides never make peace.
+  if (types.includes('peace') && state.frontline) return 'noPeaceOnFront';
   if (war && !types.includes('peace')) return 'atWarNeedsPeace';
   if (types.filter((x) => x === 'peace').length > 1) return 'badItem';
   for (const x of all) {

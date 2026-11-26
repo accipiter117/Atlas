@@ -188,14 +188,14 @@ export function buildSpec(state, ruleset, unit, target) {
 
   if (hostileCity) {
     defenderSide = {
-      faction: hostileCity.faction, human: state.factions.find((f) => f.id === hostileCity.faction)?.kind === 'human',
+      faction: hostileCity.faction, civ: state.factions.find((f) => f.id === hostileCity.faction)?.civ ?? null, human: state.factions.find((f) => f.id === hostileCity.faction)?.kind === 'human',
       units: defender ? [unitEntry(ruleset, defender)] : [],
       city: { ref: hostileCity.id, name: hostileCity.name, strength: cityStrength(state, ruleset, hostileCity), hp: hostileCity.hp ?? cityMaxHp(ruleset, hostileCity), walls: cityHasWalls(ruleset, hostileCity) },
     };
     aMods.push(...combatBonuses(ruleset, unit, { role: 'attacker', opponent: { isCity: true } }));
     if (unitDef(ruleset, unit).class === 'siege') aMods.push({ source: 'siege', amount: t.siegeVsCity ?? 10 });
   } else {
-    defenderSide = { faction: defender.faction, human: state.factions.find((f) => f.id === defender.faction)?.kind === 'human', units: [unitEntry(ruleset, defender)], city: null };
+    defenderSide = { faction: defender.faction, civ: state.factions.find((f) => f.id === defender.faction)?.civ ?? null, human: state.factions.find((f) => f.id === defender.faction)?.kind === 'human', units: [unitEntry(ruleset, defender)], city: null };
     dMods.push(...terrainModifiers(state, ruleset, target));
     if (defender.activity === 'fortify' && defender.fortifiedTurns >= (t.fortifyTurns ?? 2)) dMods.push({ source: 'fortified', amount: t.fortifyBonus ?? 4 });
     dMods.push(...wounded(defender, t));
@@ -219,12 +219,12 @@ export function buildSpec(state, ruleset, unit, target) {
     seed: 0,
     turn: state.turn,
     kind: hostileCity && !ranged ? 'city' : kind,
-    attacker: { faction: unit.faction, human: state.factions.find((f) => f.id === unit.faction)?.kind === 'human', units: [attackerEntry], support: [] },
+    attacker: { faction: unit.faction, civ: state.factions.find((f) => f.id === unit.faction)?.civ ?? null, human: state.factions.find((f) => f.id === unit.faction)?.kind === 'human', units: [attackerEntry], support: [] },
     defender: defenderSide,
     ground: { ...groundOf(state, ruleset, target), riverCrossing: aMods.some((m) => m.source === 'river') },
     modifiers: { attacker: aMods, defender: dMods },
     // Interactive modules read their own slice (battle.<id>, section 5.2).
-    tuning: { ...battle, xpAttack: xp.perAttack ?? 5, xpDefence: xp.perDefence ?? 3, tactical: ruleset.tuning?.battle?.tactical ?? null },
+    tuning: { ...battle, xpAttack: xp.perAttack ?? 5, xpDefence: xp.perDefence ?? 3, tactical: ruleset.tuning?.battle?.tactical ?? null, killzone: ruleset.tuning?.battle?.killzone ?? null },
     skin: ruleset.skin?.id ?? null,
     target,
   };

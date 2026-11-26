@@ -1,0 +1,28 @@
+{
+  "id": "killzone",
+  "name": "Killzone: The Front",
+  "version": "1.0.0",
+  "type": "conversion",
+  "engine": ">=0.1.0",
+  "description": "A two-sided war between the ISA and the Helghast on a fixed map: no settling, a front line that moves with the armies, factories and refineries to capture, and platoon battles.",
+  "dependsOn": [
+    "base-ancient"
+  ],
+  "loadAfter": [],
+  "incompatibleWith": [],
+  "options": [],
+  "files": [
+    "factions.json",
+    "leaders.json",
+    "units.json",
+    "cityNames.json",
+    "sites.json",
+    "mapPresets.json",
+    "religions.json",
+    "victories.json",
+    "tuning.json",
+    "text/en-GB.json",
+    "skin/skin.json"
+  ],
+  "credits": "Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games. The platoon battles use the battle sim from the owner's own Killzone: Front Line project."
+}

@@ -36,6 +36,7 @@ import religiousPressure from './religiousPressure.js';
 import faithPurchase from './faithPurchase.js';
 import tradeRouteYield from './tradeRouteYield.js';
 import popChange from './popChange.js';
+import { siteEffects } from '../frontline.js';
 import { religionEffects, majorityOf } from '../religion.js';
 
 export const HANDLERS = Object.freeze(Object.fromEntries(
@@ -72,6 +73,8 @@ export function effectsFor(state, ruleset, factionId) {
   const leader = civ?.leaders?.[0] ? ruleset.leaders?.[civ.leaders[0]] : null;
   for (const e of leader?.trait?.effects ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'leader', id: leader.trait.id } });
   // Difficulty (section 9.5): the labelled bonuses from difficulty.json, the only advantages anyone gets.
+  // Front-line sites (phase 19) held by this faction's side.
+  if (state.frontline) out.push(...siteEffects(state, ruleset, factionId));
   const level = difficultyOf(state, ruleset);
   for (const e of (f?.kind === 'human' ? level?.humanEffects : f?.kind === 'ai' ? level?.aiEffects : null) ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'difficulty', id: level.id } });
   // Government and policy cards (section 3.7): only the active ones; none during anarchy.

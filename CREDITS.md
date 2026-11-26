@@ -6,6 +6,7 @@ Atlas engine code: original work under the MIT licence (see `LICENSE`).
 
 - **Ancient world** (`base-ancient` 0.1.0): Original Atlas content, MIT licence.
 - **The Witcher: Northern Wars** (`witcher` 1.0.0): Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the books or games.
+- **Killzone: The Front** (`killzone` 1.0.0): Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games. The platoon battles use the battle sim from the owner's own Killzone: Front Line project.
 - **Lock to one era** (`lock-era` 1.0.0): Original Atlas content, MIT licence.
 - **No religious victory** (`no-religious-victory` 1.0.0): Original Atlas content, MIT licence.
 - **Test: swift scouts** (`test-swift-scouts` 1.0.0): Original Atlas content, MIT licence.

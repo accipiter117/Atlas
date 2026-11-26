@@ -120,7 +120,8 @@ function walkTowards(state, ruleset, unit, goal) {
 
 /** End of round: camps appear, camps send out raiders, raiders act and heal. */
 export function runRaiders(state, ruleset, events, runBattle) {
-  if (!raidersOn(state) || !state.map || !ruleset.tuning?.raiders) return;
+  // No raiders in a front-line war (phase 19): the two armies are the only threat.
+  if (!raidersOn(state) || !state.map || !ruleset.tuning?.raiders || state.frontline) return;
   const r = ruleset.tuning.raiders;
   const raging = state.setup.raiders === 'raging' ? 2 : 1;
   state.raiders ??= { camps: {}, lastCamp: 0 };
