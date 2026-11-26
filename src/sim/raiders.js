@@ -12,7 +12,7 @@ import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { createUnit, unitsAt, canStand } from './units.js';
 import { findPath } from './movement.js';
-import { attackProblem, buildSpec, combatKind } from './combat.js';
+import { attackProblem, buildSpec, combatKind, defenderAt } from './combat.js';
 import { VISIBLE } from './visibility.js';
 
 export const RAIDERS = 'raiders';
@@ -77,6 +77,18 @@ function actRaider(state, ruleset, unit, events, runBattle) {
   }
   if (attackProblem(state, ruleset, unit, target) !== null) walkTowards(state, ruleset, unit, target);
   if (state.units[unit.id] && attackProblem(state, ruleset, unit, target) === null) {
+    // Only civilians there: the raiders carry them off.
+    const city = Object.values(state.cities ?? {}).find((c) => c.tile === target);
+    if (!city && !defenderAt(state, ruleset, unit.faction, target)) {
+      for (const u of unitsAt(state, target)) {
+        if (u.faction === RAIDERS) continue;
+        delete state.units[u.id];
+        events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: target, by: RAIDERS });
+      }
+      unit.tile = target;
+      unit.moves = 0;
+      return;
+    }
     const spec = buildSpec(state, ruleset, unit, target);
     spec.from = unit.tile;
     // Raiders never take cities: they wound units and batter walls.
@@ -85,7 +97,6 @@ function actRaider(state, ruleset, unit, events, runBattle) {
       if ((city.hp ?? 1) <= 1) return;
     }
     runBattle(state, ruleset, spec, events, { forceAuto: true });
-    const city = Object.values(state.cities ?? {}).find((c) => c.tile === target);
     if (city && city.hp === 0) city.hp = 1;
     if (state.pendingCapture?.faction === RAIDERS) state.pendingCapture = null;
   }

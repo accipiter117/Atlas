@@ -45,7 +45,8 @@ export function advanceUnit(state, ruleset, unit, target, events) {
   const walked = [unit.tile];
   let lastStop = { tile: unit.tile, moves: unit.moves };
   for (const next of plan.tiles) {
-    const enemyThere = unitsAt(state, next).some((u) => isEnemy(state, unit.faction, u.faction));
+    const enemyThere = unitsAt(state, next).some((u) => isEnemy(state, unit.faction, u.faction))
+      || Object.values(state.cities ?? {}).some((c) => c.tile === next && c.faction !== unit.faction);
     if (enemyThere || !passable(state, ruleset, unit.type, next)) break;
     const left = stepMoves(state, ruleset, unit, unit.tile, next, unit.moves, full);
     if (left === null) break;

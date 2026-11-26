@@ -12,6 +12,7 @@ import { distance } from './borders.js';
 import { tileYields, factionEffects, YIELD_NAMES } from './yields.js';
 import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
 import { buildingProblem, spawnUnit, claimWonder } from './buildings.js';
+import { knows, speedMultiplier } from './progression.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -139,6 +140,7 @@ export function hasResource(state, ruleset, factionId, resourceId) {
   const map = state.map;
   const want = ruleset.resources[resourceId];
   if (!want || !map.improvement) return false;
+  if (want.revealedBy && !knows(state, factionId, want.revealedBy)) return false;
   for (let i = 0; i < state.owner.length; i += 1) {
     const o = state.owner[i];
     if (o === null || state.cities[o]?.faction !== factionId) continue;
@@ -155,7 +157,8 @@ export function canBuild(state, ruleset, city, item) {
     if (!def) return false;
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
-    if (def.requires?.tech || def.requires?.civic) return false; // arrive with techs and civics
+    if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;
+    if (def.requires?.civic) return false; // civics arrive in phase 11
     if (def.requires?.building && !city.buildings.includes(def.requires.building)) return false;
     if (def.requires?.resource && !hasResource(state, ruleset, city.faction, def.requires.resource)) return false;
     // A faction's unique unit hides the unit it replaces.
@@ -185,7 +188,7 @@ export function itemCost(ruleset, item, state = null, city = null) {
   const base = baseCost(ruleset, item);
   if (!state || !city) return base;
   const pct = sumHook('cost', state, ruleset, city.faction, { city, item });
-  return Math.max(1, Math.round(base * (1 + pct / 100)));
+  return Math.max(1, Math.round(base * (1 + pct / 100) * speedMultiplier(state, ruleset)));
 }
 
 /** Everything the city can build now. */

@@ -9,6 +9,7 @@
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
 import { sumHook } from './effects/index.js';
+import { atWar } from './diplomacy.js';
 
 export const CIVILIAN = 'civilian';
 export const COMBAT = 'combat';
@@ -58,9 +59,9 @@ export function factionUnits(state, factionId) {
   return Object.values(state.units).filter((u) => u.faction === factionId);
 }
 
-/** Until diplomacy exists (phase 12) every other faction counts as an enemy for movement rules. */
+/** Are these two factions at war (raiders are at war with everyone)? */
 export function isEnemy(state, a, b) {
-  return a !== b;
+  return atWar(state, a, b);
 }
 
 /** Does a tile accept a unit of this type from this faction (terrain, domain, stacking)? */

@@ -9,7 +9,7 @@ export { applyCommand, COMMANDS } from './commands.js';
 export { currentFactionId, getFaction, livingSeats } from './queries.js';
 export { generateMap, MapgenError, resourceAllowed, tileFood } from './mapgen.js';
 export { tileIndex, tileHex, neighbourTiles, neighbourCache } from './map.js';
-export { view } from './view.js';
+export { view, worldFromView } from './view.js';
 export { cityYields, tileYields, factionEffects } from './yields.js';
 export { foodToGrow } from './growth.js';
 export { buildOptions, foundingProblem, workable, itemCost, citiesOf, specialistSlots, hasResource } from './cities.js';
@@ -34,3 +34,6 @@ export function fingerprint(state) {
 export { buildSpec, buildCitySpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, defenderAt } from './combat.js';
 export { promotionOptions } from './combatCommands.js';
 export { cityHpMax } from './cities.js';
+export { costOf, available, pathTo, eraOf, knows, researchOf } from './progression.js';
+export { atWar } from './diplomacy.js';
+export { damage, strengths } from '../battles/index.js';

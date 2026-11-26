@@ -21,7 +21,7 @@
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 7: combat, raiders and promotions. Developer <a href="dev.html">map viewer</a>.</p>
+      <p class="footnote">Phase 8: research, and rivals who expand and fight. Developer <a href="dev.html">map viewer</a>.</p>
     </div>
   </main>
 
@@ -42,6 +42,7 @@
       <button class="btn small faction-chip" type="button" data-action="faction">Faction</button>
       <strong class="game-turn" data-field="turn">Turn 1</strong>
       <span class="game-yields" data-field="yields"></span>
+      <button class="btn small" type="button" data-action="journal" title="J">AI journal</button>
       <span class="game-hint" data-field="hint"></span>
     </header>
     <div class="advice-line" data-field="advice" aria-live="polite"></div>
@@ -81,6 +82,10 @@
       <div data-field="overlay-body"></div>
       <button class="btn small" type="button" data-action="close-overlay">Close</button>
     </div>
+  </div>
+
+  <div class="panel-overlay" data-field="panel" hidden>
+    <div class="panel-card" role="dialog" aria-modal="true" data-field="panel-body"></div>
   </div>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>

@@ -19,6 +19,7 @@ import { distance } from './borders.js';
 import { unitsAt, slotOf, isEnemy, unitDef } from './units.js';
 import { buildingDef } from './effects/index.js';
 import { random } from '../core/rng.js';
+import { knows } from './progression.js';
 
 export const CITY_REF = 'city';
 
@@ -80,7 +81,8 @@ export function cityStrength(state, ruleset, city) {
   for (const def of Object.values(ruleset.units)) {
     if (ruleset.unitClasses[def.class]?.combat !== 'melee') continue;
     if (def.requires?.faction && def.requires.faction !== state.factions.find((f) => f.id === city.faction)?.civ) continue;
-    if (def.requires?.tech || def.requires?.civic || def.requires?.resource) continue;
+    if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) continue;
+    if (def.requires?.civic || def.requires?.resource) continue;
     best = Math.max(best, def.strength);
   }
   for (const u of unitsAt(state, city.tile)) if (u.faction === city.faction) best = Math.max(best, unitDef(ruleset, u).strength);
@@ -144,9 +146,15 @@ export function attackProblem(state, ruleset, unit, target, seen = null) {
   if (seen && !seen(target)) return 'cannotSee';
   const city = cityAtTile(state, target);
   const hostileCity = city && isEnemy(state, unit.faction, city.faction);
+  // Units inside a city you are at peace with are out of reach.
+  if (city && !hostileCity && city.faction !== unit.faction) return 'atPeace';
   const defender = defenderAt(state, ruleset, unit.faction, target);
   const civilians = unitsAt(state, target).filter((u) => isEnemy(state, unit.faction, u.faction));
-  if (!hostileCity && !defender && !civilians.length) return 'noEnemy';
+  if (!hostileCity && !defender && !civilians.length) {
+    // Someone is there but we are at peace with them.
+    const other = unitsAt(state, target).find((u) => u.faction !== unit.faction) ?? (city && city.faction !== unit.faction ? city : null);
+    return other ? 'atPeace' : 'noEnemy';
+  }
   const d = distance(state.map, unit.tile, target);
   if (kind === 'ranged') {
     if (d > rangeOf(ruleset, unit) || d === 0) return 'outOfRange';
@@ -270,7 +278,8 @@ export function applyResult(state, ruleset, spec, result, events) {
     u.xp = (u.xp ?? 0) + (r.alive ? r.xpGained ?? 0 : 0);
     if (!r.alive) {
       delete state.units[r.ref];
-      events.push({ type: 'unitKilled', unit: r.ref, unitType: u.type, faction: u.faction, tile: u.tile });
+      const by = u.faction === spec.attacker.faction ? spec.defender.faction : spec.attacker.faction;
+      events.push({ type: 'unitKilled', unit: r.ref, unitType: u.type, faction: u.faction, tile: u.tile, by });
     } else if (promotionsAvailable(ruleset, u) > before) {
       events.push({ type: 'promotionReady', unit: u.id, faction: u.faction });
     }

@@ -1,0 +1,101 @@
+{
+  "contentType": "aiPersonalities",
+  "entries": [
+    {
+      "id": "builder_conqueror",
+      "style": "builder_conqueror",
+      "weights": {
+        "military": 1.2,
+        "science": 1.0,
+        "culture": 0.9,
+        "faith": 0.7,
+        "gold": 1.0,
+        "wonder": 1.1,
+        "settle": 1.2
+      },
+      "boldness": 0.8,
+      "loyalty": 0.7,
+      "grudge": 0.8
+    },
+    {
+      "id": "philosopher",
+      "style": "builder",
+      "weights": {
+        "military": 0.8,
+        "science": 1.3,
+        "culture": 1.3,
+        "faith": 0.9,
+        "gold": 1.0,
+        "wonder": 1.1,
+        "settle": 1.0
+      },
+      "boldness": 0.5,
+      "loyalty": 1.0,
+      "grudge": 0.6
+    },
+    {
+      "id": "builder",
+      "style": "builder",
+      "weights": {
+        "military": 0.8,
+        "science": 1.0,
+        "culture": 1.1,
+        "faith": 1.0,
+        "gold": 1.1,
+        "wonder": 1.5,
+        "settle": 1.0
+      },
+      "boldness": 0.4,
+      "loyalty": 0.9,
+      "grudge": 0.7
+    },
+    {
+      "id": "conqueror",
+      "style": "conqueror",
+      "weights": {
+        "military": 1.5,
+        "science": 0.9,
+        "culture": 0.7,
+        "faith": 0.7,
+        "gold": 1.0,
+        "wonder": 0.7,
+        "settle": 1.1
+      },
+      "boldness": 1.3,
+      "loyalty": 0.5,
+      "grudge": 1.2
+    },
+    {
+      "id": "trader",
+      "style": "trader",
+      "weights": {
+        "military": 0.9,
+        "science": 1.0,
+        "culture": 1.0,
+        "faith": 0.8,
+        "gold": 1.4,
+        "wonder": 1.0,
+        "settle": 1.1
+      },
+      "boldness": 0.6,
+      "loyalty": 0.8,
+      "grudge": 0.7
+    },
+    {
+      "id": "explorer",
+      "style": "explorer",
+      "weights": {
+        "military": 1.0,
+        "science": 1.1,
+        "culture": 0.9,
+        "faith": 0.8,
+        "gold": 1.0,
+        "wonder": 0.9,
+        "settle": 1.4
+      },
+      "boldness": 0.8,
+      "loyalty": 0.8,
+      "grudge": 0.8
+    }
+  ]
+}

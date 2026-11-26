@@ -9,6 +9,7 @@ import { hashValue } from '../core/hash.js';
 import { clone, deepFreeze } from '../core/clone.js';
 import { generateMap } from './mapgen.js';
 import { placeStartingUnits } from './units.js';
+import { emptyResearch, grantErasBefore } from './progression.js';
 import { updateAllVisibility } from './visibility.js';
 
 export const STATE_VERSION = 1;
@@ -76,7 +77,15 @@ export function createGame(ruleset, setup) {
       f.civ = pool.shift();
     });
   }
-  for (const f of factions) f.stocks = { gold: ruleset?.tuning?.economy?.startingGold ?? 0, science: 0, culture: 0, faith: 0 };
+  for (const f of factions) {
+    f.stocks = { gold: ruleset?.tuning?.economy?.startingGold ?? 0, science: 0, culture: 0, faith: 0 };
+    if (ruleset?.techs) {
+      f.research = emptyResearch();
+      const before = ruleset.tuning?.start?.grantErasBefore;
+      if (before) grantErasBefore({ factions }, ruleset, f.id, before);
+    }
+  }
+  state.wars = [];
 
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {

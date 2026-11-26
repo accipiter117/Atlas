@@ -2,13 +2,13 @@
   "contentType": "improvements",
   "entries": [
     {"id": "farm", "nameKey": "improvement.farm.name", "descriptionKey": "improvement.farm.text", "art": "improvement.farm", "yields": {"food": 1}, "validTerrain": ["grassland", "plains", "desert"], "validFeatures": ["floodplain"], "charges": 1},
-    {"id": "mine", "nameKey": "improvement.mine.name", "descriptionKey": "improvement.mine.text", "art": "improvement.mine", "yields": {"production": 1}, "needsHills": true, "validTerrain": ["grassland", "plains", "desert", "tundra", "snow"], "charges": 1},
-    {"id": "pasture", "nameKey": "improvement.pasture.name", "descriptionKey": "improvement.pasture.text", "art": "improvement.pasture", "yields": {"production": 1}, "needsResource": true, "charges": 1},
-    {"id": "plantation", "nameKey": "improvement.plantation.name", "descriptionKey": "improvement.plantation.text", "art": "improvement.plantation", "yields": {"gold": 1}, "needsResource": true, "charges": 1},
-    {"id": "quarry", "nameKey": "improvement.quarry.name", "descriptionKey": "improvement.quarry.text", "art": "improvement.quarry", "yields": {"production": 1}, "needsResource": true, "charges": 1},
-    {"id": "camp", "nameKey": "improvement.camp.name", "descriptionKey": "improvement.camp.text", "art": "improvement.camp", "yields": {"gold": 1}, "needsResource": true, "charges": 1},
-    {"id": "fishing_boats", "nameKey": "improvement.fishing_boats.name", "descriptionKey": "improvement.fishing_boats.text", "art": "improvement.fishing_boats", "yields": {"food": 1}, "needsResource": true, "water": true, "charges": 1},
-    {"id": "fort", "nameKey": "improvement.fort.name", "descriptionKey": "improvement.fort.text", "art": "improvement.fort", "yields": {}, "defence": 4, "validTerrain": ["grassland", "plains", "desert", "tundra", "snow"], "validFeatures": ["forest", "jungle", "marsh", "floodplain", "oasis"], "charges": 1},
+    {"id": "mine", "nameKey": "improvement.mine.name", "descriptionKey": "improvement.mine.text", "art": "improvement.mine", "yields": {"production": 1}, "needsHills": true, "validTerrain": ["grassland", "plains", "desert", "tundra", "snow"], "charges": 1, "requires": {"tech": "mining"}},
+    {"id": "pasture", "nameKey": "improvement.pasture.name", "descriptionKey": "improvement.pasture.text", "art": "improvement.pasture", "yields": {"production": 1}, "needsResource": true, "charges": 1, "requires": {"tech": "animal_husbandry"}},
+    {"id": "plantation", "nameKey": "improvement.plantation.name", "descriptionKey": "improvement.plantation.text", "art": "improvement.plantation", "yields": {"gold": 1}, "needsResource": true, "charges": 1, "requires": {"tech": "irrigation"}},
+    {"id": "quarry", "nameKey": "improvement.quarry.name", "descriptionKey": "improvement.quarry.text", "art": "improvement.quarry", "yields": {"production": 1}, "needsResource": true, "charges": 1, "requires": {"tech": "masonry"}},
+    {"id": "camp", "nameKey": "improvement.camp.name", "descriptionKey": "improvement.camp.text", "art": "improvement.camp", "yields": {"gold": 1}, "needsResource": true, "charges": 1, "requires": {"tech": "animal_husbandry"}},
+    {"id": "fishing_boats", "nameKey": "improvement.fishing_boats.name", "descriptionKey": "improvement.fishing_boats.text", "art": "improvement.fishing_boats", "yields": {"food": 1}, "needsResource": true, "water": true, "charges": 1, "requires": {"tech": "sailing"}},
+    {"id": "fort", "nameKey": "improvement.fort.name", "descriptionKey": "improvement.fort.text", "art": "improvement.fort", "yields": {}, "defence": 4, "validTerrain": ["grassland", "plains", "desert", "tundra", "snow"], "validFeatures": ["forest", "jungle", "marsh", "floodplain", "oasis"], "charges": 1, "requires": {"tech": "military_engineering"}},
     {"id": "road", "nameKey": "improvement.road.name", "descriptionKey": "improvement.road.text", "art": "improvement.road", "road": true, "charges": 0, "validTerrain": ["grassland", "plains", "desert", "tundra", "snow"], "validFeatures": ["forest", "jungle", "marsh", "floodplain", "oasis"]}
   ]
 }

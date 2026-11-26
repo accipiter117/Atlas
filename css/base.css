@@ -249,3 +249,33 @@ body {
 .promote .btn { text-align: left; justify-content: flex-start; font-size: 13px; }
 .capture-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .overlay-card h2 { margin: 0; font: 600 22px/1.2 var(--font-display); }
+
+/* Phase 8: the trees overlay and the AI journal. */
+.panel-overlay { position: fixed; inset: 0; z-index: 15; background: rgba(10, 12, 16, 0.55); display: grid; padding: 16px; }
+.panel-overlay[hidden] { display: none; }
+.panel-card { background: var(--paper); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px 16px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.tree-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tree-head h2 { margin: 0; font: 600 24px/1.2 var(--font-display); }
+.tree-head .tabs { display: flex; gap: 6px; }
+.tree-head .tree-now { margin: 0; font-weight: 600; flex: 1; }
+.tree-scroll { overflow: auto; flex: 1; min-height: 0; }
+.tree-grid { display: grid; grid-template-columns: repeat(var(--cols), 190px); grid-auto-rows: minmax(92px, auto); gap: 8px; padding: 4px 0 12px; }
+.tree-era { grid-row: 1; text-align: center; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); border-bottom: 2px solid var(--line); min-height: 0; }
+.tech { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+.tech.known { opacity: 0.6; }
+.tech.current { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.tech.available { border-color: #2f6fbf; }
+.tech.queued { border-style: dashed; border-color: var(--accent); }
+.tech-main { flex: 1; display: grid; gap: 2px; text-align: left; padding: 6px 8px; border: 0; background: transparent; color: var(--ink); font: inherit; cursor: pointer; min-height: var(--target); }
+.tech-main:disabled { cursor: default; color: var(--ink); }
+.tech-name { font-weight: 600; font-size: 14px; }
+.tech-turns, .tech-unlocks, .tech-boost { font-size: 11.5px; color: var(--ink-soft); }
+.tech-boost { color: #2f6fbf; }
+.tech-bar { height: 4px; background: var(--paper-deep); border-radius: 2px; overflow: hidden; }
+.tech-bar span { display: block; height: 100%; background: #2f6fbf; }
+.tech-queue { border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--accent); font: 600 12px var(--font-body); min-height: 32px; cursor: pointer; }
+.link-like { border: 0; background: transparent; font: inherit; cursor: pointer; padding: 0; min-height: var(--target); text-decoration: underline dotted; }
+.game-yields .era { color: var(--ink-soft); }
+.journal { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; padding-top: 8px; }
+.journal-faction h3 { margin: 0 0 4px; }
+.journal-faction ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13.5px; }

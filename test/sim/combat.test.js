@@ -109,7 +109,8 @@ test('a kill lets melee advance and take civilians on the hex', () => {
 /** A game where f1 owns a city at (4, 2) and f0 has a warrior next to it. */
 function siege(extra = []) {
   const rows = ['............', '............', '............', '............', '............'];
-  let s = fixtureGame(rows, [{ type: 'warrior', at: at({ width: 12 }, 3, 2) }, { type: 'settler', faction: 'f1', at: at({ width: 12 }, 4, 2) }, ...extra]);
+  // No techs: the city's strength comes from ancient units, so a warrior can finish it.
+  let s = fixtureGame(rows, [{ type: 'warrior', at: at({ width: 12 }, 3, 2) }, { type: 'settler', faction: 'f1', at: at({ width: 12 }, 4, 2) }, ...extra], { knowAll: false });
   s = play(s, { type: 'endTurn', faction: 'f0' }).state;
   s = play(s, { type: 'foundCity', faction: 'f1', unit: 'u_0002' }).state;
   s = play(s, { type: 'endTurn', faction: 'f1' }).state;

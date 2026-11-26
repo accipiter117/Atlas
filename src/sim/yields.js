@@ -69,6 +69,11 @@ export function cityYields(state, ruleset, city, effects = effectsFor(state, rul
 
   // 2. Flat bonuses.
   if (tuning.baseCulture) sources.push({ step: 2, kind: 'city', yields: { ...zero(), culture: tuning.baseCulture } });
+  // Every citizen adds a little science and culture (cities.perCitizen), as in Civ VI.
+  if (tuning.perCitizen) {
+    const per = add(zero(), tuning.perCitizen, city.pop);
+    if (YIELD_NAMES.some((y) => per[y])) sources.push({ step: 2, kind: 'citizens', yields: per });
+  }
   for (const b of city.buildings ?? []) {
     const def = buildingDef(ruleset, b);
     if (def?.yields) sources.push({ step: 2, kind: 'building', id: b, yields: add(zero(), def.yields) });

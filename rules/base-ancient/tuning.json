@@ -20,7 +20,11 @@
       "baseCulture": 1,
       "capitalName": true,
       "queueLength": 8,
-      "capitalBuilding": "palace"
+      "capitalBuilding": "palace",
+      "perCitizen": {
+        "science": 0.5,
+        "culture": 0.3
+      }
     },
     "growth": {
       "base": 15,
@@ -220,6 +224,13 @@
           "unit": "horseman"
         }
       ]
+    },
+    "speeds": {
+      "online": 0.5,
+      "quick": 0.67,
+      "standard": 1,
+      "epic": 1.5,
+      "marathon": 3
     }
   }
 }

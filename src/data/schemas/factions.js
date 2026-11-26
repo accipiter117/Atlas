@@ -33,11 +33,14 @@ export const cityNames = entryType('cityNames', {
   names: req(list(str(), { min: 1 })),
 });
 
+// A personality multiplies each category of decision (section 9.3), plus how
+// bold (war), loyal (treaties) and grudging (old wars) the leader is.
 export const aiPersonalities = entryType('aiPersonalities', {
-  aggression: num(0, 2),
-  expansion: num(0, 2),
-  wonderLove: num(0, 2),
-  style: oneOf(['builder', 'conqueror', 'builder_conqueror', 'trader', 'zealot']),
+  weights: obj({}, { open: true }),
+  boldness: num(0, 2),
+  loyalty: num(0, 2),
+  grudge: num(0, 2),
+  style: oneOf(['builder', 'conqueror', 'builder_conqueror', 'trader', 'zealot', 'explorer']),
 });
 
 export const aiWeights = entryType('aiWeights', {

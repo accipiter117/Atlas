@@ -26,6 +26,14 @@
       "action": "openCity"
     },
     {
+      "id": "research",
+      "priority": 85,
+      "condition": "noResearch",
+      "textKey": "advice.research",
+      "actionKey": "advice.research.do",
+      "action": "research"
+    },
+    {
       "id": "choose_production",
       "priority": 80,
       "condition": "cityNoProduction",

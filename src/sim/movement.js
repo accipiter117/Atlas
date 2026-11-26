@@ -71,7 +71,13 @@ export function stepMoves(state, ruleset, unit, from, to, moves, full, seen = nu
 }
 
 /** May the unit end a turn (or its move) on tile t? Own units of the other slot are fine. */
+function foreignCity(state, unit, t) {
+  for (const c of Object.values(state.cities ?? {})) if (c.tile === t && c.faction !== unit.faction) return true;
+  return false;
+}
+
 export function canStop(state, ruleset, unit, t, seen = null) {
+  if (foreignCity(state, unit, t)) return false;
   const slot = slotOf(ruleset, unit.type);
   for (const u of unitsAt(state, t)) {
     if (u.id === unit.id) continue;
@@ -83,6 +89,8 @@ export function canStop(state, ruleset, unit, t, seen = null) {
 
 /** May the unit pass through tile t (no enemy unit it knows about)? */
 function canPass(state, unit, t, seen) {
+  // Another faction's city cannot be walked into or through (attacking takes it).
+  if (foreignCity(state, unit, t)) return false;
   if (seen && !seen(t)) return true;
   for (const u of unitsAt(state, t)) if (u.faction !== unit.faction) return false;
   return true;

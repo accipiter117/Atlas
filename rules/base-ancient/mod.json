@@ -12,6 +12,7 @@
   "files": [
     "tuning.json",
     "eras.json",
+    "techs.json",
     "terrain.json",
     "features.json",
     "resources.json",
@@ -25,6 +26,8 @@
     "improvements.json",
     "cityNames.json",
     "factions.json",
+    "ai/personalities.json",
+    "ai/weights.json",
     "leaders.json",
     "victories.json",
     "focuses.json",

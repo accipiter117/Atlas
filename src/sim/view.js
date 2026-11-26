@@ -9,7 +9,7 @@ import { VISIBLE, UNEXPLORED } from './visibility.js';
 
 const HIDDEN = -1;
 
-export function view(state, factionId) {
+export function view(state, factionId, ruleset = null) {
   const me = state.factions.find((f) => f.id === factionId);
   if (!me) throw new Error(`No faction "${factionId}"`);
   const out = {
@@ -39,7 +39,11 @@ export function view(state, factionId) {
     terrain: mask(map.terrain),
     hills: mask(map.hills, 0),
     feature: mask(map.feature),
-    resource: mask(map.resource),
+    // Strategic resources stay hidden until the tech that reveals them.
+    resource: mask(map.resource).map((r) => {
+      const res = r >= 0 && ruleset ? ruleset.resources[map.resourceIds[r]] : null;
+      return res?.revealedBy && !(me.research?.known ?? []).includes(res.revealedBy) ? -1 : r;
+    }),
     river: mask(map.river, 0),
     road: map.road ? mask(map.road, 0) : null,
     improvementIds: (map.improvementIds ?? []).slice(),
@@ -55,6 +59,9 @@ export function view(state, factionId) {
   const mine = state.factions.find((f) => f.id === factionId);
   out.stocks = mine.stocks ? { ...mine.stocks } : null;
   out.lastNetGold = mine.lastNetGold ?? null;
+  out.research = mine.research ? JSON.parse(JSON.stringify(mine.research)) : null;
+  out.setup = JSON.parse(JSON.stringify(state.setup ?? {}));
+  out.wars = (state.wars ?? []).filter((w) => w.split('|').includes(factionId));
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
   out.pendingCapture = state.pendingCapture?.faction === factionId ? { ...state.pendingCapture } : null;
   out.pendingBattle = state.pendingBattle && (state.pendingBattle.spec.attacker.faction === factionId || state.pendingBattle.spec.defender.faction === factionId) ? JSON.parse(JSON.stringify(state.pendingBattle)) : null;
@@ -67,4 +74,29 @@ export function view(state, factionId) {
     }
   }
   return out;
+}
+
+/**
+ * A state-shaped object built only from a view: what this player knows,
+ * arranged so the rules' own checks (paths, founding, building, attacking,
+ * validating a command) can run on it. The screen and the AI both use it,
+ * so what they allow is exactly what the rules allow, without peeking.
+ */
+export function worldFromView(v) {
+  return {
+    map: v.map,
+    units: Object.fromEntries(v.units.map((u) => [u.id, u])),
+    cities: Object.fromEntries(v.cities.map((c) => [c.id, c])),
+    owner: v.map?.owner ?? null,
+    factions: v.factions.map((f) => (f.id === v.me ? { ...f, research: v.research, stocks: v.stocks } : f)),
+    turn: v.turn,
+    seatOrder: v.seatOrder,
+    seatIndex: v.seatOrder.indexOf(v.current),
+    fog: v.fog ? { [v.me]: v.fog } : {},
+    wars: v.wars ?? [],
+    wondersBuilt: v.wondersBuilt ?? {},
+    setup: v.setup ?? {},
+    pendingCapture: v.pendingCapture ?? null,
+    raiders: { camps: Object.fromEntries((v.camps ?? []).map((t) => [t, {}])) },
+  };
 }

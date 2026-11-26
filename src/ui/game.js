@@ -7,14 +7,16 @@
 // change goes through applyCommand.
 
 import {
-  createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED,
+  createGame, applyCommand, view, worldFromView, findPath, currentFactionId, VISIBLE, UNEXPLORED,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
-  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef,
-  buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
+  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf,
+  atWar, buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 import { factionCard } from './factionCards.js';
-import { takeTurn } from '../ai/index.js';
+import { createAi, runAiTurn, rankTechs } from '../ai/index.js';
+import { renderTrees } from './trees.js';
+import { renderJournal } from './journal.js';
 import { createMapView } from '../render/canvas.js';
 import { attachMapInput } from './input.js';
 import { t, formatText } from '../data/text.js';
@@ -42,14 +44,7 @@ const signed = (n) => (n >= 0 ? `+${fmt(n)}` : fmt(n));
 
 /** A state-shaped object built from a view, so planning and previews use only what the player knows. */
 export function knownWorld(v) {
-  return {
-    map: v.map,
-    units: Object.fromEntries(v.units.map((u) => [u.id, u])),
-    cities: Object.fromEntries(v.cities.map((c) => [c.id, c])),
-    owner: v.map?.owner ?? null,
-    factions: v.factions,
-    turn: v.turn,
-  };
+  return worldFromView(v);
 }
 
 /** Rank what a city could build, best first, each with a one-line reason (section 10.4). */
@@ -104,7 +99,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const colours = Object.fromEntries(state.factions.map((f, i) => [f.id, palette[i % palette.length]]));
   colours.raiders = ruleset.skin.raiderColour ?? '#3d3d3d';
   const $ = (sel) => root.querySelector(sel);
-  let v = view(state, human);
+  const ais = Object.fromEntries(state.factions.filter((f) => f.kind === 'ai').map((f) => [f.id, createAi(ruleset, f.id)]));
+  let v = view(state, human, ruleset);
   let selected = null;        // unit id
   let openCity = null;        // city id
   let pendingTarget = null;   // touch: first tap on a destination
@@ -116,7 +112,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let lastTouch = false;
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
-  doc.defaultView.__atlasGame = { get state() { return state; }, get view() { return v; }, mapView, human, ruleset };
+  doc.defaultView.__atlasGame = { get state() { return state; }, get view() { return v; }, mapView, human, ruleset, ais };
   if (debug) {
     // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
     // state directly, outside the rules, so they are never available in a normal game.
@@ -152,6 +148,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   /** Gold per turn after upkeep, from what you know. */
   const netGold = () => myCities().reduce((n, c) => n + yieldsOf(c).total.gold, 0) - upkeepOf(knownWorld(v), ruleset, human).total;
   const goldTurnsLeft = () => { const net = netGold(); return net < 0 ? Math.floor((v.stocks?.gold ?? 0) / -net) + 1 : Infinity; };
+  const techName = (id) => ruleset.text[ruleset.techs?.[id]?.nameKey] ?? id;
   const civName = (factionId) => { const f = v.factions.find((x) => x.id === factionId); return ruleset.text[ruleset.factions?.[f?.civ]?.nameKey] ?? f?.name ?? ''; };
   const starving = () => myCities().filter((c) => yieldsOf(c).surplus < 0);
 
@@ -212,7 +209,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
 
   function refresh() {
-    v = view(state, human);
+    v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
     if (v.pendingCapture) showCaptureDialog();
     if (selected && !selectedUnit()) select(null);
@@ -237,6 +234,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function showEvents(events) {
     for (const e of events) {
       if (e.type === 'battle') battleReport(e);
+      if (e.type === 'warDeclared' && (e.faction === human || e.target === human || v.cities.some((c) => c.faction === e.faction))) toast(tt('game.warDeclared', { faction: civName(e.faction), target: civName(e.target) }));
+      if (e.type === 'boost' && e.faction === human) toast(tt('game.boost', { item: techName(e.item), pct: Math.round((ruleset.tuning?.progression?.boostShare ?? 0.4) * 100) }));
+      if (e.type === 'techLearned' && e.faction === human) toast(tt('game.techLearned', { item: techName(e.item) }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'cityCaptured' && e.from === human) toast(tt('battle.cityLost', { city: e.name, faction: civName(e.faction) }));
       if (e.type === 'campCleared' && e.faction === human) toast(tt('battle.campCleared', { gold: e.gold }));
@@ -269,6 +269,28 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     return r;
   }
 
+  /** Let every computer seat play until it is your turn again. */
+  function playComputerSeats() {
+    const events = [];
+    let guard = 0;
+    while (currentFactionId(state) !== human && guard < 64) {
+      guard += 1;
+      const me = currentFactionId(state);
+      const ai = ais[me];
+      const r = runAiTurn(ai, () => view(state, me, ruleset), (cmd) => {
+        const res = applyCommand(state, cmd, ruleset);
+        if (res.ok) state = res.state;
+        return res;
+      });
+      events.push(...r.events);
+      if (currentFactionId(state) === me) {
+        const res = applyCommand(state, { type: 'endTurn', faction: me }, ruleset);
+        if (res.ok) { state = res.state; events.push(...res.events); }
+      }
+    }
+    return events;
+  }
+
   /** End your turn, let the computer seats play, and come back at your next turn. */
   function endTurn() {
     if (currentFactionId(state) !== human) return;
@@ -276,21 +298,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     let r = applyCommand(state, { type: 'endTurn', faction: human }, ruleset);
     state = r.state;
     all.push(...r.events);
-    let guard = 0;
-    while (currentFactionId(state) !== human && guard < 64) {
-      guard += 1;
-      const me = currentFactionId(state);
-      for (const cmd of takeTurn(view(state, me), ruleset)) {
-        r = applyCommand(state, cmd, ruleset);
-        if (r.ok) { state = r.state; all.push(...r.events); }
-        if (cmd.type === 'endTurn') break;
-      }
-      if (currentFactionId(state) === me) {
-        r = applyCommand(state, { type: 'endTurn', faction: me }, ruleset);
-        state = r.state;
-        all.push(...r.events);
-      }
-    }
+    all.push(...playComputerSeats());
     refresh();
     showEvents(all);
     if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
@@ -385,7 +393,14 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const u = selectedUnit();
     const world = knownWorld(v);
     if (!u || combatKind(ruleset, u) === 'none' || !enemyAt(tile)) { aim = null; mapView.setTarget(null); return; }
-    const hasDefender = defenderAt(world, ruleset, human, tile) || v.cities.some((c) => c.tile === tile && c.faction !== human);
+    const there = v.units.find((x) => x.tile === tile && x.faction !== human) ?? v.cities.find((c) => c.tile === tile && c.faction !== human);
+    if (there && there.faction !== 'raiders' && !atWar(world, human, there.faction)) {
+      aim = { tile, spec: null, odds: null, peaceWith: there.faction };
+      mapView.setTarget(tile);
+      render();
+      return;
+    }
+    const hasDefender = defenderAt(world, ruleset, human, tile) || v.cities.some((c) => c.tile === tile && atWar(world, human, c.faction));
     const spec = hasDefender ? buildSpec(world, ruleset, u, tile) : null;
     aim = { tile, spec, odds: spec ? estimateOdds(spec) : null };
     mapView.setTarget(tile);
@@ -407,6 +422,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (r) setTimeout(selectNextIdle, 0);
       return;
     }
+    if (why === 'atPeace') { aimAt(tile); return; }
     if (why === 'notAdjacent' || why === 'outOfRange') {
       const reach = combatKind(ruleset, u) === 'ranged' ? rangeOf(ruleset, u) : 1;
       let best = null;
@@ -514,10 +530,17 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     chip.style.setProperty('--faction', ruleset.factions?.[me?.civ]?.colours.primary ?? '#888');
     $('[data-field="yields"]').replaceChildren(
       el(doc, 'span', { class: `y gold${netGold() < 0 ? ' falling' : ''}` }, tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(netGold()) })),
-      el(doc, 'span', { class: 'y science' }, tt('game.bar.science', { rate: signed(total.science) })),
+      el(doc, 'span', { class: 'y era' }, tt('game.era', { era: ruleset.text[ruleset.eras?.[eraOf(knownWorld(v), ruleset, human)]?.nameKey] ?? '' })),
+      el(doc, 'button', { type: 'button', class: 'y science link-like', dataset: { action: 'trees' }, onclick: openTrees },
+        v.research?.current ? tt('game.bar.science', { rate: signed(total.science), item: techName(v.research.current) }) : tt('game.bar.noResearch', { rate: signed(total.science) })),
       el(doc, 'span', { class: 'y culture' }, tt('game.bar.culture', { rate: signed(total.culture) })),
       el(doc, 'span', { class: 'y faith' }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
     );
+  }
+
+  /** The tech the AI's own science planner would pick in your place. */
+  function suggestion() {
+    return rankTechs(knownWorld(v), v, ruleset, { path: 'score' })[0]?.cmd.item ?? null;
   }
 
   /** The advice line: the highest-priority piece of advice whose condition holds (rules/<mod>/ui/advice.json). */
@@ -526,6 +549,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       noCities: () => myCities().length === 0 && myUnits().some(isFounder) && {},
       cityStarving: () => starving().length && { city: starving()[0].name, target: starving()[0].id },
       cityNoProduction: () => noProduction().length && { city: noProduction()[0].name, target: noProduction()[0].id },
+      noResearch: () => ruleset.techs && !v.research?.current && !(v.research?.queue ?? []).length && suggestion() && { tech: techName(suggestion()) },
       goldRunningOut: () => goldTurnsLeft() <= (ruleset.tuning?.economy?.bankruptcyWarningTurns ?? 2) && { n: goldTurnsLeft() },
       unitsNeedOrders: () => idle().length && { n: idle().length },
       cityCanBuyTile: () => false,
@@ -544,6 +568,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (a.action === 'openCity') openCityDrawer(a.args.target, { centre: true });
     else if (a.action === 'selectUnit') selectNextIdle();
     else if (a.action === 'endTurn') endTurn();
+    else if (a.action === 'research') run({ type: 'setResearch', faction: human, item: suggestion() });
   }
 
   function renderAdvice() {
@@ -573,6 +598,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     if (!aim) return null;
     const target = aim.spec?.defender.city ? tt('odds.city', { name: aim.spec.defender.city.name })
       : (() => { const e = v.units.find((x) => x.tile === aim.tile && x.faction !== human); return e ? nameOfUnit(e.type, e.faction) : ''; })();
+    if (aim.peaceWith) {
+      return el(doc, 'div', { class: 'odds', dataset: { field: 'odds' } }, el(doc, 'h3', {}, tt('odds.title', { target })),
+        el(doc, 'p', {}, tt('game.refused.atPeace')),
+        el(doc, 'button', { type: 'button', class: 'btn small wide danger', dataset: { action: 'declare-war' },
+          onclick: () => { run({ type: 'declareWar', faction: human, target: aim.peaceWith }); aimAt(aim.tile); } }, tt('game.declareWar', { faction: civName(aim.peaceWith) })));
+    }
     if (!aim.odds) return el(doc, 'div', { class: 'odds', dataset: { field: 'odds' } }, el(doc, 'h3', {}, tt('odds.title', { target })));
     const o = aim.odds;
     const modText = (side) => {
@@ -778,15 +809,35 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       ' ': () => selectNextIdle(),
       Enter: () => { if (!e.target.closest?.('button')) next(); else return false; },
       b: () => { const u = selectedUnit(); if (u && isFounder(u)) act('foundCity'); else return false; },
+      r: () => openTrees(),
+      j: () => openJournal(),
       f: () => act('fortify'),
       s: () => (selectedUnit() ? act('skip') : false),
       z: () => act('sleep'),
       Delete: () => act('disband'),
-      Escape: () => { if (selected || openCity) select(null); else return false; },
+      Escape: () => { if (!panel.hidden) { panel.hidden = true; return true; } if (selected || openCity) select(null); else return false; },
     }[key];
     if (handled && handled() !== false) e.preventDefault();
   });
   $('[data-action="next"]').onclick = next;
+  const panel = doc.querySelector('[data-field="panel"]');
+  function openTrees() {
+    const science = myCities().reduce((n, c) => n + yieldsOf(c).total.science, 0);
+    renderTrees(doc, panel.querySelector('[data-field="panel-body"]'), {
+      world: knownWorld(v), view: v, ruleset, text, science,
+      onResearch: (id) => { run({ type: 'setResearch', faction: human, item: id }); openTrees(); },
+      onQueue: (id) => { run({ type: 'queueResearch', faction: human, item: id }); openTrees(); },
+      onClose: () => { panel.hidden = true; },
+    });
+    panel.hidden = false;
+  }
+  function openJournal() {
+    renderJournal(doc, panel.querySelector('[data-field="panel-body"]'), {
+      ais, factions: v.factions, ruleset, text, factionName: (id) => (id === 'raiders' ? tt('game.raiders') : civName(id)), onClose: () => { panel.hidden = true; },
+    });
+    panel.hidden = false;
+  }
+  $('[data-action="journal"]').onclick = openJournal;
   // Your faction's card, from the chip in the top bar.
   const overlay = doc.querySelector('[data-field="overlay"]');
   $('[data-action="faction"]').onclick = () => {
@@ -801,16 +852,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   $('[data-action="faction"]').onclick = () => { overlay.querySelector('[data-action="close-overlay"]').hidden = false; showClose(); };
 
   // The computer seats before you in the first round play now.
-  let guard = 0;
-  while (currentFactionId(state) !== human && guard < 64) {
-    guard += 1;
-    const me = currentFactionId(state);
-    for (const cmd of takeTurn(view(state, me), ruleset)) {
-      const r = applyCommand(state, cmd, ruleset);
-      if (r.ok) state = r.state;
-      if (cmd.type === 'endTurn') break;
-    }
-  }
+  playComputerSeats();
   refresh();
   const firstUnit = myUnits()[0];
   if (firstUnit) mapView.centreOnTile(firstUnit.tile);

@@ -7,6 +7,7 @@
 // from the shore on a neighbouring water hex. Roads cost no charge.
 
 import { neighbourCache } from './map.js';
+import { knows } from './progression.js';
 
 export function improvementIndex(map, id) {
   return map.improvementIds ? map.improvementIds.indexOf(id) : -1;
@@ -17,7 +18,8 @@ export function improvementProblem(state, ruleset, factionId, id, tile) {
   const def = ruleset.improvements?.[id];
   const map = state.map;
   if (!def) return 'unknown';
-  if (def.requires?.tech || def.requires?.civic) return 'needsTech';
+  if (def.requires?.tech && !knows(state, factionId, def.requires.tech)) return 'needsTech';
+  if (def.requires?.civic) return 'needsCivic';
   const terrainId = map.terrainIds[map.terrain[tile]];
   const terrain = ruleset.terrain[terrainId];
   if (!terrain || terrain.impassable) return 'badTile';

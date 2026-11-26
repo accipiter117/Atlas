@@ -11,6 +11,7 @@
 import { neighbourCache } from './map.js';
 import { buildingDef, hasBuilding } from './effects/index.js';
 import { canStand, createUnit } from './units.js';
+import { knows } from './progression.js';
 
 /** The building this faction actually gets for a base building id (its unique version, if any). */
 export function factionVersionOf(state, ruleset, factionId, id) {
@@ -38,7 +39,8 @@ export function buildingProblem(state, ruleset, city, id, kind) {
   if (kind === 'building' && factionVersionOf(state, ruleset, city.faction, id) !== id) return 'replaced';
   if (kind === 'building' && def.replaces && hasBuilding(ruleset, city, def.replaces)) return 'built';
   if (req.capital && !city.capital) return 'notCapital';
-  if (req.tech || req.civic) return 'needsTech';
+  if (req.tech && !knows(state, city.faction, req.tech)) return 'needsTech';
+  if (req.civic) return 'needsCivic';
   for (const b of req.buildings ?? []) if (!hasBuilding(ruleset, city, b)) return 'needsBuilding';
   if (req.nearTerrain && !nearTerrain(state, ruleset, city, req.nearTerrain)) return 'needsTerrain';
   if (req.river && state.map.river[city.tile] === 0) return 'needsRiver';

@@ -5,6 +5,7 @@
 import { currentFactionId } from './queries.js';
 import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf, cityHpMax } from './cities.js';
 import { payUpkeep } from './economy.js';
+import { addResearch } from './progression.js';
 import { effectsFor, sumHook } from './effects/index.js';
 import { cityYields } from './yields.js';
 import { applyGrowth } from './growth.js';
@@ -185,6 +186,7 @@ export const buyTile = {
 export function startCitiesTurn(state, ruleset, factionId, events) {
   const faction = state.factions.find((f) => f.id === factionId);
   let income = 0;
+  let science = 0;
   for (const city of citiesOf(state, factionId)) {
     // A city being razed loses a citizen each turn and is gone at zero.
     if (city.razing) {
@@ -203,7 +205,7 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
     const effects = effectsFor(state, ruleset, factionId);
     const y = cityYields(state, ruleset, city, effects);
     income += y.total.gold;
-    faction.stocks.science += y.total.science;
+    science += y.total.science;
     faction.stocks.faith += y.total.faith;
     faction.stocks.culture += y.total.culture;
 
@@ -246,5 +248,7 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
     if (city.timed) city.timed = city.timed.filter((t) => t.turns > 0);
   }
   payUpkeep(state, ruleset, factionId, income, events);
+  if (ruleset.techs) addResearch(state, ruleset, factionId, science, events);
+  else faction.stocks.science += science;
   updateVisibility(state, ruleset, factionId);
 }

@@ -11,6 +11,8 @@
 import { clone } from '../core/clone.js';
 import { endTurn } from './turn.js';
 import { moveUnit, fortify, skip, sleep, wake, disband, buildImprovement } from './unitCommands.js';
+import { setResearch, queueResearch, applyBoosts } from './progression.js';
+import { declareWar } from './diplomacy.js';
 import { attack, cityAttack, resolveBattle, autoResolveBattle, captureChoice, promote } from './combatCommands.js';
 import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
 
@@ -38,6 +40,9 @@ export const COMMANDS = Object.freeze({
   autoResolveBattle,
   captureChoice,
   promote,
+  setResearch,
+  queueResearch,
+  declareWar,
 });
 
 const EMPTY = Object.freeze({});
@@ -70,6 +75,7 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   const next = clone(state);
   const events = [];
   handler.apply(next, cmd, events, ruleset);
+  if (ruleset.techs) applyBoosts(next, ruleset, events);
   next.commandCount += 1;
   return { ok: true, state: next, events };
 }

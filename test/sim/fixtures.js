@@ -51,7 +51,7 @@ export function addRiver(map, a, b) {
  * A two-faction game on a fixture map. units: [{ type, faction: 'f0', at: tile }].
  * The seed is chosen so f0 moves first. Fog starts fully explored unless `fog: true`.
  */
-export function fixtureGame(rows, units, { fog = false, rules = ruleset } = {}) {
+export function fixtureGame(rows, units, { fog = false, rules = ruleset, knowAll = true } = {}) {
   // Both sides play Rome, whose traits do not change movement, sight or healing.
   let state = createGame(rules, { seed: 3, players: [{ kind: 'human', name: 'A', faction: 'rome' }, { kind: 'ai', name: 'B', faction: 'rome' }] });
   if (state.seatOrder[0] !== 'f0') state.seatOrder.reverse();
@@ -65,6 +65,10 @@ export function fixtureGame(rows, units, { fog = false, rules = ruleset } = {}) 
     if ((rules.units[u.type].tags ?? []).includes('worker')) state.units[id].charges = rules.tuning.builders.charges;
   });
   state.nextId = units.length + 1;
+  // Rule tests fight: the two sides start at war, and know every tech so content is not gated
+  // (tech gating has its own tests).
+  state.wars = ['f0|f1'];
+  if (knowAll) for (const f of state.factions) f.research.known = Object.keys(rules.techs ?? {});
   updateAllVisibility(state, rules);
   if (!fog) for (const f of Object.values(state.fog)) f.forEach((v, i) => { if (v === 0) f[i] = 1; });
   return state;
