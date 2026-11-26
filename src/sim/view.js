@@ -17,7 +17,8 @@ export function view(state, factionId) {
     me: factionId,
     current: state.seatOrder[state.seatIndex],
     seatOrder: state.seatOrder.slice(),
-    factions: state.factions.map((f) => ({ id: f.id, name: f.name, kind: f.kind, alive: f.alive })),
+    factions: state.factions.map((f) => ({ id: f.id, name: f.name, kind: f.kind, alive: f.alive, civ: f.civ ?? null })),
+    cities: [],
     map: null,
     fog: null,
     units: [],
@@ -41,7 +42,16 @@ export function view(state, factionId) {
     resource: mask(map.resource),
     river: mask(map.river, 0),
     road: map.road ? mask(map.road, 0) : null,
+    owner: state.owner ? mask(state.owner, null) : null,
   };
+  // Cities: your own in full; others where you have explored, outside details only.
+  out.cities = [];
+  for (const c of Object.values(state.cities ?? {})) {
+    if (c.faction === factionId) out.cities.push(JSON.parse(JSON.stringify(c)));
+    else if (fog[c.tile] !== UNEXPLORED) out.cities.push({ id: c.id, name: c.name, faction: c.faction, tile: c.tile, pop: c.pop, capital: c.capital });
+  }
+  const mine = state.factions.find((f) => f.id === factionId);
+  out.stocks = mine.stocks ? { ...mine.stocks } : null;
   for (const u of Object.values(state.units ?? {})) {
     if (u.faction === factionId) {
       out.units.push({ ...u });

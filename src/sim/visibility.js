@@ -65,6 +65,18 @@ export function updateVisibility(state, ruleset, factionId) {
   for (const u of factionUnits(state, factionId)) {
     for (const t of tilesInSight(state, ruleset, u.tile, sightRange(state, ruleset, u))) fog[t] = VISIBLE;
   }
+  // Cities see around themselves, and a faction always sees its own land.
+  const cityRange = ruleset.tuning?.sight?.city ?? 2;
+  for (const c of Object.values(state.cities ?? {})) {
+    if (c.faction !== factionId) continue;
+    for (const t of tilesInSight(state, ruleset, c.tile, cityRange)) fog[t] = VISIBLE;
+  }
+  if (state.owner) {
+    for (let i = 0; i < n; i += 1) {
+      const c = state.owner[i];
+      if (c !== null && state.cities[c]?.faction === factionId) fog[i] = VISIBLE;
+    }
+  }
   return fog;
 }
 

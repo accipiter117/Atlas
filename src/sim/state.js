@@ -64,11 +64,27 @@ export function createGame(ruleset, setup) {
   // A named fork keeps the main dice stream untouched.
   state.seatOrder = fork(state, 'seats').shuffle(factions.map((f) => f.id));
 
+  // Each player plays a faction from the ruleset: their choice, or one drawn
+  // from the seed (no repeats until every faction is taken).
+  const civs = Object.keys(ruleset?.factions ?? {});
+  if (civs.length) {
+    const chosen = new Set(setup.players.map((p) => p.faction).filter(Boolean));
+    let pool = fork(state, 'civs').shuffle(civs.filter((c) => !chosen.has(c)));
+    factions.forEach((f, i) => {
+      if (setup.players[i].faction && ruleset.factions[setup.players[i].faction]) { f.civ = setup.players[i].faction; return; }
+      if (!pool.length) pool = fork(state, `civs${i}`).shuffle(civs);
+      f.civ = pool.shift();
+    });
+  }
+  for (const f of factions) f.stocks = { gold: 0, science: 0, culture: 0, faith: 0 };
+
   // The world, when the setup asks for one and the ruleset can build it.
   if (setup.map && ruleset?.mapSizes) {
     state.map = generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
     state.map.road = new Array(state.map.width * state.map.height).fill(0);
     state.units = {};
+    state.cities = {};
+    state.owner = new Array(state.map.width * state.map.height).fill(null);
     placeStartingUnits(state, ruleset);
     updateAllVisibility(state, ruleset);
   }

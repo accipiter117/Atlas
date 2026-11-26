@@ -6,9 +6,12 @@
 
 import { currentFactionId, getFaction } from './queries.js';
 import { startUnitsTurn } from './unitCommands.js';
+import { startCitiesTurn } from './cityCommands.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
+  // Section 3.14: cities first (yields, growth, production, borders), then units.
+  if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
   if (state.units) startUnitsTurn(state, ruleset, factionId, events);
 }
 

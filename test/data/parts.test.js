@@ -57,7 +57,7 @@ test('there is a schema for every content type in section 4.1, and all 24 effect
   const planned = ['terrain', 'features', 'resources', 'mapSizes', 'mapTypes', 'units', 'unitClasses', 'promotions',
     'buildings', 'wonders', 'improvements', 'techs', 'civics', 'eras', 'governments', 'policies', 'beliefs', 'religions',
     'trade', 'espionage', 'diplomacy', 'factions', 'leaders', 'cityNames', 'events', 'victories', 'aiPersonalities', 'aiWeights',
-    'tuning', 'text', 'skin'];
+    'focuses', 'advice', 'tuning', 'text', 'skin'];
   assert.deepEqual([...CONTENT_TYPES].sort(), [...planned].sort());
   assert.equal(Object.keys(EFFECTS).length, 24);
   assert.equal(effectSchema('buildCharge'), null);

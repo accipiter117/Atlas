@@ -23,6 +23,8 @@
     "factions.json",
     "leaders.json",
     "victories.json",
+    "focuses.json",
+    "ui/advice.json",
     "text/en-GB.json",
     "skin/skin.json"
   ],

@@ -5,7 +5,6 @@
     "era.classical.name": "Classical",
     "era.medieval.name": "Medieval",
     "era.renaissance.name": "Renaissance",
-
     "terrain.grassland.name": "Grassland",
     "terrain.plains.name": "Plains",
     "terrain.desert.name": "Desert",
@@ -15,14 +14,12 @@
     "terrain.ocean.name": "Ocean",
     "terrain.lake.name": "Lake",
     "terrain.mountain.name": "Mountains",
-
     "feature.forest.name": "Forest",
     "feature.jungle.name": "Jungle",
     "feature.marsh.name": "Marsh",
     "feature.floodplain.name": "Floodplain",
     "feature.oasis.name": "Oasis",
     "feature.reef.name": "Reef",
-
     "resource.wheat.name": "Wheat",
     "resource.cattle.name": "Cattle",
     "resource.stone.name": "Stone",
@@ -32,12 +29,10 @@
     "resource.incense.name": "Incense",
     "resource.horses.name": "Horses",
     "resource.iron.name": "Iron",
-
     "mapSize.small.name": "Small",
     "mapSize.standard.name": "Standard",
     "mapSize.large.name": "Large",
     "mapSize.huge.name": "Huge",
-
     "mapType.continents.name": "Continents",
     "mapType.continents.text": "Two great landmasses divided by ocean.",
     "mapType.pangaea.name": "Pangaea",
@@ -48,7 +43,6 @@
     "mapType.inland_sea.text": "Land all round a central sea, like the Mediterranean.",
     "mapType.highlands.name": "Highlands",
     "mapType.highlands.text": "Hills and mountain passes that favour defenders.",
-
     "unitClass.melee.name": "Melee",
     "unitClass.ranged.name": "Ranged",
     "unitClass.anti_cavalry.name": "Anti-cavalry",
@@ -58,25 +52,36 @@
     "unitClass.naval_melee.name": "Naval melee",
     "unitClass.naval_ranged.name": "Naval ranged",
     "unitClass.civilian.name": "Civilian",
-
     "unit.settler.name": "Settler",
     "unit.builder.name": "Builder",
     "unit.warrior.name": "Warrior",
     "unit.scout.name": "Scout",
     "unit.slinger.name": "Slinger",
     "unit.spearman.name": "Spearman",
-
     "faction.rome.name": "Rome",
     "faction.rome.adj": "Roman",
     "faction.egypt.name": "Egypt",
     "faction.egypt.adj": "Egyptian",
     "leader.trajan.name": "Trajan",
     "leader.hatshepsut.name": "Hatshepsut",
-
     "victory.conquest.name": "Conquest",
     "victory.science.name": "Science",
     "victory.culture.name": "Culture",
     "victory.religious.name": "Religious",
-    "victory.score.name": "Score"
+    "victory.score.name": "Score",
+    "focus.balanced": "Balanced",
+    "focus.food": "Food",
+    "focus.production": "Production",
+    "focus.gold": "Gold",
+    "focus.science": "Science",
+    "focus.culture": "Culture",
+    "focus.faith": "Faith",
+    "advice.do": "Do it",
+    "advice.endTurn": "End turn",
+    "advice.foundFirstCity": "Found your first city: select your settler and press Found city (or B).",
+    "advice.starving": "{city} is starving. Switch its focus to Food.",
+    "advice.chooseProduction": "{city} has nothing to build. Choose its next project.",
+    "advice.unitsNeedOrders": "{n} units need orders.",
+    "advice.readyToEnd": "Everything is in hand. End the turn when you are ready."
   }
 }

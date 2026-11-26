@@ -118,7 +118,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     while (currentFactionId(state) !== human && guard < 64) {
       guard += 1;
       const me = currentFactionId(state);
-      for (const cmd of takeTurn(view(state, me))) {
+      for (const cmd of takeTurn(view(state, me), ruleset)) {
         r = applyCommand(state, cmd, ruleset);
         if (r.ok) { state = r.state; all.push(...r.events); }
       }
@@ -270,7 +270,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     let guard = 0;
     while (currentFactionId(state) !== human && guard < 64) {
       guard += 1;
-      for (const cmd of takeTurn(view(state, currentFactionId(state)))) {
+      for (const cmd of takeTurn(view(state, currentFactionId(state)), ruleset)) {
         const r = applyCommand(state, cmd, ruleset);
         if (r.ok) state = r.state;
       }

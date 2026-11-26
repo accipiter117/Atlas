@@ -8,10 +8,11 @@ import * as progression from './progression.js';
 import * as religion from './religion.js';
 import * as systems from './systems.js';
 import * as factions from './factions.js';
+import * as ui from './ui.js';
 
 /** Entry-list content types: each file holds { contentType, entries: [...] }. */
 export const ENTRY_SCHEMAS = Object.freeze(Object.fromEntries(
-  [map, units, city, progression, religion, systems, factions]
+  [map, units, city, progression, religion, systems, factions, ui]
     .flatMap((m) => Object.values(m))
     .filter((s) => s && s.kind === 'entries')
     .map((s) => [s.contentType, s]),

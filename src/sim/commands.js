@@ -11,6 +11,7 @@
 import { clone } from '../core/clone.js';
 import { endTurn } from './turn.js';
 import { moveUnit, fortify, skip, sleep, wake, disband } from './unitCommands.js';
+import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
 
 /** Every command the sim understands, by type. Each has validate (returns an error or null) and apply. */
 export const COMMANDS = Object.freeze({
@@ -21,6 +22,14 @@ export const COMMANDS = Object.freeze({
   sleep,
   wake,
   disband,
+  foundCity,
+  setProduction,
+  queueProduction,
+  buyItem,
+  setFocus,
+  lockTile,
+  unlockTile,
+  buyTile,
 });
 
 const EMPTY = Object.freeze({});

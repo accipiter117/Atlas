@@ -12,12 +12,20 @@
       "claimRadius": 1,
       "workRadius": 3,
       "foodPerCitizen": 2,
-      "captureLoss": 0.5
+      "captureLoss": 0.5,
+      "centreMinimum": {
+        "food": 2,
+        "production": 1
+      },
+      "baseCulture": 1,
+      "capitalName": true,
+      "queueLength": 8
     },
     "growth": {
       "base": 15,
       "linear": 8,
-      "exponent": 1.5
+      "exponent": 1.5,
+      "starvationReset": 0
     },
     "borders": {
       "baseCost": 10,
@@ -129,7 +137,8 @@
     },
     "sight": {
       "default": 2,
-      "hillsBonus": 1
+      "hillsBonus": 1,
+      "city": 2
     },
     "start": {
       "era": "ancient",
@@ -164,6 +173,9 @@
         "standard": 1.0,
         "old": 0.7
       }
+    },
+    "yields": {
+      "hillsProduction": 1
     }
   }
 }

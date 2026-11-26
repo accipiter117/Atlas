@@ -1,0 +1,90 @@
+{
+  "contentType": "focuses",
+  "entries": [
+    {
+      "id": "balanced",
+      "nameKey": "focus.balanced",
+      "weights": {
+        "food": 1.6,
+        "production": 1.4,
+        "gold": 1,
+        "science": 1,
+        "culture": 1,
+        "faith": 0.8
+      },
+      "default": true
+    },
+    {
+      "id": "food",
+      "nameKey": "focus.food",
+      "weights": {
+        "food": 3,
+        "production": 1,
+        "gold": 0.5,
+        "science": 0.5,
+        "culture": 0.5,
+        "faith": 0.5
+      }
+    },
+    {
+      "id": "production",
+      "nameKey": "focus.production",
+      "weights": {
+        "food": 1,
+        "production": 3,
+        "gold": 0.5,
+        "science": 0.5,
+        "culture": 0.5,
+        "faith": 0.5
+      }
+    },
+    {
+      "id": "gold",
+      "nameKey": "focus.gold",
+      "weights": {
+        "food": 1,
+        "production": 0.8,
+        "gold": 3,
+        "science": 0.5,
+        "culture": 0.5,
+        "faith": 0.5
+      }
+    },
+    {
+      "id": "science",
+      "nameKey": "focus.science",
+      "weights": {
+        "food": 1,
+        "production": 0.8,
+        "gold": 0.5,
+        "science": 3,
+        "culture": 0.5,
+        "faith": 0.5
+      }
+    },
+    {
+      "id": "culture",
+      "nameKey": "focus.culture",
+      "weights": {
+        "food": 1,
+        "production": 0.8,
+        "gold": 0.5,
+        "science": 0.5,
+        "culture": 3,
+        "faith": 0.5
+      }
+    },
+    {
+      "id": "faith",
+      "nameKey": "focus.faith",
+      "weights": {
+        "food": 1,
+        "production": 0.8,
+        "gold": 0.5,
+        "science": 0.5,
+        "culture": 0.5,
+        "faith": 3
+      }
+    }
+  ]
+}

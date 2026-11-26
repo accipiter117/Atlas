@@ -54,6 +54,8 @@ export function fixtureGame(rows, units, { fog = false, rules = ruleset } = {}) 
   if (state.seatOrder[0] !== 'f0') state.seatOrder.reverse();
   state.map = fixtureMap(rows);
   state.units = {};
+  state.cities = {};
+  state.owner = new Array(state.map.width * state.map.height).fill(null);
   units.forEach((u, i) => {
     const id = `u_${String(i + 1).padStart(4, '0')}`;
     state.units[id] = { id, type: u.type, faction: u.faction ?? 'f0', tile: u.at, hp: 100, moves: rules.units[u.type].moves, activity: 'none', fortifiedTurns: 0, goto: null };

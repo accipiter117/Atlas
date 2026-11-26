@@ -1,0 +1,45 @@
+{
+  "contentType": "advice",
+  "entries": [
+    {
+      "id": "found_first_city",
+      "priority": 100,
+      "condition": "noCities",
+      "textKey": "advice.foundFirstCity",
+      "actionKey": "advice.do",
+      "action": "selectSettler"
+    },
+    {
+      "id": "starving",
+      "priority": 90,
+      "condition": "cityStarving",
+      "textKey": "advice.starving",
+      "actionKey": "advice.do",
+      "action": "openCity"
+    },
+    {
+      "id": "choose_production",
+      "priority": 80,
+      "condition": "cityNoProduction",
+      "textKey": "advice.chooseProduction",
+      "actionKey": "advice.do",
+      "action": "openCity"
+    },
+    {
+      "id": "orders",
+      "priority": 50,
+      "condition": "unitsNeedOrders",
+      "textKey": "advice.unitsNeedOrders",
+      "actionKey": "advice.do",
+      "action": "selectUnit"
+    },
+    {
+      "id": "end_turn",
+      "priority": 0,
+      "condition": "readyToEnd",
+      "textKey": "advice.readyToEnd",
+      "actionKey": "advice.endTurn",
+      "action": "endTurn"
+    }
+  ]
+}
