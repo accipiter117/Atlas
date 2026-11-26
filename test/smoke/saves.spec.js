@@ -52,7 +52,7 @@ test('setup, autosave, Continue, export and import', async ({ page }, info) => {
     const option = page.locator('.choose-item:not([disabled])').first();
     if (await skip.count()) await skip.first().click();
     else if (await option.count() && await option.isVisible()) await option.click();
-    else await next.click();
+    else { await next.click(); await page.waitForFunction(() => !window.__atlasGame.busy); }
   }
   const turn = await turnOf(page);
   expect(turn).toBe(before + 1);

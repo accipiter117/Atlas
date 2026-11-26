@@ -432,6 +432,7 @@
     "game.eliminated": "{faction} has been knocked out of the game.",
     "game.youEliminated": "You have been knocked out of the game.",
     "game.refused.gameOver": "The game is over.",
-    "end.pointsNote": "Score points from each part of an empire (each citizen {perCitizen}, city {perCity}, tech {perTech}, wonder {perWonder}, building {perBuilding}, project {perProject})."
+    "end.pointsNote": "Score points from each part of an empire (each citizen {perCitizen}, city {perCity}, tech {perTech}, wonder {perWonder}, building {perBuilding}, project {perProject}).",
+    "game.rivalsMoving": "Rivals are moving..."
   }
 }

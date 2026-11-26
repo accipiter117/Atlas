@@ -47,6 +47,22 @@ export const COMMANDS = Object.freeze({
 
 const EMPTY = Object.freeze({});
 
+// Map layers that never change once the map is made. A new state shares them
+// with the old one instead of copying them for every command (phase 10 speed
+// work): nothing in the rules may write to them after map generation.
+const FIXED_MAP_LAYERS = new Set(['terrain', 'hills', 'feature', 'resource', 'river', 'rivers', 'starts', 'terrainIds', 'featureIds', 'resourceIds', 'improvementIds']);
+
+/** A working copy of the state for one command: everything copied except the fixed map layers. */
+export function cloneState(state) {
+  if (!state.map) return clone(state);
+  const { map, ...rest } = state;
+  const out = clone(rest);
+  const m = {};
+  for (const key of Object.keys(map)) m[key] = FIXED_MAP_LAYERS.has(key) ? map[key] : clone(map[key]);
+  out.map = m;
+  return out;
+}
+
 function refuse(code, message) {
   return { ok: false, error: { code, message } };
 }
@@ -74,7 +90,7 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   const problem = handler.validate(state, cmd, ruleset);
   if (problem) return { ok: false, error: problem };
 
-  const next = clone(state);
+  const next = cloneState(state);
   const events = [];
   handler.apply(next, cmd, events, ruleset);
   if (ruleset.techs) applyBoosts(next, ruleset, events);

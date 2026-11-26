@@ -340,3 +340,4 @@ body {
 .end-table tr.out { opacity: 0.55; }
 .panel-card { gap: 10px; }
 .end-table caption { text-align: left; padding-bottom: 6px; }
+.advice-line .busy { font-style: italic; color: var(--ink-soft); }

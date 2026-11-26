@@ -107,6 +107,8 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
       await page.locator('[data-act="sleep"]').click();
     }
     await page.locator('[data-action="next"]').click();
+    // The rivals move in the background now; wait for them.
+    await page.waitForFunction(() => !window.__atlasGame.busy);
   }
   expect(await warriors()).toBe(before + 1);
   expect(errors).toEqual([]);

@@ -32,5 +32,7 @@ export function runAiTurn(ai, getView, apply, maxCommands = 600) {
   return { commands: maxCommands, events, stuck: true };
 }
 
+export { createSeatRunner, portableMemory } from './seats.js';
+
 /** Research the AI would choose in your place, for the advice line. */
 export { rankTechs } from './planners/science.js';

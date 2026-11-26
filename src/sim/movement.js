@@ -44,11 +44,31 @@ export function enterCost(state, ruleset, from, to) {
   return { cost, river };
 }
 
+const NONE = Object.freeze([]);
+
+/**
+ * Who stands where, built once per path search (phase 10 speed work): looking
+ * a tile up in this beats scanning every unit on the map for every tile the
+ * search touches. Only valid while the state is not changed.
+ */
+export function occupancy(state) {
+  const units = new Map();
+  for (const u of Object.values(state.units ?? {})) {
+    const list = units.get(u.tile);
+    if (list) list.push(u); else units.set(u.tile, [u]);
+  }
+  const cities = new Map();
+  for (const c of Object.values(state.cities ?? {})) cities.set(c.tile, c);
+  return { units, cities };
+}
+
+const unitsOn = (state, t, occ) => (occ ? occ.units.get(t) ?? NONE : unitsAt(state, t));
+
 /** Is tile `t` next to a combat unit hostile to `factionId`? `seen` limits it to units the faction can see. */
-export function inEnemyZoc(state, ruleset, factionId, t, seen = null) {
+export function inEnemyZoc(state, ruleset, factionId, t, seen = null, occ = null) {
   for (const j of neighbourCache(state.map)[t]) {
     if (j < 0 || (seen && !seen(j))) continue;
-    for (const u of unitsAt(state, j)) {
+    for (const u of unitsOn(state, j, occ)) {
       if (isEnemy(state, factionId, u.faction) && slotOf(ruleset, u.type) !== 'civilian') return true;
     }
   }
@@ -60,26 +80,27 @@ export function inEnemyZoc(state, ruleset, factionId, t, seen = null) {
  * Returns the moves left afterwards, or null if the step is not possible now
  * (not enough movement and not at full movement).
  */
-export function stepMoves(state, ruleset, unit, from, to, moves, full, seen = null) {
+export function stepMoves(state, ruleset, unit, from, to, moves, full, seen = null, occ = null) {
   const { cost, river } = enterCost(state, ruleset, from, to);
   const endsByRiver = river && (ruleset.tuning?.movement?.riverCrossingEndsMove ?? true);
   if (moves <= 0) return null;
   if (!endsByRiver && moves < cost && moves < full) return null;
   let left = endsByRiver ? 0 : Math.max(0, moves - cost);
-  if (!unitClass(ruleset, unit).ignoresZoc && inEnemyZoc(state, ruleset, unit.faction, to, seen)) left = 0;
+  if (!unitClass(ruleset, unit).ignoresZoc && inEnemyZoc(state, ruleset, unit.faction, to, seen, occ)) left = 0;
   return left;
 }
 
 /** May the unit end a turn (or its move) on tile t? Own units of the other slot are fine. */
-function foreignCity(state, unit, t) {
+function foreignCity(state, unit, t, occ = null) {
+  if (occ) { const c = occ.cities.get(t); return Boolean(c && c.faction !== unit.faction); }
   for (const c of Object.values(state.cities ?? {})) if (c.tile === t && c.faction !== unit.faction) return true;
   return false;
 }
 
-export function canStop(state, ruleset, unit, t, seen = null) {
-  if (foreignCity(state, unit, t)) return false;
+export function canStop(state, ruleset, unit, t, seen = null, occ = null) {
+  if (foreignCity(state, unit, t, occ)) return false;
   const slot = slotOf(ruleset, unit.type);
-  for (const u of unitsAt(state, t)) {
+  for (const u of unitsOn(state, t, occ)) {
     if (u.id === unit.id) continue;
     if (seen && !seen(t)) continue;
     if (u.faction !== unit.faction || slotOf(ruleset, u.type) === slot) return false;
@@ -88,11 +109,11 @@ export function canStop(state, ruleset, unit, t, seen = null) {
 }
 
 /** May the unit pass through tile t (no enemy unit it knows about)? */
-function canPass(state, unit, t, seen) {
+function canPass(state, unit, t, seen, occ = null) {
   // Another faction's city cannot be walked into or through (attacking takes it).
-  if (foreignCity(state, unit, t)) return false;
+  if (foreignCity(state, unit, t, occ)) return false;
   if (seen && !seen(t)) return true;
-  for (const u of unitsAt(state, t)) if (u.faction !== unit.faction) return false;
+  for (const u of unitsOn(state, t, occ)) if (u.faction !== unit.faction) return false;
   return true;
 }
 
@@ -148,7 +169,8 @@ export function findPath(state, ruleset, unit, target, { known = null, seen = nu
   const start = unit.tile;
   if (target === start || target < 0 || target >= map.width * map.height) return null;
   if (known && !known(target)) return null;
-  if (!passable(state, ruleset, unit.type, target) || !canStop(state, ruleset, unit, target, seen) || !canPass(state, unit, target, seen)) return null;
+  const occ = occupancy(state);
+  if (!passable(state, ruleset, unit.type, target) || !canStop(state, ruleset, unit, target, seen, occ) || !canPass(state, unit, target, seen, occ)) return null;
   const goal = tileHex(map, target);
   const h = (t) => hexDistance(tileHex(map, t), goal) * 0.5 / full;
   const best = new Map();
@@ -166,16 +188,16 @@ export function findPath(state, ruleset, unit, target, { known = null, seen = nu
     if (cur.tile === target) { found = cur; break; }
     expanded += 1;
     for (const j of nbs[cur.tile]) {
-      if (j < 0 || (known && !known(j)) || !passable(state, ruleset, unit.type, j) || !canPass(state, unit, j, seen)) continue;
+      if (j < 0 || (known && !known(j)) || !passable(state, ruleset, unit.type, j) || !canPass(state, unit, j, seen, occ)) continue;
       let turn = cur.turn;
       let moves = cur.moves;
-      let left = moves > 0 ? stepMoves(state, ruleset, unit, cur.tile, j, moves, full, seen) : null;
+      let left = moves > 0 ? stepMoves(state, ruleset, unit, cur.tile, j, moves, full, seen, occ) : null;
       if (left === null) {
         // Wait here for next turn, which needs a tile the unit may stop on.
-        if (cur.tile !== start && !canStop(state, ruleset, unit, cur.tile, seen)) continue;
+        if (cur.tile !== start && !canStop(state, ruleset, unit, cur.tile, seen, occ)) continue;
         turn += 1;
         moves = full;
-        left = stepMoves(state, ruleset, unit, cur.tile, j, moves, full, seen);
+        left = stepMoves(state, ruleset, unit, cur.tile, j, moves, full, seen, occ);
         if (left === null) continue;
       }
       const label = { tile: j, turn, moves: left, parent: cur };

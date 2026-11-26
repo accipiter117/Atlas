@@ -7,14 +7,14 @@
 // change goes through applyCommand.
 
 import {
-  createGame, applyCommand, view, worldFromView, findPath, currentFactionId, VISIBLE, UNEXPLORED,
+  createGame, applyCommand, view, worldFromView, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
   improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef, eraOf,
   atWar, buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 import { factionCard } from './factionCards.js';
-import { createAi, runAiTurn, rankTechs } from '../ai/index.js';
+import { createSeatRunner, rankTechs } from '../ai/index.js';
 import { renderTrees } from './trees.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
@@ -115,10 +115,40 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const colours = Object.fromEntries(state.factions.map((f, i) => [f.id, palette[i % palette.length]]));
   colours.raiders = ruleset.skin.raiderColour ?? '#3d3d3d';
   const $ = (sel) => root.querySelector(sel);
-  const ais = Object.fromEntries(state.factions.filter((f) => f.kind === 'ai').map((f) => [f.id, createAi(ruleset, f.id, {
-    journal: resume?.journal?.[f.id] ?? [],
-    recordOff: setup.recordAI === 'off',
-  })]));
+  // The computer seats. They play in a Web Worker when the browser allows
+  // (phase 10), so the page never freezes; otherwise here, with the same code.
+  const aiIds = state.factions.filter((f) => f.kind === 'ai').map((f) => f.id);
+  const startMemories = Object.fromEntries(aiIds.map((id) => [id, { journal: resume?.journal?.[id] ?? [] }]));
+  const recordOff = setup.recordAI === 'off';
+  const seats = createSeatRunner(ruleset, aiIds, { memories: startMemories, recordOff });
+  let journals = seats.journals();
+  let busy = false;           // the rivals are moving: your commands wait
+  const worker = startWorker();
+  function startWorker() {
+    const params = new URLSearchParams(doc.defaultView.location.search);
+    if (params.get('worker') === 'off' || typeof doc.defaultView.Worker !== 'function') return null;
+    try {
+      const w = new doc.defaultView.Worker(new URL('../aiWorker.js', import.meta.url), { type: 'module' });
+      w.postMessage({ type: 'init', ruleset, factions: aiIds, memories: startMemories, recordOff });
+      return w;
+    } catch {
+      return null;
+    }
+  }
+  let playId = 0;
+  /** Ask the worker to play the computer seats; resolves with its reply, or null if it failed. */
+  function workerPlay(fromState) {
+    const id = ++playId;
+    return new Promise((resolve) => {
+      const done = (e) => {
+        if (e.data?.id !== id) return;
+        worker.removeEventListener('message', done);
+        resolve(e.data.type === 'played' ? e.data : null);
+      };
+      worker.addEventListener('message', done);
+      worker.postMessage({ type: 'play', id, state: fromState, stopAt: human });
+    });
+  }
   let v = view(state, human, ruleset);
   let selected = null;        // unit id
   let openCity = null;        // city id
@@ -132,11 +162,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let autoplayAi = null;      // ?debug=1 autoplay: an AI plays your seat too
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
-  doc.defaultView.__atlasGame = { get state() { return state; }, get view() { return v; }, mapView, human, ruleset, ais };
+  // What tests and the dev tools can see; published on window once the opening seats have played.
+  const api = { get state() { return state; }, get view() { return v; }, get busy() { return busy; }, mapView, human, ruleset, get journals() { return journals; }, usesWorker: Boolean(worker) };
   if (debug) {
     // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
     // state directly, outside the rules, so they are never available in a normal game.
-    doc.defaultView.__atlasGame.debug = {
+    api.debug = {
       spawn(type, factionId, tile) {
         const next = JSON.parse(JSON.stringify(state));
         const id = `dbg_${next.nextId++}`;
@@ -147,16 +178,36 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       },
       /** Let an AI play your seat as well, for `rounds` rounds or until the game ends (the full-game browser test). */
       autoplay(rounds = 1) {
-        autoplayAi ??= createAi(ruleset, human);
-        const all = [];
+        // Its own AIs for every seat, played here on the page (debug only).
+        autoplayAi ??= createSeatRunner(ruleset, state.factions.map((f) => f.id));
+        const refusals = [];
         for (let i = 0; i < rounds && !gameOver(); i += 1) {
           const before = state.turn;
-          while (state.turn === before && !state.winner && humanAlive()) all.push(...playComputerSeats());
-          if (!humanAlive()) while (!state.winner && state.turn === before) all.push(...playComputerSeats());
+          while (state.turn === before && !state.winner) {
+            const r = autoplayAi.play(state, { maxSeats: state.factions.length });
+            state = r.state;
+            log.push(...r.commands);
+            refusals.push(...r.refusals);
+          }
         }
+        journals = autoplayAi.journals();
         refresh();
         checkEnd();
-        return { turn: state.turn, winner: state.winner ?? null, refusals: Object.values(ais).concat(autoplayAi).flatMap((a) => a.refusals), log: log.length };
+        return { turn: state.turn, winner: state.winner ?? null, refusals, log: log.length };
+      },
+      /** Play the computer seats from the current state both in the worker and on the page, from fresh AIs; compare. */
+      async workerCheck() {
+        // From the moment you end this turn (without changing the real game).
+        const from = currentFactionId(state) === human ? applyCommand(state, { type: 'endTurn', faction: human }, ruleset).state : state;
+        const fresh = createSeatRunner(ruleset, aiIds);
+        const direct = fresh.play(from, { stopAt: human });
+        const w = new doc.defaultView.Worker(new URL('../aiWorker.js', import.meta.url), { type: 'module' });
+        const reply = await new Promise((resolve) => {
+          w.onmessage = (e) => { if (e.data.type === 'ready') w.postMessage({ type: 'play', id: 1, state: from, stopAt: human }); else resolve(e.data); };
+          w.postMessage({ type: 'init', ruleset, factions: aiIds, memories: {} });
+        });
+        w.terminate();
+        return { direct: fingerprint(direct.state), worker: fingerprint(reply.state), commands: [direct.commands.length, reply.commands?.length] };
       },
       setXp(unitId, xp) {
         const next = JSON.parse(JSON.stringify(state));
@@ -293,6 +344,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
 
   function run(cmd) {
+    if (busy) return null;
     const r = exec(cmd);
     if (!r.ok) {
       toast(refusal(r.error));
@@ -309,7 +361,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   /** Everything a save needs right now. */
   function snapshot() {
-    return { state, log, journal: Object.fromEntries(Object.entries(ais).map(([id, ai]) => [id, ai.memory.journal ?? []])) };
+    return { state, log, journal: journals };
   }
   function saveLabel() {
     const civ = v.factions.find((f) => f.id === human)?.civ;
@@ -331,33 +383,41 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     showEnd();
   }
 
-  /** Let every computer seat play until it is your turn again. */
-  function playComputerSeats() {
-    const events = [];
-    let guard = 0;
-    while (!state.winner && (currentFactionId(state) !== human || autoplayAi) && guard < 64) {
-      guard += 1;
-      const me = currentFactionId(state);
-      const ai = ais[me] ?? autoplayAi;
-      const r = runAiTurn(ai, () => view(state, me, ruleset), exec);
-      events.push(...r.events);
-      if (!state.winner && currentFactionId(state) === me) {
-        const res = exec({ type: 'endTurn', faction: me });
-        if (res.ok) events.push(...res.events);
-      }
-      if (autoplayAi && currentFactionId(state) === human) break;
+  /** Let every computer seat play until it is your turn again: in the worker if there is one. */
+  async function playComputerSeats() {
+    if (state.winner || currentFactionId(state) === human) return [];
+    busy = true;
+    renderBusy();
+    let r = null;
+    if (worker) r = await workerPlay(state);
+    if (!r) r = seats.play(state, { stopAt: human });
+    state = r.state;
+    log.push(...r.commands);
+    journals = r.journals ?? seats.journals();
+    busy = false;
+    return r.events;
+  }
+
+  /** While the rivals move, the advice line says so and the Next button waits. */
+  function renderBusy() {
+    const next = $('[data-action="next"]');
+    next.disabled = busy;
+    if (busy) {
+      next.textContent = tt('game.rivalsMoving');
+      $('[data-field="advice"]').replaceChildren(el(doc, 'span', { class: 'busy' }, tt('game.rivalsMoving')));
     }
-    return events;
   }
 
   /** End your turn, let the computer seats play, and come back at your next turn. */
-  function endTurn() {
-    if (currentFactionId(state) !== human || gameOver()) return;
+  async function endTurn() {
+    if (busy || currentFactionId(state) !== human || gameOver()) return;
     const all = [];
     const r = exec({ type: 'endTurn', faction: human });
     if (!r.ok) { toast(refusal(r.error)); return; }
     all.push(...r.events);
-    all.push(...playComputerSeats());
+    refresh();
+    all.push(...(await playComputerSeats()));
+    $('[data-action="next"]').disabled = false;
     refresh();
     showEvents(all);
     autosaveNow();
@@ -896,7 +956,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
   function openJournal() {
     renderJournal(doc, panel.querySelector('[data-field="panel-body"]'), {
-      ais, factions: v.factions, ruleset, text, factionName: (id) => (id === 'raiders' ? tt('game.raiders') : civName(id)), onClose: () => { panel.hidden = true; },
+      ais: Object.fromEntries(Object.entries(journals).map(([id, journal]) => [id, { memory: { journal } }])), factions: v.factions, ruleset, text, factionName: (id) => (id === 'raiders' ? tt('game.raiders') : civName(id)), onClose: () => { panel.hidden = true; },
     });
     panel.hidden = false;
   }
@@ -958,11 +1018,18 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   $('[data-action="faction"]').onclick = () => { overlay.querySelector('[data-action="close-overlay"]').hidden = false; showClose(); };
 
   // The computer seats before you in the first round play now (a loaded game is already at your turn).
-  if (!resume) playComputerSeats();
   refresh();
   const firstUnit = myUnits()[0];
   if (firstUnit) mapView.centreOnTile(firstUnit.tile);
-  selectNextIdle();
-  checkEnd();
-  return { destroy: () => mapView.destroy(), get state() { return state; }, snapshot };
+  // The computer seats before you in the first round play now (a loaded game is already at your turn).
+  const opening = !resume && currentFactionId(state) !== human ? playComputerSeats() : Promise.resolve([]);
+  opening.then((events) => {
+    $('[data-action="next"]').disabled = false;
+    refresh();
+    showEvents(events);
+    selectNextIdle();
+    checkEnd();
+    doc.defaultView.__atlasGame = api;
+  });
+  return { destroy: () => { mapView.destroy(); worker?.terminate(); }, get state() { return state; }, snapshot };
 }

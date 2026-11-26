@@ -47,7 +47,7 @@ test('research tree, queueing, and the AI journal', async ({ page }, info) => {
     const option = page.locator('.choose-item:not([disabled])').first();
     if (await skip.count()) await skip.first().click();
     else if (await option.count() && await option.isVisible()) await option.click();
-    else await next.click();
+    else { await next.click(); await page.waitForFunction(() => !window.__atlasGame.busy); }
     turn = await page.evaluate(() => window.__atlasGame.state.turn);
   }
   expect(await page.evaluate(() => window.__atlasGame.state.turn)).toBeGreaterThanOrEqual(5);
