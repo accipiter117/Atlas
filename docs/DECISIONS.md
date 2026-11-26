@@ -98,6 +98,21 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The content is generated** by `tools/gen/base-ancient-content.py`, which keeps ids, text keys and references in step; either the script or the JSON can be edited afterwards.
 - **`buildCharge`** is still not an effect; legionaries do not build forts. The fort exists as a normal builder improvement.
 
+## Phase 7
+
+- **A home-made e^x.** Damage uses e^x, and browsers may compute `Math.exp` very slightly differently, which could make the same battle end differently on two machines. `src/core/mathdet.js` computes it with plain arithmetic (accurate to the last digit).
+- **One exchange per attack, as in Civ VI.** Both sides usually survive; the result's winner is then "none". If both would fall, the attacker keeps 1 HP. Attacking ends the attacker's move; melee units must be next to their target (clicking a distant enemy walks your unit to the nearest hex it can attack from first).
+- **Flanking** counts each other friendly fighting unit next to the defender (+2 each). The plan does not ask for Civ VI's defensive support bonus, so there is none. **Fortified** counts after two turn starts in the fortify stance. **Siege** units get +10 against cities (`combat.siegeVsCity`).
+- **Cities**: strength is the best melee unit the owner could build (or its garrison, if stronger) + 3, + 5 per wall building, + 3 on hills. HP is 200 plus each building's defence (walls 100). Cities heal 20 a turn when not attacked since their last turn, and with walls shoot once a turn at range 2; city shots always use the auto module.
+- **Capture**: a melee unit attacking a city at 0 HP takes it. Ranged attacks can bring a city to 0 HP but cannot take it. The garrison is destroyed, the palace goes, the city restarts at a quarter of its HP, and the new owner must choose Keep (half the people are lost) or Raze (one citizen a turn) before doing anything else. Original capitals cannot be razed. Captured civilians keep their type.
+- **Experience** goes only to survivors: 5 for attacking, 3 for defending. Promotions have two tiers per class tree; the second needs either first-tier choice. Promotion bonuses reach the unit directly. `combatBonus` is worked out by the combat rules rather than the effects registry, because it depends on the opponent. Promoting does not heal.
+- **Battle modules**: the setup's `battleModule` (default `auto`) is used when it can handle the fight, otherwise auto. An interactive module waits for its screen only when a human is involved and the setup's `battleMode` is not `auto`; base Atlas has no interactive module yet, so every battle resolves at once. Every result is kept in `state.battleLog`, and the per-battle seed is drawn once from the game dice.
+- **Odds** sample the damage range 400 times with a throwaway generator private to `src/ui/odds.js`, so looking at odds can never change the game.
+- **Raiders** are off unless the setup turns them on; New game turns them on (the plan's default). Camps appear from turn 6, every 10 turns, on land no player can see, at least 6 hexes from any city, up to one per 250 land hexes. Each camp sends out a raider every 6 turns while fewer than 2 are nearby (warriors, archers from turn 40, horsemen from turn 80). Raiders go for anything within 4 hexes, never take cities (a city they batter stays at 1 HP), have no fog of war, and act at the end of each round. Clearing an empty camp pays 30 gold. Raging halves the waits and doubles the camps.
+- **What you see of an enemy unit** now includes whether it is fortified and its promotions, because the odds would otherwise be wrong.
+- **`?debug=1`** adds developer cheats to the game (placing a unit, setting experience), like the plan's dev page. They edit the state outside the rules, so they exist only with that address; the browser tests use them to set up a fight.
+- **Rival factions still do not attack**; they will once the real AI arrives in phase 8. Only raiders fight back for now.
+
 ## Later
 
 - Nothing yet.

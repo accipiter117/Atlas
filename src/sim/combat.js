@@ -315,6 +315,7 @@ export function applyResult(state, ruleset, spec, result, events) {
   }
   if (captured) captureCity(state, ruleset, captured, attacker.faction, events);
   events.push({ type: 'battle', battleId: spec.battleId, kind: spec.kind, attacker: spec.attacker.units[0].ref, attackerFaction: spec.attacker.faction,
+    attackerType: spec.attacker.units[0].type, defenderType: spec.defender.units[0]?.type ?? null, attackerCity: spec.attacker.city ?? null,
     defenderFaction: spec.defender.faction, target, winner: result.winner, margin: result.margin, damage: result.damage ?? null, city: spec.defender.city?.ref ?? null });
 }
 

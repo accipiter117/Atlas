@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 7: Combat and the battle module interface
+
+What you can try: start a game and wait for raiders (camps appear in land nobody can see from about turn 6, marked with a dark tent once found). Select a fighting unit and point at an enemy (first tap on touch): the panel shows your win chance, the HP each side should lose, both strengths and every modifier (hills, forest, river crossing, flanking, wounds, fortified, promotions). Click (or tap again) to attack; if the enemy is out of reach your unit walks to the nearest hex it can attack from. A report says what each side dealt. Units earn experience; at 15 a promotion appears under Needs attention and you pick one of two. Take a city with a melee unit once its defence is at 0 HP and choose Keep or Raze (original capitals cannot be razed). Cities show their defence HP and, once they have walls, can shoot once a turn. Walk into an empty raider camp for 30 gold. For experimenting, `?debug=1` in the address adds developer cheats (see DECISIONS).
+
+- Combat with Civ VI's damage curve (equal strength costs each side 24 to 36 HP), every modifier from the plan, ranged attacks with no damage back, city strength, HP, walls, healing and city shots, capture with Keep or Raze, and capturing civilians.
+- The battle module interface from section 5: a registry, the instant auto module, battle specs and checked results, a seed per battle, waiting for an interactive module's screen, and a log of every result.
+- Experience and 22 promotions across every unit class.
+- Raiders: camps, raiders that attack nearby units and cities (but never take them), and gold for clearing camps.
+- Odds before every attack, worked out without ever touching the game's dice.
+- Tests: 131 unit tests (17 new for combat, odds, capture, promotions, raiders, 200 scripted battles and a fake interactive battle module) and 27 browser tests, which now also check the side panel never shows a stray "null".
+
 ## Phase 6: Economy, buildings, improvements and factions
 
 What you can try: New game now starts with a choice of eight peoples (Rome, Greece, Egypt, Persia, Carthage, Gaul, the Britons and Han), each card showing its leader, two traits, unique unit, unique building and agenda. Your faction's name sits in the top bar; tap it to see its card again. Found a city and open it: your capital has a palace, Rome's cities also get a free monument, and the drawer lists buildings (with any adjacency bonus written out, such as a library's science from mountains), amenities and specialists. The build list now holds 30 buildings and 8 wonders as well as units. Select a builder to see a button for each improvement that fits its hex; each one spends a charge. Gold in the top bar is now after upkeep; if it is falling towards zero you are warned two turns ahead, and when it runs out a unit disbands.

@@ -54,6 +54,8 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
   await expect(page.locator('.city-head h2')).toHaveText(c.name);
   await expect(page.locator('.city-yields .food')).toContainText(/grows in \d+ turns/);
   await expect(page.locator('.choose-item').first().locator('.reason')).not.toBeEmpty();
+  // An empty entry must never show up as the word "null" in the panel.
+  await expect(page.locator('.unit-panel')).not.toContainText('null');
   await page.screenshot({ path: `test-results/city-drawer-${info.project.name}.png` });
 
   // The advice now says to choose production; Do it opens this city.

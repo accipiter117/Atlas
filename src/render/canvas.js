@@ -10,7 +10,7 @@ import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
 import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
-import { drawBorders, drawCities, drawCityWork } from './layers/cities.js';
+import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/cities.js';
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
 
@@ -42,6 +42,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     owner: null,
     cityOverlay: null,
     selectedCity: null,
+    camps: [],
+    target: null,
     hover: null,
     path: null,
     pathFrom: null,
@@ -82,7 +84,9 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
     if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.7)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
+    drawCamps(ctx, view.map, cam, view.camps);
     drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity);
+    if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
     const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (walking) dirty = true;
@@ -121,7 +125,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       return h.r * view.map.width + c;
     },
     /** Update what the player knows: map arrays (for newly explored tiles), fog and units. */
-    setWorld({ map: newMap, fog: newFog, units: newUnits, cities: newCities }) {
+    setWorld({ map: newMap, fog: newFog, units: newUnits, cities: newCities, camps: newCamps }) {
       if (newMap && view.fog && newFog) {
         // Redraw the chunks where something on the ground changed: newly explored hexes, improvements, roads.
         const old = view.map;
@@ -135,6 +139,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       if (newFog) view.fog = newFog;
       if (newUnits) view.units = newUnits;
       if (newCities) view.cities = newCities;
+      if (newCamps) view.camps = newCamps;
       view.owner = view.map.owner ?? null;
       dirty = true;
     },
@@ -145,6 +150,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setSelection(unitId) { view.selected = unitId; dirty = true; },
     setHover(tile) { if (view.hover !== tile) { view.hover = tile; dirty = true; } },
     setPath(from, plan) { view.pathFrom = from; view.path = plan; dirty = true; },
+    /** Ring a hex in red (an enemy you are aiming at), or clear it with null. */
+    setTarget(tile) { if (view.target !== tile) { view.target = tile; dirty = true; } },
     setGrid(on) { view.showGrid = on; dirty = true; },
     setMarkers(tiles) { view.markers = tiles; dirty = true; },
     redraw() { dirty = true; },

@@ -138,3 +138,27 @@ export function drawCityWork(ctx, map, cam, overlay) {
     ctx.fillText(label, p.x, p.y + 0.5);
   }
 }
+
+/** Raider camps the player has seen: a dark tent with a red pennant. */
+export function drawCamps(ctx, map, cam, camps) {
+  const z = cam.zoom;
+  for (const tile of camps ?? []) {
+    const p = screen(map, cam, tile);
+    ctx.fillStyle = '#3a2a1c';
+    ctx.beginPath();
+    ctx.moveTo(p.x - 14 * z, p.y + 10 * z);
+    ctx.lineTo(p.x, p.y - 12 * z);
+    ctx.lineTo(p.x + 14 * z, p.y + 10 * z);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = Math.max(1, 1.5 * z);
+    ctx.stroke();
+    ctx.fillStyle = '#1a120b';
+    ctx.fillRect(p.x - 3 * z, p.y + 2 * z, 6 * z, 8 * z);
+    ctx.fillStyle = '#c0392b';
+    ctx.fillRect(p.x, p.y - 20 * z, 9 * z, 5 * z);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(p.x - 1 * z, p.y - 20 * z, 2 * z, 9 * z);
+  }
+}

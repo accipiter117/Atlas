@@ -48,6 +48,8 @@ test('faction picker, faction card, a builder farms, the drawer shows buildings 
     // This seed put the builder on a hex no farm suits; the buttons still match the rules.
     await expect(page.locator('[data-improve]').first()).toBeVisible();
   }
+  // An empty entry must never show up as the word "null" in the panel.
+  await expect(page.locator('.unit-panel')).not.toContainText('null');
   await page.screenshot({ path: `test-results/builder-${info.project.name}.png` });
   expect(errors).toEqual([]);
 });

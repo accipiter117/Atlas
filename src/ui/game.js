@@ -10,7 +10,9 @@ import {
   createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
   improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef,
+  buildSpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, promotionOptions, cityHpMax, defenderAt,
 } from '../sim/index.js';
+import { estimateOdds } from './odds.js';
 import { factionCard } from './factionCards.js';
 import { takeTurn } from '../ai/index.js';
 import { createMapView } from '../render/canvas.js';
@@ -28,6 +30,11 @@ function el(doc, tag, props = {}, ...children) {
   }
   node.append(...children.filter((c) => c !== null && c !== undefined && c !== false));
   return node;
+}
+
+/** Replace an element's children, skipping empty entries (null, undefined, false). */
+function fill(node, ...children) {
+  node.replaceChildren(...children.filter((c) => c !== null && c !== undefined && c !== false));
 }
 
 const fmt = (n) => (Math.round(n * 10) / 10).toString();
@@ -83,17 +90,19 @@ export function rankOptions(v, ruleset, city, tt) {
   }).sort((a, b) => b.score - a.score || a.turns - b.turns || a.item.id.localeCompare(b.item.id));
 }
 
-export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, players = 4, mapSize = 'small', mapType = 'continents', faction = null }) {
+export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, players = 4, mapSize = 'small', mapType = 'continents', faction = null, debug = false }) {
   const tt = (key, args) => t(text, key, args);
   const setup = {
     seed,
     players: [{ kind: 'human', name: tt('game.you'), ...(faction ? { faction } : {}) }, ...Array.from({ length: players - 1 }, (_, n) => ({ kind: 'ai', name: tt('game.rival', { n: n + 1 }) }))],
     map: { size: mapSize, type: mapType },
+    raiders: 'on',
   };
   let state = createGame(ruleset, setup);
   const human = 'f0';
   const palette = ruleset.skin.seatColours ?? ['#c23b22', '#2f6fbf', '#e0a526', '#6a4c9c'];
   const colours = Object.fromEntries(state.factions.map((f, i) => [f.id, palette[i % palette.length]]));
+  colours.raiders = ruleset.skin.raiderColour ?? '#3d3d3d';
   const $ = (sel) => root.querySelector(sel);
   let v = view(state, human);
   let selected = null;        // unit id
@@ -102,10 +111,32 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let pendingBuy = null;      // tile awaiting a second tap to buy
   let confirmDisband = false;
   let showAllOptions = false;
+  let aim = null;             // { tile, spec, odds } for the enemy being pointed at
+  let shootingCity = null;    // a city choosing what to shoot
   let lastTouch = false;
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
   doc.defaultView.__atlasGame = { get state() { return state; }, get view() { return v; }, mapView, human, ruleset };
+  if (debug) {
+    // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
+    // state directly, outside the rules, so they are never available in a normal game.
+    doc.defaultView.__atlasGame.debug = {
+      spawn(type, factionId, tile) {
+        const next = JSON.parse(JSON.stringify(state));
+        const id = `dbg_${next.nextId++}`;
+        next.units[id] = { id, type, faction: factionId, tile, hp: 100, moves: ruleset.units[type].moves, activity: 'none', fortifiedTurns: 0, goto: null, xp: 0, promotions: [] };
+        state = next;
+        refresh();
+        return id;
+      },
+      setXp(unitId, xp) {
+        const next = JSON.parse(JSON.stringify(state));
+        next.units[unitId].xp = xp;
+        state = next;
+        refresh();
+      },
+    };
+  }
 
   const unitName = (u) => ruleset.text[ruleset.units[u.type]?.nameKey] ?? u.type;
   const itemName = (item) => (item.kind === 'unit' ? ruleset.text[ruleset.units[item.id]?.nameKey] : ruleset.text[ruleset.buildings?.[item.id]?.nameKey]) ?? item.id;
@@ -146,6 +177,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function select(id, { centre = false } = {}) {
     selected = id;
     openCity = null;
+    aim = null;
+    shootingCity = null;
+    mapView.setTarget(null);
     pendingTarget = null;
     pendingBuy = null;
     confirmDisband = false;
@@ -179,14 +213,34 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   function refresh() {
     v = view(state, human);
-    mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities });
+    mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
+    if (v.pendingCapture) showCaptureDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
     render();
   }
 
+  const nameOfUnit = (type, faction) => (faction === 'raiders' ? `${tt('game.raiders')} ${unitName({ type }).toLowerCase()}` : unitName({ type }));
+
+  function battleReport(e) {
+    if (e.attackerFaction !== human && e.defenderFaction !== human) return;
+    const attackerType = e.attackerType ?? '';
+    const d = e.damage ?? { toDefender: 0, toAttacker: 0 };
+    const city = e.city ? v.cities.find((c) => c.id === e.city) : null;
+    const defender = city ? tt('odds.city', { name: city.name }) : nameOfUnit(e.defenderType, e.defenderFaction);
+    const attacker = e.kind === 'cityRanged' ? (v.cities.find((c) => c.id === e.attackerCity)?.name ?? '') : nameOfUnit(attackerType, e.attackerFaction);
+    toast(e.kind === 'ranged' || e.kind === 'cityRanged'
+      ? tt('battle.reportRanged', { attacker, defender, dealt: d.toDefender })
+      : tt('battle.report', { attacker, defender, dealt: d.toDefender, taken: d.toAttacker }));
+  }
+
   function showEvents(events) {
     for (const e of events) {
+      if (e.type === 'battle') battleReport(e);
+      if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
+      if (e.type === 'cityCaptured' && e.from === human) toast(tt('battle.cityLost', { city: e.name, faction: civName(e.faction) }));
+      if (e.type === 'campCleared' && e.faction === human) toast(tt('battle.campCleared', { gold: e.gold }));
+      if (e.type === 'unitCaptured' && e.faction === human) toast(tt('battle.civilianCaptured', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'unitMoved' && (e.faction === human || e.path.some((tile) => v.fog[tile] === VISIBLE))) mapView.animateMove(e.unit, e.path);
       if (e.type === 'wonderBuilt') {
         const known = e.faction === human || v.cities.some((c) => c.id === e.city);
@@ -245,7 +299,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   /** The Next button: whatever still blocks the turn, else end it (section 10.1). */
   function next() {
-    if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
+    if (v.pendingCapture) showCaptureDialog();
+    else if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
     else if (idle().length) selectNextIdle();
     else endTurn();
   }
@@ -318,10 +373,78 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     return false;
   }
 
+  /** A visible enemy unit or enemy city on a hex. */
+  function enemyAt(tile) {
+    if (tile < 0 || v.fog[tile] !== VISIBLE) return null;
+    const city = v.cities.find((c) => c.tile === tile && c.faction !== human);
+    const unit = v.units.find((x) => x.tile === tile && x.faction !== human);
+    return city || unit ? { city, unit } : null;
+  }
+
+  function aimAt(tile) {
+    const u = selectedUnit();
+    const world = knownWorld(v);
+    if (!u || combatKind(ruleset, u) === 'none' || !enemyAt(tile)) { aim = null; mapView.setTarget(null); return; }
+    const hasDefender = defenderAt(world, ruleset, human, tile) || v.cities.some((c) => c.tile === tile && c.faction !== human);
+    const spec = hasDefender ? buildSpec(world, ruleset, u, tile) : null;
+    aim = { tile, spec, odds: spec ? estimateOdds(spec) : null };
+    mapView.setTarget(tile);
+    mapView.setPath(null, null);
+    render();
+  }
+
+  /** Attack if possible; otherwise walk to the nearest hex it can attack from. */
+  function attackAt(tile) {
+    const u = selectedUnit();
+    if (!u) return;
+    const world = knownWorld(v);
+    const seen = (i) => v.fog[i] === VISIBLE;
+    const why = attackProblem(world, ruleset, u, tile, seen);
+    if (!why) {
+      const r = run({ type: 'attack', faction: human, unit: u.id, target: tile });
+      aim = null;
+      mapView.setTarget(null);
+      if (r) setTimeout(selectNextIdle, 0);
+      return;
+    }
+    if (why === 'notAdjacent' || why === 'outOfRange') {
+      const reach = combatKind(ruleset, u) === 'ranged' ? rangeOf(ruleset, u) : 1;
+      let best = null;
+      for (let i = 0; i < v.fog.length; i += 1) {
+        if (v.fog[i] === UNEXPLORED || hexDist(i, tile) > reach || i === tile) continue;
+        const p = plan(u, i);
+        if (p && (!best || p.arrivesOnTurn < best.p.arrivesOnTurn || (p.arrivesOnTurn === best.p.arrivesOnTurn && p.tiles.length < best.p.tiles.length))) best = { i, p };
+      }
+      if (best) { moveTo(best.i); return; }
+    }
+    toast(refusal({ code: why, message: why }));
+  }
+
+  function hexDist(a, b) {
+    const w = v.map.width;
+    const ra = Math.floor(a / w); const rb = Math.floor(b / w);
+    const qa = a - ra * w - Math.floor(ra / 2); const qb = b - rb * w - Math.floor(rb / 2);
+    const dq = qa - qb; const dr = ra - rb;
+    return (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+  }
+
   function onTap(sx, sy, pointerType) {
     lastTouch = pointerType === 'touch' || pointerType === 'pen';
     const tile = mapView.tileAt(sx, sy);
     if (tile < 0) return;
+    if (shootingCity) {
+      const c = shootingCity;
+      shootingCity = null;
+      mapView.setTarget(null);
+      run({ type: 'cityAttack', faction: human, city: c, target: tile });
+      return;
+    }
+    if (selectedUnit() && combatKind(ruleset, selectedUnit()) !== 'none' && enemyAt(tile)) {
+      // Mouse: a click attacks (the odds showed on pointing). Touch: the first tap shows the odds.
+      if (lastTouch && aim?.tile !== tile) { aimAt(tile); toast(tt('odds.confirm')); return; }
+      attackAt(tile);
+      return;
+    }
     const city = myCities().find((c) => c.tile === tile);
     const mine = myUnits().filter((u) => u.tile === tile);
     const u = selectedUnit();
@@ -358,6 +481,11 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const u = selectedUnit();
     if (sx === null || !u) { mapView.setHover(null); if (!pendingTarget) mapView.setPath(null, null); return; }
     const tile = mapView.tileAt(sx, sy);
+    if (combatKind(ruleset, u) !== 'none' && enemyAt(tile)) {
+      if (aim?.tile !== tile) aimAt(tile);
+      return;
+    }
+    if (aim) { aim = null; mapView.setTarget(null); render(); }
     mapView.setHover(tile >= 0 ? tile : null);
     mapView.setPath(u.tile, tile >= 0 && tile !== u.tile ? plan(u, tile) : null);
   }
@@ -421,8 +549,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function renderAdvice() {
     const a = currentAdvice();
     const line = $('[data-field="advice"]');
-    if (!a) { line.replaceChildren(); return; }
-    line.replaceChildren(
+    if (!a) { fill(line, ); return; }
+    fill(line, 
       el(doc, 'span', { class: 'advice-text' }, tt(a.textKey, a.args)),
       el(doc, 'button', { type: 'button', class: 'btn small primary', dataset: { action: 'advice' }, onclick: () => doAdvice(a) }, tt(a.actionKey ?? 'advice.do')),
     );
@@ -432,6 +560,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const items = [
       ...noProduction().map((c) => ({ key: `p${c.id}`, label: tt('game.attention.production', { city: c.name }), go: () => openCityDrawer(c.id, { centre: true }), urgent: true })),
       ...starving().map((c) => ({ key: `s${c.id}`, label: tt('game.attention.starving', { city: c.name }), go: () => openCityDrawer(c.id, { centre: true }), urgent: true })),
+      ...myUnits().filter((u) => promotionsAvailable(ruleset, u) > 0 && combatKind(ruleset, u) !== 'none').map((u) => ({ key: `pr${u.id}`, label: tt('game.attention.promote', { unit: unitName(u) }), go: () => select(u.id, { centre: true }) })),
       ...idle().map((u) => ({ key: u.id, label: tt('game.attention.idle', { unit: unitName(u) }), go: () => select(u.id, { centre: true }), unit: u.id })),
     ];
     $('[data-field="attention-title"]').textContent = tt('game.attention', { n: items.length });
@@ -440,18 +569,75 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     $('[data-field="attention"]').replaceChildren(...(lis.length ? lis : [el(doc, 'li', { class: 'none' }, tt('game.attention.none'))]));
   }
 
+  function oddsPanel() {
+    if (!aim) return null;
+    const target = aim.spec?.defender.city ? tt('odds.city', { name: aim.spec.defender.city.name })
+      : (() => { const e = v.units.find((x) => x.tile === aim.tile && x.faction !== human); return e ? nameOfUnit(e.type, e.faction) : ''; })();
+    if (!aim.odds) return el(doc, 'div', { class: 'odds', dataset: { field: 'odds' } }, el(doc, 'h3', {}, tt('odds.title', { target })));
+    const o = aim.odds;
+    const modText = (side) => {
+      const list = aim.spec.modifiers[side].map((m) => `${m.amount > 0 ? '+' : ''}${m.amount} ${tt(`odds.mod.${m.source.split(':')[0]}`)}`).join(', ');
+      return list ? el(doc, 'p', { class: 'muted small' }, tt('odds.mods', { side: tt(`odds.${side}`), list })) : null;
+    };
+    return el(doc, 'div', { class: `odds${o.win > 0.5 ? ' good' : o.lose > 0.3 ? ' bad' : ''}`, dataset: { field: 'odds' } },
+      el(doc, 'h3', {}, tt('odds.title', { target })),
+      el(doc, 'p', { class: 'win' }, tt('odds.win', { p: Math.round(o.win * 100) })),
+      o.ranged ? null : el(doc, 'p', {}, tt('odds.youLose', { hp: Math.round(o.attackerLoss) })),
+      el(doc, 'p', {}, tt('odds.theyLose', { hp: Math.round(o.defenderLoss) })),
+      el(doc, 'p', { class: 'muted small' }, tt('odds.strength', { a: o.attack, d: o.defence })),
+      modText('attacker'), modText('defender'));
+  }
+
+  function promotionPanel(u) {
+    const options = promotionOptions(ruleset, u);
+    if (!options.length) return null;
+    return el(doc, 'div', { class: 'promote', dataset: { field: 'promote' } },
+      el(doc, 'h3', {}, tt('promote.title')),
+      ...options.map((id) => {
+        const p = ruleset.promotions[id];
+        return el(doc, 'button', { type: 'button', class: 'btn small wide', dataset: { promotion: id },
+          onclick: () => { run({ type: 'promote', faction: human, unit: u.id, promotion: id }); render(); } },
+        tt('promote.pick', { name: ruleset.text[p.nameKey] ?? id, text: ruleset.text[p.descriptionKey] ?? '' }));
+      }));
+  }
+
+  function showCaptureDialog() {
+    const p = v.pendingCapture;
+    if (!p) return;
+    const c = v.cities.find((x) => x.id === p.city);
+    const overlay = doc.querySelector('[data-field="overlay"]');
+    const body = overlay.querySelector('[data-field="overlay-body"]');
+    fill(body, 
+      el(doc, 'h2', {}, tt('capture.title', { city: c.name })),
+      el(doc, 'p', {}, tt('capture.text')),
+      el(doc, 'div', { class: 'capture-choices' },
+        el(doc, 'button', { type: 'button', class: 'btn primary', dataset: { capture: 'keep' }, onclick: () => { overlay.hidden = true; run({ type: 'captureChoice', faction: human, city: c.id, choice: 'keep' }); toast(tt('battle.captured', { city: c.name })); } }, tt('capture.keep', { city: c.name })),
+        el(doc, 'button', { type: 'button', class: 'btn', dataset: { capture: 'raze' }, disabled: Boolean(c.originalCapital), onclick: () => { overlay.hidden = true; run({ type: 'captureChoice', faction: human, city: c.id, choice: 'raze' }); } }, tt('capture.raze', { city: c.name }))),
+      c.originalCapital ? el(doc, 'p', { class: 'muted small' }, tt('capture.noRaze')) : null,
+    );
+    overlay.querySelector('[data-action="close-overlay"]').hidden = true;
+    overlay.hidden = false;
+    body.querySelector('[data-capture="keep"]').focus();
+  }
+
   function renderUnitCard(u) {
     const card = $('[data-field="unit-card"]');
     const actions = $('[data-field="actions"]');
     const def = ruleset.units[u.type];
     const turnsLeft = u.goto !== null ? (plan(u, u.goto)?.arrivesOnTurn ?? 0) + 1 : 0;
     const status = u.goto !== null ? tt('game.unit.status.goto', { turns: turnsLeft }) : tt(`game.unit.status.${u.activity}`, { turns: u.fortifiedTurns });
-    card.replaceChildren(
+    const thresholds = ruleset.tuning?.experience?.promotionThresholds ?? [15, 45, 90, 150];
+    const nextAt = thresholds.find((x) => x > (u.xp ?? 0));
+    fill(card, 
       el(doc, 'h2', {}, unitName(u)),
       el(doc, 'p', { class: 'muted' }, isCivilian(u) ? tt('game.unit.civilian') : `${ruleset.text[ruleset.unitClasses[def.class]?.nameKey] ?? def.class} · ${def.strength}`),
       el(doc, 'p', { dataset: { field: 'moves' } }, tt('game.unit.moves', { left: u.moves, max: def.moves })),
       el(doc, 'p', {}, tt('game.unit.health', { hp: u.hp })),
       el(doc, 'p', { class: 'status' }, status),
+      combatKind(ruleset, u) === 'none' ? null : el(doc, 'p', { class: 'muted small' }, tt('game.unit.xp', { xp: u.xp ?? 0, next: nextAt ?? '-' })),
+      (u.promotions ?? []).length ? el(doc, 'p', { class: 'muted small' }, tt('game.unit.promotions', { list: u.promotions.map((p) => ruleset.text[ruleset.promotions[p]?.nameKey] ?? p).join(', ') })) : null,
+      promotionPanel(u),
+      oddsPanel(),
     );
     const button = (type, label, disabled = false, extra = '') => el(doc, 'button', { type: 'button', class: `btn small${extra}${type === 'disband' && confirmDisband ? ' danger' : ''}`, dataset: { act: type }, disabled, onclick: () => act(type) }, label);
     const foundable = isFounder(u) && u.moves > 0 && !foundingProblem(knownWorld(v), ruleset, human, u.tile);
@@ -470,7 +656,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         }
       }
     }
-    actions.replaceChildren(...improve, ...[
+    fill(actions, ...improve, ...[
       isFounder(u) ? button('foundCity', tt('game.action.found'), !foundable, ' primary wide') : null,
       isCivilian(u) ? null : button('fortify', tt('game.action.fortify'), u.activity === 'fortify'),
       button('skip', tt('game.action.skip'), u.moves <= 0 || u.activity === 'skip'),
@@ -507,24 +693,28 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const card = $('[data-field="unit-card"]');
     const actions = $('[data-field="actions"]');
     const y = yieldsOf(c);
+    const world = knownWorld(v);
     const need = foodToGrow(c.pop, ruleset.tuning);
     const growIn = y.surplus > 0 ? Math.ceil((need - c.food) / y.surplus) : null;
     const growth = y.surplus < 0 ? tt('city.starving') : growIn ? tt('city.grows', { n: growIn }) : tt('city.growsNever');
     const head = c.queue[0];
     const prod = Math.max(1, y.total.production);
-    const world = knownWorld(v);
     const price = head ? buyPrice(ruleset, c, world) : null;
     const options = rankOptions(v, ruleset, c, tt);
     const shown = showAllOptions ? options : options.slice(0, 4);
     const borderIn = Math.max(1, Math.ceil((borderCost(c, ruleset.tuning) - c.culture) / Math.max(0.1, y.total.culture)));
     const focuses = Object.values(ruleset.focuses ?? {});
 
-    card.replaceChildren(...[
+    fill(card, ...[
       el(doc, 'div', { class: 'city-head' },
         el(doc, 'h2', {}, c.name),
         el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-city' }, onclick: () => select(null) }, tt('city.close'))),
       el(doc, 'p', { class: 'muted' }, tt('city.pop', { pop: c.pop })),
       mood(y.amenities),
+      el(doc, 'p', { class: 'muted small', dataset: { field: 'city-hp' } }, tt('city.hp', { hp: c.hp ?? cityHpMax(ruleset, c), max: cityHpMax(ruleset, c), strength: cityStrength(world, ruleset, c) })),
+      cityHasWalls(ruleset, c) ? el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'shoot' }, disabled: c.shotTurn === v.turn,
+        onclick: () => { shootingCity = c.id; toast(tt('city.shootPick', { n: ruleset.tuning?.combat?.cityRange ?? 2 })); } },
+      c.shotTurn === v.turn ? tt('city.shot') : tt('city.shoot', { n: ruleset.tuning?.combat?.cityRange ?? 2 })) : null,
       el(doc, 'div', { class: 'city-yields' },
         el(doc, 'span', { class: 'food' }, `${tt('city.food', { rate: signed(y.surplus) })} (${growth})`),
         el(doc, 'span', {}, tt('city.production', { n: fmt(y.total.production) })),
@@ -559,7 +749,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       el(doc, 'p', { class: 'muted small' }, tt('city.border', { n: borderIn })),
       el(doc, 'p', { class: 'muted small' }, tt('city.lockHint')),
     ].filter(Boolean));
-    actions.replaceChildren();
+    fill(actions, );
     $('[data-field="hint"]').textContent = '';
   }
 
@@ -607,6 +797,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     overlay.querySelector('[data-action="close-overlay"]').focus();
   };
   overlay.querySelector('[data-action="close-overlay"]').onclick = () => { overlay.hidden = true; };
+  const showClose = $('[data-action="faction"]').onclick;
+  $('[data-action="faction"]').onclick = () => { overlay.querySelector('[data-action="close-overlay"]').hidden = false; showClose(); };
 
   // The computer seats before you in the first round play now.
   let guard = 0;

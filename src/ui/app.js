@@ -53,7 +53,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
         game?.destroy();
         show(doc, 'game');
         const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
-        game = createGameScreen(doc, gameScreen, { ruleset, text, sheets, seed, faction, toast: (m) => toast(doc, m) });
+        game = createGameScreen(doc, gameScreen, { ruleset, text, sheets, seed, faction, debug: params.has('debug'), toast: (m) => toast(doc, m) });
         gameScreen.querySelector('#game-map').focus({ preventScroll: true });
       };
       if (params.has('faction') && ruleset.factions[params.get('faction')]) { await start(params.get('faction')); return; }
