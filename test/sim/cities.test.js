@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { applyCommand, createGame, currentFactionId, fingerprint, view, cityYields, foodToGrow, tileYields, borderCost } from '../../src/sim/index.js';
 import { takeTurn } from '../../src/ai/index.js';
 import { clone } from '../../src/core/clone.js';
-import { ruleset, fixtureGame, at, play, passRound } from './fixtures.js';
+import { ruleset, fixtureGame, play, passRound } from './fixtures.js';
 import { findNonFinite } from './helpers.js';
 import { hexDistance } from '../../src/core/hex.js';
 import { tileHex } from '../../src/sim/map.js';
