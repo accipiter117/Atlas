@@ -11,7 +11,7 @@ import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { tileYields, factionEffects, YIELD_NAMES } from './yields.js';
 import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
-import { buildingProblem, spawnUnit, claimWonder } from './buildings.js';
+import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildings.js';
 import { knows, speedMultiplier } from './progression.js';
 
 export function citiesOf(state, factionId) {
@@ -51,11 +51,15 @@ export function nextCityName(state, ruleset, factionId) {
 export function foundCity(state, ruleset, factionId, tile) {
   const id = nextId(state, 'c');
   const first = citiesOf(state, factionId).length === 0;
+  // Only a faction's very first city is its original capital (conquest victory counts these).
+  const faction = state.factions.find((f) => f.id === factionId);
+  const original = first && !faction?.foundedCapital;
+  if (faction) faction.foundedCapital = true;
   const city = {
     id, name: nextCityName(state, ruleset, factionId), faction: factionId, tile, capital: first, founded: state.turn,
     pop: 1, food: 0, culture: 0, tilesClaimed: 0,
     focus: Object.values(ruleset.focuses ?? {}).find((f) => f.default)?.id ?? 'balanced',
-    locks: [], worked: [], specialists: {}, queue: [], progress: 0, buildings: [], originalCapital: first, hp: null,
+    locks: [], worked: [], specialists: {}, queue: [], progress: 0, buildings: [], originalCapital: original, foundedBy: factionId, hp: null,
   };
   state.cities[id] = city;
   const radius = ruleset.tuning?.cities?.claimRadius ?? 1;
@@ -207,6 +211,10 @@ export function completeItem(state, ruleset, city, item) {
     return ev ? [ev] : null;
   }
   const events = [];
+  if (item.kind === 'wonder' && ruleset.wonders[item.id]?.project) {
+    claimProject(state, city, item.id, events);
+    return events;
+  }
   const before = cityHpMax(ruleset, city);
   city.buildings.push(item.id);
   // New walls add their hit points straight away.

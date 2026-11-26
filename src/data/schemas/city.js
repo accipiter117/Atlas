@@ -19,6 +19,7 @@ const buildingFields = {
     civic: ref('civics'),
     faction: ref('factions'),
     buildings: refs('buildings', { cascade: 'remove' }),
+    projects: refs('wonders', { cascade: 'remove' }),
     nearTerrain: ref('terrain'),
     river: bool(),
     capital: bool(),

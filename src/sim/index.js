@@ -36,4 +36,6 @@ export { promotionOptions } from './combatCommands.js';
 export { cityHpMax } from './cities.js';
 export { costOf, available, pathTo, eraOf, knows, researchOf } from './progression.js';
 export { atWar } from './diplomacy.js';
+export { scoreOf, scoreParts } from './score.js';
+export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './victories/index.js';
 export { damage, strengths } from '../battles/index.js';

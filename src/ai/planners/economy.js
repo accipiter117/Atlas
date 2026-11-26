@@ -68,7 +68,11 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
       for (const a of adjacencyBonus(world, ruleset, { ...city, buildings: [...city.buildings, item.id] }, item.id)) value += a.amount * categoryWeight(ruleset, view, memory, a.yield);
       value += (def.amenities ?? 0) * amen + (def.effects?.length ?? 0) * 1.2 + (def.defence ? (ctx.threatAt(city.tile) ? 4 : 0.3) : 0);
       value -= (def.upkeep ?? 0) * 0.6;
-      if (item.kind === 'wonder') {
+      if (def.project) {
+        // A science victory project: worth a lot to a science-minded AI, something to anyone.
+        value = 3 * categoryWeight(ruleset, view, memory, 'project');
+        reasonKey = 'ai.reason.project';
+      } else if (item.kind === 'wonder') {
         value = value * 0.8 + 2 * categoryWeight(ruleset, view, memory, 'wonder');
         if (view.turn < (exp.wonderFromTurn ?? 30)) value *= 0.4;
         reasonKey = 'ai.reason.wonder';

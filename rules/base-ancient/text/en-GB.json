@@ -439,6 +439,7 @@
     "ai.reason.army": "{city} trains a {item} for the war.",
     "ai.reason.build": "{city} builds a {item}.",
     "ai.reason.wonder": "{city} starts the {item}.",
+    "ai.reason.project": "{city} starts the {item}, a step towards a science victory.",
     "ai.reason.switch": "{city} switches from {from} to {item}, which is now worth more.",
     "ai.reason.buy": "Bought a {item} in {city} for {price} gold.",
     "ai.reason.promote": "Promoted a unit: {promotion}.",
@@ -467,6 +468,12 @@
     "path.religious": "religious",
     "path.sandbox": "sandbox",
     "advice.research": "Choose what to research. Suggested: {tech}.",
-    "advice.research.do": "Research it"
+    "advice.research.do": "Research it",
+    "wonder.great_observatory.name": "Great Observatory",
+    "wonder.great_observatory.text": "Science victory project 1 of 3: chart every star in the sky.",
+    "wonder.atlas_of_the_world.name": "Atlas of the World",
+    "wonder.atlas_of_the_world.text": "Science victory project 2 of 3: map every coast and river.",
+    "wonder.voyage_beyond.name": "Voyage Beyond",
+    "wonder.voyage_beyond.text": "Science victory project 3 of 3: sail past the edge of the known world. Needs the other two projects first."
   }
 }

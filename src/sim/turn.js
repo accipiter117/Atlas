@@ -10,6 +10,8 @@ import { startCitiesTurn } from './cityCommands.js';
 import { runRaiders } from './raiders.js';
 import { runBattle } from './combatCommands.js';
 import { updateAllVisibility } from './visibility.js';
+import { checkVictory } from './victories/index.js';
+import { eliminate } from './elimination.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
@@ -23,7 +25,10 @@ function startRound(state, events, ruleset) {
   if (state.map && ruleset?.tuning) {
     runRaiders(state, ruleset, events, runBattle);
     updateAllVisibility(state, ruleset);
+    eliminate(state, ruleset, events);
+    checkVictory(state, ruleset, events);
   }
+  if (state.winner) return;
   state.turn += 1;
   state.seatIndex = 0;
   events.push({ type: 'roundStarted', turn: state.turn });
@@ -44,6 +49,7 @@ export const endTurn = {
     do {
       state.seatIndex += 1;
       if (state.seatIndex >= state.seatOrder.length) startRound(state, events, ruleset);
+      if (state.winner) return;
       guard -= 1;
     } while (!getFaction(state, currentFactionId(state)).alive && guard > 0);
     startFactionTurn(state, currentFactionId(state), events, ruleset);

@@ -32,7 +32,8 @@ export function buildingProblem(state, ruleset, city, id, kind) {
   const def = kind === 'wonder' ? ruleset.wonders?.[id] : ruleset.buildings?.[id];
   if (!def) return 'unknown';
   if (city.buildings.includes(id)) return 'built';
-  if (kind === 'wonder' && state.wondersBuilt?.[id]) return 'wonderTaken';
+  if (kind === 'wonder' && def.project && (state.projects?.[city.faction] ?? []).includes(id)) return 'built';
+  if (kind === 'wonder' && !def.project && state.wondersBuilt?.[id]) return 'wonderTaken';
   const civ = state.factions.find((f) => f.id === city.faction)?.civ;
   const req = def.requires ?? {};
   if (req.faction && req.faction !== civ) return 'otherFaction';
@@ -42,6 +43,7 @@ export function buildingProblem(state, ruleset, city, id, kind) {
   if (req.tech && !knows(state, city.faction, req.tech)) return 'needsTech';
   if (req.civic) return 'needsCivic';
   for (const b of req.buildings ?? []) if (!hasBuilding(ruleset, city, b)) return 'needsBuilding';
+  for (const p of req.projects ?? []) if (!(state.projects?.[city.faction] ?? []).includes(p)) return 'needsProject';
   if (req.nearTerrain && !nearTerrain(state, ruleset, city, req.nearTerrain)) return 'needsTerrain';
   if (req.river && state.map.river[city.tile] === 0) return 'needsRiver';
   return null;
@@ -85,6 +87,27 @@ export function spawnUnit(state, ruleset, city, typeId) {
   const unit = createUnit(state, ruleset, typeId, city.faction, spot);
   unit.builtIn = city.id;
   return { type: 'unitBuilt', city: city.id, unit: unit.id, unitType: typeId, faction: city.faction, tile: spot };
+}
+
+/**
+ * A project was finished (a wonder entry with project: true, such as the three
+ * science victory projects). Each faction may finish each project once; other
+ * cities of the same faction building it get their production back as gold.
+ */
+export function claimProject(state, city, id, events) {
+  state.projects ??= {};
+  state.projects[city.faction] ??= [];
+  state.projects[city.faction].push(id);
+  events.push({ type: 'projectCompleted', project: id, city: city.id, cityName: city.name, faction: city.faction, global: true });
+  for (const other of Object.values(state.cities)) {
+    if (other.id === city.id || other.faction !== city.faction) continue;
+    const k = other.queue.findIndex((q) => q.kind === 'wonder' && q.id === id);
+    if (k < 0) continue;
+    const refund = k === 0 ? other.progress : 0;
+    other.queue.splice(k, 1);
+    if (k === 0) other.progress = 0;
+    state.factions.find((f) => f.id === other.faction).stocks.gold += refund;
+  }
 }
 
 /** A wonder was finished: record it and pay every other city building it back in gold. */

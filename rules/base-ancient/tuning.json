@@ -232,5 +232,22 @@
       "epic": 1.5,
       "marathon": 3
     }
+  },
+  "score": {
+    "perCitizen": 1,
+    "perCity": 5,
+    "perTech": 3,
+    "perWonder": 10,
+    "perBuilding": 1,
+    "perProject": 25
+  },
+  "victory": {
+    "turnLimits": {
+      "online": 165,
+      "quick": 220,
+      "standard": 330,
+      "epic": 500,
+      "marathon": 990
+    }
   }
 }

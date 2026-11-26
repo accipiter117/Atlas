@@ -83,6 +83,8 @@ export function createGame(ruleset, setup) {
       f.research = emptyResearch();
       const before = ruleset.tuning?.start?.grantErasBefore;
       if (before) grantErasBefore({ factions }, ruleset, f.id, before);
+      // Setup "starting era": every tech of the eras before it is known from the start.
+      if (setup.startEra && ruleset.eras?.[setup.startEra]) grantErasBefore({ factions }, ruleset, f.id, setup.startEra);
     }
   }
   state.wars = [];

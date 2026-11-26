@@ -63,6 +63,9 @@ export function view(state, factionId, ruleset = null) {
   out.setup = JSON.parse(JSON.stringify(state.setup ?? {}));
   out.wars = (state.wars ?? []).filter((w) => w.split('|').includes(factionId));
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
+  // Finished projects and the winner are announced to everyone, so every view has them.
+  out.projects = JSON.parse(JSON.stringify(state.projects ?? {}));
+  out.winner = state.winner ? { ...state.winner } : null;
   out.pendingCapture = state.pendingCapture?.faction === factionId ? { ...state.pendingCapture } : null;
   out.pendingBattle = state.pendingBattle && (state.pendingBattle.spec.attacker.faction === factionId || state.pendingBattle.spec.defender.faction === factionId) ? JSON.parse(JSON.stringify(state.pendingBattle)) : null;
   out.camps = Object.keys(state.raiders?.camps ?? {}).map(Number).filter((t) => fog[t] !== UNEXPLORED);
@@ -94,7 +97,7 @@ export function worldFromView(v) {
     seatIndex: v.seatOrder.indexOf(v.current),
     fog: v.fog ? { [v.me]: v.fog } : {},
     wars: v.wars ?? [],
-    wondersBuilt: v.wondersBuilt ?? {},
+    wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,
     raiders: { camps: Object.fromEntries((v.camps ?? []).map((t) => [t, {}])) },

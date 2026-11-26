@@ -136,7 +136,7 @@ test('base-ancient loads cleanly; lock-era warns until techs exist; the test pai
   assert.deepEqual(codes(base, 'error'), []);
   assert.deepEqual(codes(base, 'warning'), []);
   assert.equal(Object.keys(base.ruleset.factions).length, 8);
-  assert.equal(Object.keys(base.ruleset.wonders).length, 8);
+  assert.equal(Object.keys(base.ruleset.wonders).length, 11); // 8 wonders and the 3 science projects
   assert.ok(Object.keys(base.ruleset.buildings).length >= 30);
   assert.equal(Object.keys(base.ruleset.improvements).length, 9);
 

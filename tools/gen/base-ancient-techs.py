@@ -109,8 +109,22 @@ for e in b:
         e['requires']['tech'] = t
 dump('buildings.json', 'buildings', b)
 WONDER_TECH = {'pyramids': 'masonry', 'hanging_gardens': 'irrigation', 'colossus': 'currency', 'great_library': 'philosophy', 'temple_of_artemis': 'archery',
-               'stonehenge': 'astrology', 'oracle': 'drama_poetry', 'great_lighthouse': 'celestial_navigation'}
+               'stonehenge': 'astrology', 'oracle': 'drama_poetry', 'great_lighthouse': 'celestial_navigation',
+               'great_observatory': 'scientific_method', 'atlas_of_the_world': 'cartography', 'voyage_beyond': 'navigation'}
 w = load('wonders.json')['entries']
+# Phase 9: the science victory's three final projects. Each faction builds its
+# own (project: true); Voyage Beyond needs the other two first.
+PROJECTS = [
+    ('great_observatory', 'Great Observatory', 'Science victory project 1 of 3: chart every star in the sky.', 700, None),
+    ('atlas_of_the_world', 'Atlas of the World', 'Science victory project 2 of 3: map every coast and river.', 700, None),
+    ('voyage_beyond', 'Voyage Beyond', 'Science victory project 3 of 3: sail past the edge of the known world. Needs the other two projects first.', 1000, ['great_observatory', 'atlas_of_the_world']),
+]
+w = [e for e in w if not e.get('project')]
+for pid, name, desc, cost, needs in PROJECTS:
+    e = collections.OrderedDict([('id', pid), ('nameKey', T(f'wonder.{pid}.name', name)), ('descriptionKey', T(f'wonder.{pid}.text', desc)),
+                                 ('era', 'renaissance'), ('cost', cost), ('upkeep', 0), ('icon', f'wonder.{pid}'), ('project', True)])
+    if needs: e['requires'] = collections.OrderedDict([('projects', needs)])
+    w.append(e)
 for e in w:
     e.setdefault('requires', collections.OrderedDict())
     e['requires']['tech'] = WONDER_TECH[e['id']]

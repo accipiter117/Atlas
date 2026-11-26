@@ -53,7 +53,7 @@ export function addRiver(map, a, b) {
  */
 export function fixtureGame(rows, units, { fog = false, rules = ruleset, knowAll = true } = {}) {
   // Both sides play Rome, whose traits do not change movement, sight or healing.
-  let state = createGame(rules, { seed: 3, players: [{ kind: 'human', name: 'A', faction: 'rome' }, { kind: 'ai', name: 'B', faction: 'rome' }] });
+  let state = createGame(rules, { seed: 3, players: [{ kind: 'human', name: 'A', faction: 'rome' }, { kind: 'ai', name: 'B', faction: 'rome' }], elimination: false });
   if (state.seatOrder[0] !== 'f0') state.seatOrder.reverse();
   state.map = fixtureMap(rows);
   state.units = {};

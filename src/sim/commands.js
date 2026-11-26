@@ -68,6 +68,8 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   if (state.pendingBattle && cmd.type !== 'resolveBattle' && cmd.type !== 'autoResolveBattle') return refuse('battlePending', 'Finish the battle first');
   if (state.pendingCapture && cmd.type !== 'captureChoice' && state.pendingCapture.faction === cmd.faction) return refuse('capturePending', 'Choose whether to keep or raze the captured city first');
 
+  if (state.winner) return refuse('gameOver', 'The game is over');
+
   const handler = COMMANDS[cmd.type];
   const problem = handler.validate(state, cmd, ruleset);
   if (problem) return { ok: false, error: problem };

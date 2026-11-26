@@ -9,7 +9,7 @@ export function aiGame(ruleset, { seed, players = 4, size = 'small', type = 'con
   const ais = Object.fromEntries(state.factions.map((f) => [f.id, createAi(ruleset, f.id)]));
   const times = [];
   const log = [];
-  while (state.turn <= turns) {
+  while (state.turn <= turns && !state.winner) {
     const me = currentFactionId(state);
     const t0 = performance.now();
     const r = runAiTurn(ais[me], () => view(state, me, ruleset), (cmd) => {

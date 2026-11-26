@@ -81,6 +81,8 @@ export function updateVisibility(state, ruleset, factionId) {
       if (c !== null && state.cities[c]?.faction === factionId) fog[i] = VISIBLE;
     }
   }
+  // Setup "fog of war: off" (for testing): everyone sees everything.
+  if (state.setup?.fog === 'off') fog.fill(VISIBLE);
   return fog;
 }
 
