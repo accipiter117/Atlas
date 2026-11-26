@@ -64,6 +64,22 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The LPC test sheet** is composed from body, head, trousers, chainmail and helmet layers of the Universal LPC Spritesheet Character Generator, arranged in the classic LPC layout the plan describes (the generator now ships one file per animation). It is used under OGA-BY 3.0, the licence all five layers share; full credits are in `assets/sprites/lpc-test-warrior.CREDITS.md`. Only the warrior has art; other units show a faction-coloured shield with their initial.
 - **Seat colours** come from `seatColours` in the base skin until factions are chosen on the setup screen.
 
+## Phase 5
+
+- **Every player plays a faction from the ruleset** (for city names, traits and later unique units): your choice once the setup screen exists, until then drawn from the seed, with no repeats until every faction is taken. base-ancient has only two test factions, so with four players two pairs share a faction; they share its name list but never a city name.
+- **Every city makes 1 culture** (`cities.baseCulture`), so borders grow before any culture building exists. The city centre always yields at least 2 food and 1 production (`cities.centreMinimum`), and hills add 1 production (`yields.hillsProduction`), as in Civ VI.
+- **Gold has income only for now.** Unit upkeep and running out of gold arrive with the economy in phase 6. Science, culture and faith collect in your stocks and start being spent in phases 8, 11 and 13.
+- **Buying** costs 2 gold per point of production still missing (`economy.goldPerProduction`), and the item appears at once.
+- **Settlers do not cost population**; the plan does not ask for it.
+- **Citizens** go on locked tiles first, then the best tiles for the focus (weights in `focuses.json`). If that would starve the city, food is weighted up until it does not, where the land allows. Locking more tiles than the city has citizens releases the oldest lock. Citizens with no tile to work produce nothing until specialists arrive in phase 6.
+- **Sight**: a city sees 2 hexes around itself, and you always see all your own land.
+- **The river growth bonus** applies to a city with a river along any edge of its own hex.
+- **Advice and focuses are data.** Two content types were added: `focuses` and `advice`. The engine knows a small set of conditions it can check (no cities yet, nothing being built, starving, units need orders, ready to end); which advice shows, in what order and in what words is in `rules/base-ancient/ui/advice.json` and its text, so a conversion can reword or reorder it.
+- **What blocks the turn**, in order: a city with nothing to build, then units needing orders. At the start of your turn a city with nothing to build opens by itself.
+- **The build list's ranking and reasons** come from each unit's role (founder, worker, recon, ranged, anti-cavalry, naval, melee), not its name, so they work for any ruleset. Units needing a tech, civic, building or strategic resource stay hidden until those systems exist.
+- **Tapping in the city drawer**: a hex in the city's land locks or unlocks a citizen there; a hex with a price asks once and buys on the second tap; tapping the city itself closes the drawer.
+- **The computer players** follow simple rules until the real AI in phase 8: found where allowed or walk to the best site within six hexes, build settlers while they have fewer than four cities, keep a warrior per city, fortify or sleep everything else.
+
 ## Later
 
 - Nothing yet.

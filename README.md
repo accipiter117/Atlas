@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 4 of 22: the foundations are complete. Start a game to move your first units across a seeded hex world under fog of war; the rules load from stackable data mods (see the Mods screen). Cities, yields and the rest of the playable core come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 5 of 22. Start a game to found cities that claim land, grow, work tiles and build units, guided by the advice line, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Buildings, improvements and the economy come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

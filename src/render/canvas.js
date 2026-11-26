@@ -10,6 +10,8 @@ import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
 import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
+import { drawBorders, drawCities, drawCityWork } from './layers/cities.js';
+import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
 
 export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, sheets: descriptors = {} }) {
@@ -36,6 +38,10 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     fog,
     units,
     selected: null,
+    cities: [],
+    owner: null,
+    cityOverlay: null,
+    selectedCity: null,
     hover: null,
     path: null,
     pathFrom: null,
@@ -70,9 +76,13 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const visible = { x: cam.x, y: cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom };
     view.terrain.draw(ctx, cam, visible);
     drawFog(ctx, view.map, cam, visible, view.fog);
+    const cityById = new Map(view.cities.map((c) => [c.id, c]));
+    drawBorders(ctx, view.map, cam, view.owner, (cityId) => colours[cityById.get(cityId)?.faction] ?? '#888', neighbourCache(view.map));
+    drawCityWork(ctx, view.map, cam, view.cityOverlay);
     if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
     if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.7)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
+    drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity);
     const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (walking) dirty = true;
@@ -111,7 +121,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       return h.r * view.map.width + c;
     },
     /** Update what the player knows: map arrays (for newly explored tiles), fog and units. */
-    setWorld({ map: newMap, fog: newFog, units: newUnits }) {
+    setWorld({ map: newMap, fog: newFog, units: newUnits, cities: newCities }) {
       if (newMap && view.fog && newFog) {
         const changed = [];
         for (let i = 0; i < newFog.length; i += 1) if ((view.fog[i] === 0) !== (newFog[i] === 0)) changed.push(i);
@@ -120,8 +130,12 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       if (newMap) view.map = newMap;
       if (newFog) view.fog = newFog;
       if (newUnits) view.units = newUnits;
+      if (newCities) view.cities = newCities;
+      view.owner = view.map.owner ?? null;
       dirty = true;
     },
+    /** The open city's worked tiles, locks and tile prices (or null to clear). */
+    setCityOverlay(cityId, overlay) { view.selectedCity = cityId; view.cityOverlay = overlay; dirty = true; },
     animateMove(unitId, path) { unitsLayer.animate(unitId, path, win.performance.now()); dirty = true; },
     isAnimating: () => unitsLayer.isAnimating(),
     setSelection(unitId) { view.selected = unitId; dirty = true; },

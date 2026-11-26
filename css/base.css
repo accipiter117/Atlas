@@ -136,8 +136,8 @@ body {
 /* The game screen: top bar, needs-attention list, map, unit panel. */
 .screen.game {
   display: grid; place-items: stretch; padding: 0; height: 100vh; height: 100dvh;
-  grid-template-columns: 220px minmax(0, 1fr) 260px; grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "bar bar bar" "attention map panel";
+  grid-template-columns: 220px minmax(0, 1fr) 300px; grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: "bar bar bar" "advice advice advice" "attention map panel";
 }
 .game-bar {
   grid-area: bar; display: flex; align-items: center; gap: 14px; padding: 6px 12px;
@@ -168,5 +168,47 @@ body {
 .btn.danger { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .unit-panel .next { margin-top: auto; min-height: 52px; }
 @media (max-width: 900px) {
-  .screen.game { grid-template-columns: 170px minmax(0, 1fr) 210px; }
+  .screen.game { grid-template-columns: 170px minmax(0, 1fr) 270px; }
+  .game-hint { display: none; }
 }
+.game-yields { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; font-weight: 600; }
+.game-yields .gold { color: #9a7410; }
+.game-yields .science { color: #2f6fbf; }
+.game-yields .culture { color: #8a3f9c; }
+.game-yields .faith { color: #4b6f8c; }
+.advice-line {
+  grid-area: advice; display: flex; align-items: center; gap: 12px; padding: 4px 12px; min-height: 52px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--panel)); border-bottom: 1px solid var(--line); font-size: 15px;
+}
+.advice-line:empty { display: none; }
+.advice-text::before { content: "\203A  "; color: var(--accent); font-weight: 700; }
+.advice-line .btn { margin-left: auto; flex: none; }
+.attention-item.urgent { border-color: var(--accent); font-weight: 600; }
+.actions .wide { grid-column: 1 / -1; }
+.city-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.city-yields { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin: 6px 0; font-size: 14px; }
+.city-yields .food { grid-column: 1 / -1; font-weight: 600; }
+.city-building { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 6px 0; margin: 6px 0; display: grid; gap: 6px; }
+.city-building p { margin: 0; font-weight: 600; font-size: 14px; }
+.unit-panel h3 { margin: 10px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
+.choose { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.choose li { display: flex; gap: 6px; }
+.choose-item {
+  flex: 1; display: grid; grid-template-columns: 1fr auto; gap: 0 8px; text-align: left; min-height: var(--target);
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--ink); cursor: pointer;
+  font: inherit; font-size: 14px;
+}
+.choose-item .name { font-weight: 600; }
+.choose-item .turns { color: var(--ink-soft); }
+.choose-item .reason { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-soft); }
+.choose-item.current { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.choose-item:hover, .queue-add:hover { border-color: var(--accent); }
+.queue-add {
+  width: var(--target); min-height: var(--target); border: 1px solid var(--line); border-radius: var(--radius);
+  background: transparent; color: var(--ink); font-size: 20px; cursor: pointer;
+}
+.btn.link { border: none; justify-content: flex-start; padding-left: 0; color: var(--accent); }
+.focus { display: flex; flex-wrap: wrap; gap: 6px; }
+.focus .btn.small { padding: 4px 10px; font-size: 13px; }
+.muted.small { font-size: 12.5px; }
+.unit-panel.city-open .next { margin-top: 8px; }

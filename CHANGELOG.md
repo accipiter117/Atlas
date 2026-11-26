@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 5: Cities, citizens and yields
+
+What you can try: start a new game and follow the advice line under the top bar. Do it selects your settler; press B (or Found city) and your capital claims the ring of hexes around it and takes a name from your faction's list. The city drawer opens on the right: food and turns to grow, production, gold, science, culture and faith, what it is building (with a Buy button), and a short list of things to build, best first, each with a one-line reason (+ adds to the queue). Switch the citizen focus to Production and the citizen moves onto hills or forest. Tap any hex in the city's land to lock a citizen there (a padlock appears; tap again to unlock). Hexes the city could buy show their price; tap one twice to buy it. Borders also grow by themselves as culture builds up. The computer rivals now found cities and build units too.
+
+- Cities (`src/sim`): founding (at least 4 hexes apart, never on foreign land), names per faction, capital, growth on Civ VI's curve (10% faster beside a river), starvation, citizens placed by focus with locks, production of units with a queue, buying with gold, borders that grow with culture, buying tiles.
+- Yields from one function in a fixed order: tiles, then flat bonuses, then percentages last; Rome's +1 production in the capital and Egypt's floodplain food already work this way.
+- Commands: found city, set and queue production, buy, set focus, lock and unlock a tile, buy a tile.
+- The top bar shows gold, science, culture and faith per turn and your stocks. The advice line picks the most useful next step from `rules/base-ancient/ui/advice.json`; Needs attention adds cities with nothing to build and starving cities; the Next button reads "Choose production" first.
+- Map: faction borders, walled-town city markers with a name and population banner, worked tiles and padlocks for the open city.
+- Tests: 97 unit tests (growth thresholds 1 to 20, yields in order, borders, founding rules, focus and locks, production and buying, and 100 turns of four AIs founding cities that replay exactly and stay in range) and a browser test of the whole city flow on all three screen sizes.
+
 ## Phase 4: Units, turns and fog of war
 
 What you can try: press New game. You start with a settler, a warrior and a builder on a Small map against three computer rivals (who only end their turns for now). Pick the warrior from Needs attention, point at a hex three tiles away (mouse) or tap it (touch): a path appears with numbers where each turn ends. Click (or tap again) and the warrior walks there, finishing at the start of your next turn. Forests and hills slow units; rivers stop them on the far bank. Unexplored land is black, places you have seen are greyed, and what your units see now is bright. The Next button walks you through units needing orders, then ends the turn. Keys: Space next unit, Enter next, F fortify, S skip, Z sleep, Delete disband, Escape deselect; drag, arrows or WASD to pan.

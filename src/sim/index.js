@@ -8,7 +8,7 @@ export { createGame, ENGINE_VERSION, STATE_VERSION, SetupError } from './state.j
 export { applyCommand, COMMANDS } from './commands.js';
 export { currentFactionId, getFaction, livingSeats } from './queries.js';
 export { generateMap, MapgenError, resourceAllowed, tileFood } from './mapgen.js';
-export { tileIndex, tileHex, neighbourTiles } from './map.js';
+export { tileIndex, tileHex, neighbourTiles, neighbourCache } from './map.js';
 export { view } from './view.js';
 export { cityYields, tileYields, factionEffects } from './yields.js';
 export { foodToGrow } from './growth.js';

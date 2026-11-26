@@ -21,7 +21,7 @@
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 4: explore with your first units. Developer <a href="dev.html">map viewer</a>.</p>
+      <p class="footnote">Phase 5: found cities and watch them grow. Developer <a href="dev.html">map viewer</a>.</p>
     </div>
   </main>
 
@@ -29,8 +29,10 @@
     <header class="game-bar">
       <button class="btn small" type="button" data-action="back">Menu</button>
       <strong class="game-turn" data-field="turn">Turn 1</strong>
+      <span class="game-yields" data-field="yields"></span>
       <span class="game-hint" data-field="hint"></span>
     </header>
+    <div class="advice-line" data-field="advice" aria-live="polite"></div>
     <aside class="attention" aria-labelledby="attention-title">
       <h2 id="attention-title" data-field="attention-title">Needs attention</h2>
       <ul data-field="attention"></ul>
