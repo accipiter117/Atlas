@@ -80,6 +80,24 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Tapping in the city drawer**: a hex in the city's land locks or unlocks a citizen there; a hex with a price asks once and buys on the second tap; tapping the city itself closes the drawer.
 - **The computer players** follow simple rules until the real AI in phase 8: found where allowed or walk to the best site within six hexes, build settlers while they have fewer than four cities, keep a warrior per city, fortify or sleep everything else.
 
+## Phase 6
+
+- **Nothing is tech-gated yet.** Buildings, wonders and units would normally need techs, which arrive in phase 8; until then they are gated by their other requirements (other buildings, coast or river, capital, faction, strategic resources). Phase 8 adds the tech requirements.
+- **A free upkeep allowance.** With upkeep on, a new faction (no city, a warrior costing 1 gold) went broke on turn 1. Units now get a free allowance of 2 gold plus 1 per city (`economy.freeUpkeep`, `freeUpkeepPerCity`), and everyone starts with 10 gold (`economy.startingGold`).
+- **Bankruptcy.** Gold never stays below zero: when it would, one unit with upkeep is chosen by the seeded dice, disbands, and gold is set to zero. A warning event fires (and the advice line speaks) when gold will run out within 2 turns.
+- **Amenities.** A city needs 1 amenity per 2 citizens, rounded down. Luxuries count only once improved (a plantation on wine), each kind going to up to 4 cities, unhappiest first. The thresholds live in `tuning.json` rather than a separate `amenities.json`. Unhappiness cuts every yield except the food citizens eat; rebel units are left for later.
+- **Specialists** give 2 of their yield each (`specialists.yield`); citizens take a specialist slot whenever it beats the best free tile for the city's focus.
+- **The palace** is given free to the capital (`cities.capitalBuilding`).
+- **Unique buildings count as the original** for prerequisites (Egypt's mortuary temple satisfies "needs a monument"), and a faction never sees the building its unique one replaces.
+- **Wonders** cannot be bought. Only the wonder a city was working on refunds its production; one waiting further down a queue is simply removed.
+- **Effect scopes**: traits reach every city by default and buildings only their own city; `capital`, `withBuilding:<id>` (Han's Silk Road) and `capturedCities` are also understood. `moveBonus` and `sightBonus` gained an optional `domain` (land or sea). `costPercent` targets an item id, a unit class or tag, or `units`, `buildings`, `wonders`, `landUnits`, `seaUnits`. Effects on a building that grant units or buildings fire when it is built; on a trait, when each city is founded.
+- **Builders** improve only their own faction's land (roads go anywhere on land), build fishing boats from the shore, may mine an iron hex without hills because the iron names the mine, and use all their moves doing it. Resources now name their improvement and improved yields; deer was added so camps have something to improve.
+- **Healing** (section 3.5) is in now: units that did not act heal 10, 15 or 20 depending on where they rest, plus healBonus effects.
+- **Picking a faction.** The plan puts the faction card on the setup screen (phase 9); until then New game opens a faction picker, and `?faction=rome` in the address skips it.
+- **The eight factions** follow the plan's suggested set. Leaders: Trajan, Pericles, Hatshepsut, Cyrus, Dido, Ambiorix, Boudica and Emperor Wu. Agendas are stored now and used by diplomacy in phase 12. City names are real historical places (facts); every description is original.
+- **The content is generated** by `tools/gen/base-ancient-content.py`, which keeps ids, text keys and references in step; either the script or the JSON can be edited afterwards.
+- **`buildCharge`** is still not an effect; legionaries do not build forts. The fort exists as a normal builder improvement.
+
 ## Later
 
 - Nothing yet.

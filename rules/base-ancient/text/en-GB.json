@@ -293,6 +293,7 @@
     "trait.silk_road.name": "The Silk Road",
     "trait.silk_road.text": "+1 gold in every city with a market.",
     "agenda.great_wall.name": "Builder of walls",
-    "agenda.great_wall.text": "Respects strong borders; dislikes rivals who settle close by."
+    "agenda.great_wall.text": "Respects strong borders; dislikes rivals who settle close by.",
+    "advice.goldRunningOut": "Gold runs out in {n} turns. Disband a unit you can spare, or build markets."
   }
 }

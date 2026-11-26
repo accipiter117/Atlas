@@ -7,7 +7,7 @@ async function startGame(page) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto('/?seed=42');
+  await page.goto('/?seed=42&faction=rome');
   await page.getByRole('button', { name: 'New game' }).click();
   await page.waitForFunction(() => window.__atlasGame);
   return errors;
@@ -91,10 +91,8 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
   await page.screenshot({ path: `test-results/city-lock-${info.project.name}.png` });
 
   // Choose a warrior; it appears after enough turns.
-  await page.locator('.choose-item[data-item="warrior"]').click().catch(async () => {
-    await page.getByRole('button', { name: /Show all/ }).click();
-    await page.locator('.choose-item[data-item="warrior"]').click();
-  });
+  if (!(await page.locator('.choose-item[data-item="warrior"]').count())) await page.getByRole('button', { name: /Show all/ }).click();
+  await page.locator('.choose-item[data-item="warrior"]').click();
   await expect(page.locator('[data-field="building"]')).toContainText('Warrior');
   const warriors = () => page.evaluate(() => window.__atlasGame.view.units.filter((u) => u.faction === 'f0' && u.type === 'warrior').length);
   const before = await warriors();

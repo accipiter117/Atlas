@@ -21,13 +21,25 @@
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 5: found cities and watch them grow. Developer <a href="dev.html">map viewer</a>.</p>
+      <p class="footnote">Phase 6: eight peoples, buildings, wonders and builders. Developer <a href="dev.html">map viewer</a>.</p>
+    </div>
+  </main>
+
+  <main id="pick" class="screen pick" hidden aria-labelledby="pick-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="pick-heading">Choose your people</h2>
+        <button class="btn back" type="button" data-action="back">Title screen</button>
+      </div>
+      <p class="mods-intro">Each faction plays differently: its traits, unique unit and unique building change the numbers from the first turn.</p>
+      <div class="faction-grid" data-field="factions"></div>
     </div>
   </main>
 
   <main id="game" class="screen game" hidden aria-label="Game">
     <header class="game-bar">
       <button class="btn small" type="button" data-action="back">Menu</button>
+      <button class="btn small faction-chip" type="button" data-action="faction">Faction</button>
       <strong class="game-turn" data-field="turn">Turn 1</strong>
       <span class="game-yields" data-field="yields"></span>
       <span class="game-hint" data-field="hint"></span>
@@ -63,6 +75,13 @@
       </div>
     </div>
   </main>
+
+  <div class="overlay" data-field="overlay" hidden>
+    <div class="overlay-card" role="dialog" aria-modal="true" aria-label="Faction">
+      <div data-field="overlay-body"></div>
+      <button class="btn small" type="button" data-action="close-overlay">Close</button>
+    </div>
+  </div>
 
   <div class="toast" role="status" aria-live="polite" data-toast></div>
 

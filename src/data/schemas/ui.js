@@ -10,7 +10,7 @@ export const focuses = entryType('focuses', {
 // Conditions are checks the engine knows how to make; the text and order are
 // data, so a conversion can reword or reorder the advice.
 export const ADVICE_CONDITIONS = Object.freeze([
-  'noCities', 'cityNoProduction', 'cityStarving', 'unitsNeedOrders', 'cityCanBuyTile', 'readyToEnd',
+  'noCities', 'cityNoProduction', 'cityStarving', 'goldRunningOut', 'unitsNeedOrders', 'cityCanBuyTile', 'readyToEnd',
 ]);
 
 export const advice = entryType('advice', {

@@ -1,5 +1,18 @@
 # Changelog
 
+## Phase 6: Economy, buildings, improvements and factions
+
+What you can try: New game now starts with a choice of eight peoples (Rome, Greece, Egypt, Persia, Carthage, Gaul, the Britons and Han), each card showing its leader, two traits, unique unit, unique building and agenda. Your faction's name sits in the top bar; tap it to see its card again. Found a city and open it: your capital has a palace, Rome's cities also get a free monument, and the drawer lists buildings (with any adjacency bonus written out, such as a library's science from mountains), amenities and specialists. The build list now holds 30 buildings and 8 wonders as well as units. Select a builder to see a button for each improvement that fits its hex; each one spends a charge. Gold in the top bar is now after upkeep; if it is falling towards zero you are warned two turns ahead, and when it runs out a unit disbands.
+
+- Effects system (`src/sim/effects`): 14 effect handlers behind one registry, used by traits, buildings and wonders.
+- Buildings with prerequisites, adjacency bonuses, specialist slots and faction versions; wonders one per world, with the loser's production refunded as gold.
+- Improvements and builder charges; roads (Rome's new cities get one to the capital); strategic resources (horses, iron) now gate the units that need them.
+- Amenities with thresholds that change yields and growth; luxuries count once improved.
+- Unit and building upkeep, a small free allowance, 10 starting gold, warnings and deterministic disbanding when broke; units heal when they rest.
+- Content: 20 units (8 unique), 38 buildings (8 unique), 8 wonders, 9 improvements and the 8 factions, all in original text.
+- Fixed: the hidden game screen could show below the title screen on tall windows.
+- Tests: 114 unit tests (every effect, adjacency, wonders, bankruptcy, amenities, builders, every faction) and 24 browser tests.
+
 ## Phase 5: Cities, citizens and yields
 
 What you can try: start a new game and follow the advice line under the top bar. Do it selects your settler; press B (or Found city) and your capital claims the ring of hexes around it and takes a name from your faction's list. The city drawer opens on the right: food and turns to grow, production, gold, science, culture and faith, what it is building (with a Buy button), and a short list of things to build, best first, each with a one-line reason (+ adds to the queue). Switch the citizen focus to Production and the citizen moves onto hills or forest. Tap any hex in the city's land to lock a citizen there (a padlock appears; tap again to unlock). Hexes the city could buy show their price; tap one twice to buy it. Borders also grow by themselves as culture builds up. The computer rivals now found cities and build units too.

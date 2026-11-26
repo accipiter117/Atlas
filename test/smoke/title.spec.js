@@ -13,6 +13,7 @@ test('title screen: five buttons, no console errors, big enough to tap', async (
   const menu = page.locator('#title [data-menu] .btn');
   await expect(menu).toHaveText(['Continue', 'New game', 'Load', 'Mods', 'Settings']);
   await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+  await expect(page.locator('#game')).toBeHidden();
 
   for (const btn of await page.locator('.btn:visible').all()) {
     const box = await btn.boundingBox();
@@ -29,7 +30,7 @@ test('title screen: five buttons, no console errors, big enough to tap', async (
   expect(errors).toEqual([]);
 });
 
-test('keyboard: arrows move through the menu and Enter starts a game', async ({ page }, info) => {
+test('keyboard: arrows move through the menu and Enter opens the faction picker', async ({ page }, info) => {
   test.skip(Boolean(info.project.use.hasTouch), 'keyboard run is for laptops');
   await page.goto('/?seed=42');
   await expect(page.getByRole('button', { name: 'New game' })).toBeFocused();
@@ -37,5 +38,6 @@ test('keyboard: arrows move through the menu and Enter starts a game', async ({ 
   await expect(page.getByRole('button', { name: 'Load' })).toBeFocused();
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('Enter');
-  await expect(page.locator('#game')).toBeVisible();
+  await expect(page.locator('#pick')).toBeVisible();
+  await expect(page.locator('#game')).toBeHidden();
 });

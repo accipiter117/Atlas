@@ -10,6 +10,14 @@
       "action": "selectSettler"
     },
     {
+      "id": "gold",
+      "priority": 95,
+      "condition": "goldRunningOut",
+      "textKey": "advice.goldRunningOut",
+      "actionKey": "advice.do",
+      "action": "selectUnit"
+    },
+    {
       "id": "starving",
       "priority": 90,
       "condition": "cityStarving",

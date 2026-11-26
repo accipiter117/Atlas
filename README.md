@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 5 of 22. Start a game to found cities that claim land, grow, work tiles and build units, guided by the advice line, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Buildings, improvements and the economy come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 6 of 22. Pick one of eight peoples, found cities, raise buildings and wonders, improve the land with builders and keep your gold and your citizens' happiness in hand, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Combat comes next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 

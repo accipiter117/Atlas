@@ -9,7 +9,9 @@
 import {
   createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED,
   cityYields, foodToGrow, buildOptions, itemCost, foundingProblem, borderCost, claimable, tilePrice, buyPrice,
+  improvementProblem, builderTargets, upkeepOf, adjacencyBonus, buildingDef,
 } from '../sim/index.js';
+import { factionCard } from './factionCards.js';
 import { takeTurn } from '../ai/index.js';
 import { createMapView } from '../render/canvas.js';
 import { attachMapInput } from './input.js';
@@ -53,12 +55,17 @@ export function rankOptions(v, ruleset, city, tt) {
   const explored = v.fog.filter((f) => f !== UNEXPLORED).length / v.fog.length;
   const settlersAround = myUnits.filter((u) => (ruleset.units[u.type].tags ?? []).includes('founder')).length;
   return buildOptions(world, ruleset, city).map((item) => {
-    const turns = Math.max(1, Math.ceil((itemCost(ruleset, item) - (city.queue[0]?.id === item.id ? city.progress : 0)) / prod));
+    const turns = Math.max(1, Math.ceil((itemCost(ruleset, item, world, city) - (city.queue[0]?.id === item.id ? city.progress : 0)) / prod));
     let score = 1;
     let reason;
-    if (item.kind === 'building') {
-      reason = tt('prod.reason.building', { city: city.name });
-      score = 3;
+    if (item.kind === 'building' || item.kind === 'wonder') {
+      const def = buildingDef(ruleset, item.id);
+      reason = ruleset.text[def.descriptionKey] ?? tt('prod.reason.building', { city: city.name });
+      if (item.kind === 'wonder') reason = tt('prod.reason.wonder', { text: reason });
+      // Value what it gives here: yields (with adjacency in this city) and amenities.
+      const adj = (def.adjacency ?? []).length ? adjacencyBonus(world, ruleset, { ...city, buildings: [...city.buildings, item.id] }, item.id).reduce((n, a) => n + a.amount, 0) : 0;
+      const gives = Object.values(def.yields ?? {}).reduce((n, x) => n + x, 0) + adj + (def.amenities ?? 0) * 1.5 + (def.effects?.length ?? 0);
+      score = (item.kind === 'wonder' ? 2.5 : 2) + gives * 0.6;
     } else {
       const def = ruleset.units[item.id];
       const cls = ruleset.unitClasses[def.class] ?? {};
@@ -76,11 +83,11 @@ export function rankOptions(v, ruleset, city, tt) {
   }).sort((a, b) => b.score - a.score || a.turns - b.turns || a.item.id.localeCompare(b.item.id));
 }
 
-export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, players = 4, mapSize = 'small', mapType = 'continents' }) {
+export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, players = 4, mapSize = 'small', mapType = 'continents', faction = null }) {
   const tt = (key, args) => t(text, key, args);
   const setup = {
     seed,
-    players: [{ kind: 'human', name: tt('game.you') }, ...Array.from({ length: players - 1 }, (_, n) => ({ kind: 'ai', name: tt('game.rival', { n: n + 1 }) }))],
+    players: [{ kind: 'human', name: tt('game.you'), ...(faction ? { faction } : {}) }, ...Array.from({ length: players - 1 }, (_, n) => ({ kind: 'ai', name: tt('game.rival', { n: n + 1 }) }))],
     map: { size: mapSize, type: mapType },
   };
   let state = createGame(ruleset, setup);
@@ -111,6 +118,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const isFounder = (u) => (ruleset.units[u.type].tags ?? []).includes('founder');
   const yieldsOf = (c) => cityYields(knownWorld(v), ruleset, c);
   const noProduction = () => myCities().filter((c) => c.queue.length === 0);
+  /** Gold per turn after upkeep, from what you know. */
+  const netGold = () => myCities().reduce((n, c) => n + yieldsOf(c).total.gold, 0) - upkeepOf(knownWorld(v), ruleset, human).total;
+  const goldTurnsLeft = () => { const net = netGold(); return net < 0 ? Math.floor((v.stocks?.gold ?? 0) / -net) + 1 : Infinity; };
+  const civName = (factionId) => { const f = v.factions.find((x) => x.id === factionId); return ruleset.text[ruleset.factions?.[f?.civ]?.nameKey] ?? f?.name ?? ''; };
   const starving = () => myCities().filter((c) => yieldsOf(c).surplus < 0);
 
   function plan(unit, target) {
@@ -177,8 +188,16 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function showEvents(events) {
     for (const e of events) {
       if (e.type === 'unitMoved' && (e.faction === human || e.path.some((tile) => v.fog[tile] === VISIBLE))) mapView.animateMove(e.unit, e.path);
+      if (e.type === 'wonderBuilt') {
+        const known = e.faction === human || v.cities.some((c) => c.id === e.city);
+        toast(tt('game.wonderBuilt', { faction: known ? civName(e.faction) : '?', wonder: ruleset.text[ruleset.wonders[e.wonder]?.nameKey] ?? e.wonder, city: known ? e.cityName : '?' }));
+      }
       if (e.faction !== human) continue;
       const city = v.cities.find((c) => c.id === e.city);
+      if (e.type === 'wonderLost') toast(tt('game.wonderLost', { wonder: ruleset.text[ruleset.wonders[e.wonder]?.nameKey] ?? e.wonder, gold: Math.round(e.gold) }));
+      if (e.type === 'goldWarning') toast(tt('game.goldWarning', { n: e.turns }));
+      if (e.type === 'unitDisbanded' && e.reason === 'bankrupt') toast(tt('game.bankrupt', { unit: unitName({ type: e.unitType }) }));
+      if (e.type === 'improvementBuilt') toast(tt('game.improvementBuilt', { name: ruleset.text[ruleset.improvements[e.improvement]?.nameKey] ?? e.improvement, n: Math.max(0, e.charges) }));
       if (e.type === 'cityFounded') toast(tt('game.cityFounded', { city: e.name }));
       if (e.type === 'unitBuilt' && !e.bought) toast(tt('game.unitBuilt', { city: city?.name ?? '', unit: itemName({ kind: 'unit', id: e.unitType }) }));
     }
@@ -240,7 +259,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       return;
     }
     const name = unitName(u);
-    const cmd = type === 'foundCity' ? { type, faction: human, unit: u.id } : { type, faction: human, unit: u.id };
+    const cmd = { type, faction: human, unit: u.id };
     const r = run(cmd);
     if (!r) return;
     if (type === 'disband') toast(tt('game.disbanded', { unit: name }));
@@ -361,8 +380,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       for (const k of Object.keys(total)) total[k] += y[k];
     }
     const s = v.stocks ?? { gold: 0, faith: 0 };
+    const me = v.factions.find((f) => f.id === human);
+    const chip = $('[data-action="faction"]');
+    chip.textContent = tt('game.factionCard', { faction: civName(human) });
+    chip.style.setProperty('--faction', ruleset.factions?.[me?.civ]?.colours.primary ?? '#888');
     $('[data-field="yields"]').replaceChildren(
-      el(doc, 'span', { class: 'y gold' }, tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(total.gold) })),
+      el(doc, 'span', { class: `y gold${netGold() < 0 ? ' falling' : ''}` }, tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(netGold()) })),
       el(doc, 'span', { class: 'y science' }, tt('game.bar.science', { rate: signed(total.science) })),
       el(doc, 'span', { class: 'y culture' }, tt('game.bar.culture', { rate: signed(total.culture) })),
       el(doc, 'span', { class: 'y faith' }, tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
@@ -375,6 +398,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       noCities: () => myCities().length === 0 && myUnits().some(isFounder) && {},
       cityStarving: () => starving().length && { city: starving()[0].name, target: starving()[0].id },
       cityNoProduction: () => noProduction().length && { city: noProduction()[0].name, target: noProduction()[0].id },
+      goldRunningOut: () => goldTurnsLeft() <= (ruleset.tuning?.economy?.bankruptcyWarningTurns ?? 2) && { n: goldTurnsLeft() },
       unitsNeedOrders: () => idle().length && { n: idle().length },
       cityCanBuyTile: () => false,
       readyToEnd: () => ({}),
@@ -431,7 +455,22 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     );
     const button = (type, label, disabled = false, extra = '') => el(doc, 'button', { type: 'button', class: `btn small${extra}${type === 'disband' && confirmDisband ? ' danger' : ''}`, dataset: { act: type }, disabled, onclick: () => act(type) }, label);
     const foundable = isFounder(u) && u.moves > 0 && !foundingProblem(knownWorld(v), ruleset, human, u.tile);
-    actions.replaceChildren(...[
+    // Builders: one button per improvement that fits a hex they can reach now.
+    const improve = [];
+    if ((def.tags ?? []).includes('worker')) {
+      card.append(el(doc, 'p', { dataset: { field: 'charges' } }, tt('game.unit.charges', { n: u.charges ?? 0 })));
+      const world = knownWorld(v);
+      for (const [id, imp] of Object.entries(ruleset.improvements ?? {})) {
+        for (const tile of builderTargets(world, ruleset, id, u.tile)) {
+          if (improvementProblem(world, ruleset, human, id, tile)) continue;
+          const label = tt('game.action.improve', { name: ruleset.text[imp.nameKey] ?? id });
+          improve.push(el(doc, 'button', { type: 'button', class: 'btn small wide', dataset: { improve: id }, title: ruleset.text[imp.descriptionKey] ?? '', disabled: u.moves <= 0,
+            onclick: () => { const r = run({ type: 'buildImprovement', faction: human, unit: u.id, improvement: id, tile }); if (r) selectNextIdle(); } }, label));
+          break;
+        }
+      }
+    }
+    actions.replaceChildren(...improve, ...[
       isFounder(u) ? button('foundCity', tt('game.action.found'), !foundable, ' primary wide') : null,
       isCivilian(u) ? null : button('fortify', tt('game.action.fortify'), u.activity === 'fortify'),
       button('skip', tt('game.action.skip'), u.moves <= 0 || u.activity === 'skip'),
@@ -439,6 +478,29 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       button('disband', confirmDisband ? tt('game.action.confirmDisband') : tt('game.action.disband')),
     ].filter(Boolean));
     $('[data-field="hint"]').textContent = lastTouch ? tt('game.hint.moveTouch') : tt('game.hint.move');
+  }
+
+  function mood(a) {
+    if (!a) return null;
+    const p = a.threshold?.yieldPercent ?? 0;
+    const key = p > 0 ? 'city.mood.happy' : p === 0 ? 'city.mood.content' : a.threshold?.rebels ? 'city.mood.revolt' : 'city.mood.unhappy';
+    return el(doc, 'p', { class: `mood${p < 0 ? ' bad' : p > 0 ? ' good' : ''}`, dataset: { field: 'amenities' } },
+      `${tt('city.amenities', { balance: signed(a.balance), have: a.have + a.luxuries, need: a.need })} · ${tt(key, { p })}`);
+  }
+
+  /** Built buildings and wonders, each with what it adds here; adjacency shown in words, not only in a tooltip. */
+  function buildingList(c) {
+    if (!c.buildings.length) return el(doc, 'p', { class: 'muted small' }, tt('city.noBuildings'));
+    const world = knownWorld(v);
+    return el(doc, 'ul', { class: 'built', dataset: { field: 'buildings' } }, ...c.buildings.map((b) => {
+      const def = buildingDef(ruleset, b);
+      const adj = adjacencyBonus(world, ruleset, c, b).filter((a) => a.rule);
+      const extra = adj.map((a) => tt('city.adjacency', { n: a.amount, yield: tt(`yield.${a.yield}`), count: a.count })).join(', ');
+      const tip = [ruleset.text[def?.descriptionKey], extra].filter(Boolean).join(' ');
+      return el(doc, 'li', { title: tip, dataset: { building: b } },
+        el(doc, 'span', { class: 'name' }, ruleset.text[def?.nameKey] ?? b),
+        extra ? el(doc, 'span', { class: 'adjacency' }, ` (${extra})`) : null);
+    }));
   }
 
   function renderCityDrawer(c) {
@@ -450,17 +512,19 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const growth = y.surplus < 0 ? tt('city.starving') : growIn ? tt('city.grows', { n: growIn }) : tt('city.growsNever');
     const head = c.queue[0];
     const prod = Math.max(1, y.total.production);
-    const price = head ? buyPrice(ruleset, c) : null;
+    const world = knownWorld(v);
+    const price = head ? buyPrice(ruleset, c, world) : null;
     const options = rankOptions(v, ruleset, c, tt);
     const shown = showAllOptions ? options : options.slice(0, 4);
     const borderIn = Math.max(1, Math.ceil((borderCost(c, ruleset.tuning) - c.culture) / Math.max(0.1, y.total.culture)));
     const focuses = Object.values(ruleset.focuses ?? {});
 
-    card.replaceChildren(
+    card.replaceChildren(...[
       el(doc, 'div', { class: 'city-head' },
         el(doc, 'h2', {}, c.name),
         el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-city' }, onclick: () => select(null) }, tt('city.close'))),
       el(doc, 'p', { class: 'muted' }, tt('city.pop', { pop: c.pop })),
+      mood(y.amenities),
       el(doc, 'div', { class: 'city-yields' },
         el(doc, 'span', { class: 'food' }, `${tt('city.food', { rate: signed(y.surplus) })} (${growth})`),
         el(doc, 'span', {}, tt('city.production', { n: fmt(y.total.production) })),
@@ -470,9 +534,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         el(doc, 'span', {}, tt('city.faith', { n: fmt(y.total.faith) }))),
       el(doc, 'div', { class: 'city-building' },
         el(doc, 'p', { dataset: { field: 'building' } }, head
-          ? tt('city.building', { item: itemName(head), n: Math.max(1, Math.ceil((itemCost(ruleset, head) - c.progress) / prod)) })
+          ? tt('city.building', { item: itemName(head), n: Math.max(1, Math.ceil((itemCost(ruleset, head, world, c) - c.progress) / prod)) })
           : tt('city.buildingNothing')),
-        head ? el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'buy' }, disabled: (v.stocks?.gold ?? 0) < price, onclick: () => cityCmd({ type: 'buyItem' }) }, tt('city.buy', { price })) : null,
+        head && price !== null ? el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'buy' }, disabled: (v.stocks?.gold ?? 0) < price, onclick: () => cityCmd({ type: 'buyItem' }) }, tt('city.buy', { price })) : null,
         c.queue.length > 1 ? el(doc, 'p', { class: 'muted' }, tt('city.queue', { items: c.queue.slice(1).map(itemName).join(', ') })) : null),
       el(doc, 'h3', {}, tt('city.choose')),
       el(doc, 'ul', { class: 'choose', dataset: { field: 'options' } }, ...shown.map((o) => el(doc, 'li', {},
@@ -483,6 +547,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         el(doc, 'button', { type: 'button', class: 'queue-add', 'aria-label': tt('city.queueAdd', { item: itemName(o.item) }), title: tt('city.queueAdd', { item: itemName(o.item) }), onclick: () => cityCmd({ type: 'queueProduction', item: o.item }) }, '+')))),
       options.length > 4 ? el(doc, 'button', { type: 'button', class: 'btn small link', onclick: () => { showAllOptions = !showAllOptions; render(); } },
         showAllOptions ? tt('city.showFewer') : tt('city.showAll', { n: options.length })) : null,
+      el(doc, 'h3', {}, tt('city.buildings')),
+      buildingList(c),
+      Object.keys(c.specialists ?? {}).length ? el(doc, 'p', { class: 'muted small', dataset: { field: 'specialists' } },
+        tt('city.specialists', { list: Object.entries(c.specialists).map(([k, n]) => `${n} ${tt(`yield.${k}`)}`).join(', ') })) : null,
       el(doc, 'h3', {}, tt('city.focus')),
       el(doc, 'div', { class: 'focus', role: 'group' }, ...focuses.map((f) => el(doc, 'button', {
         type: 'button', class: `btn small${c.focus === f.id ? ' primary' : ''}`, dataset: { focus: f.id }, 'aria-pressed': String(c.focus === f.id),
@@ -490,7 +558,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       }, ruleset.text[f.nameKey] ?? f.id))),
       el(doc, 'p', { class: 'muted small' }, tt('city.border', { n: borderIn })),
       el(doc, 'p', { class: 'muted small' }, tt('city.lockHint')),
-    );
+    ].filter(Boolean));
     actions.replaceChildren();
     $('[data-field="hint"]').textContent = '';
   }
@@ -529,6 +597,16 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     if (handled && handled() !== false) e.preventDefault();
   });
   $('[data-action="next"]').onclick = next;
+  // Your faction's card, from the chip in the top bar.
+  const overlay = doc.querySelector('[data-field="overlay"]');
+  $('[data-action="faction"]').onclick = () => {
+    const civ = v.factions.find((f) => f.id === human)?.civ;
+    if (!civ) return;
+    overlay.querySelector('[data-field="overlay-body"]').replaceChildren(factionCard(doc, ruleset, text, civ));
+    overlay.hidden = false;
+    overlay.querySelector('[data-action="close-overlay"]').focus();
+  };
+  overlay.querySelector('[data-action="close-overlay"]').onclick = () => { overlay.hidden = true; };
 
   // The computer seats before you in the first round play now.
   let guard = 0;

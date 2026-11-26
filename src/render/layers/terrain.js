@@ -6,7 +6,8 @@
 // smoothing off, which keeps panning a Huge map at full speed.
 
 import { HEX_ART, ART_SCALE, SQRT3, cornerOffsets, edgeCorners, fillHexPixels } from '../hexDraw.js';
-import { placeholderColour, drawTerrainPattern, drawHills, drawFeature, drawResource, shade } from '../art/placeholders.js';
+import { placeholderColour, drawTerrainPattern, drawHills, drawFeature, drawResource, drawImprovement, shade } from '../art/placeholders.js';
+import { neighbourCache } from '../../sim/index.js';
 
 export const CHUNK = 16;
 
@@ -27,6 +28,8 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
   const resourceColour = map.resourceIds.map((id) => placeholderColour(registry, 'resource', ruleset.resources[id]?.class ?? id));
   const roles = map.terrainIds.map((id) => ruleset.terrain[id]?.mapgen?.role ?? (ruleset.terrain[id]?.water ? 'ocean' : 'land'));
   const riverColour = placeholderColour(registry, 'terrain', 'lake');
+
+  const neighboursOf = (i) => neighbourCache(map)[i];
 
   function bounds(cx, cy) {
     const c0 = cx * CHUNK;
@@ -88,7 +91,29 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
         ctx.stroke();
       }
     }
+    // Roads: a track from each road hex towards each neighbouring road hex.
+    ctx.strokeStyle = '#8a6a3a';
+    ctx.lineWidth = 2;
+    for (const i of tiles) {
+      if (!map.road?.[i] || map.terrain[i] < 0) continue;
+      const p = artCentre(map, i);
+      let joined = false;
+      for (const j of neighboursOf(i)) {
+        if (j < 0 || !map.road[j] || map.terrain[j] < 0) continue;
+        const q = artCentre(map, j);
+        ctx.beginPath();
+        ctx.moveTo(Math.round(p.x - b.x), Math.round(p.y - b.y));
+        ctx.lineTo(Math.round((p.x + q.x) / 2 - b.x), Math.round((p.y + q.y) / 2 - b.y));
+        ctx.stroke();
+        joined = true;
+      }
+      if (!joined) ctx.fillRect(Math.round(p.x - b.x) - 2, Math.round(p.y - b.y) - 1, 4, 2);
+    }
     for (const i of tilesIn(cx, cy)) {
+      if (map.improvement?.[i] >= 0 && map.terrain[i] >= 0) {
+        const p = artCentre(map, i);
+        drawImprovement(ctx, Math.round(p.x - b.x), Math.round(p.y - b.y), map.improvementIds[map.improvement[i]]);
+      }
       if (map.resource[i] < 0 || map.terrain[i] < 0) continue;
       const p = artCentre(map, i);
       drawResource(ctx, Math.round(p.x - b.x), Math.round(p.y - b.y), resourceColour[map.resource[i]]);

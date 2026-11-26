@@ -9,7 +9,7 @@ async function startGame(page) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto('/?seed=42');
+  await page.goto('/?seed=42&faction=rome');
   await page.getByRole('button', { name: 'New game' }).click();
   await page.waitForFunction(() => window.__atlasGame);
   return errors;

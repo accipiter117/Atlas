@@ -7,6 +7,7 @@
 import { ENGINE_VERSION } from '../sim/index.js';
 import { loadRuleset } from '../data/loader.js';
 import { createGameScreen } from './game.js';
+import { showFactionPicker } from './factionCards.js';
 import { createModManager } from './modManager.js';
 
 let toastTimer = 0;
@@ -45,13 +46,19 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       const src = await sources();
       const { ruleset, ok, report } = loadRuleset({ available: src.available, selection: ['base-ancient'], engineVersion: ENGINE_VERSION });
       if (!ok) { toast(doc, `${report.errors} errors in the rules`); return; }
-      const sheets = await loadSheets(ruleset.skin.art);
-      game?.destroy();
-      show(doc, 'game');
+      const text = { ...src.engineText, ...ruleset.text };
       const params = new URLSearchParams(doc.defaultView.location.search);
-      const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
-      game = createGameScreen(doc, gameScreen, { ruleset, text: { ...src.engineText, ...ruleset.text }, sheets, seed, toast: (m) => toast(doc, m) });
-      gameScreen.querySelector('#game-map').focus({ preventScroll: true });
+      const start = async (faction) => {
+        const sheets = await loadSheets(ruleset.skin.art);
+        game?.destroy();
+        show(doc, 'game');
+        const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
+        game = createGameScreen(doc, gameScreen, { ruleset, text, sheets, seed, faction, toast: (m) => toast(doc, m) });
+        gameScreen.querySelector('#game-map').focus({ preventScroll: true });
+      };
+      if (params.has('faction') && ruleset.factions[params.get('faction')]) { await start(params.get('faction')); return; }
+      show(doc, 'pick');
+      showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, start);
     },
     async mods() {
       show(doc, 'mods');
@@ -84,7 +91,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       const next = buttons[(i + (e.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length];
       next.focus();
       e.preventDefault();
-    } else if (!modsScreen.hidden && e.key === 'Escape') {
+    } else if ((!modsScreen.hidden || !doc.getElementById('pick').hidden) && e.key === 'Escape') {
       actions.back();
     }
   });

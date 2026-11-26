@@ -123,8 +123,12 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     /** Update what the player knows: map arrays (for newly explored tiles), fog and units. */
     setWorld({ map: newMap, fog: newFog, units: newUnits, cities: newCities }) {
       if (newMap && view.fog && newFog) {
+        // Redraw the chunks where something on the ground changed: newly explored hexes, improvements, roads.
+        const old = view.map;
         const changed = [];
-        for (let i = 0; i < newFog.length; i += 1) if ((view.fog[i] === 0) !== (newFog[i] === 0)) changed.push(i);
+        for (let i = 0; i < newFog.length; i += 1) {
+          if ((view.fog[i] === 0) !== (newFog[i] === 0) || old.improvement?.[i] !== newMap.improvement?.[i] || old.road?.[i] !== newMap.road?.[i]) changed.push(i);
+        }
         if (changed.length) view.terrain.update(newMap, changed);
       }
       if (newMap) view.map = newMap;
