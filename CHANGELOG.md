@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 8: Technology and the first real AI
+
+What you can try: start a game and press R (or tap the science figure in the top bar) to open the technology tree. Pick a tech to research it now; press Queue path on a locked one and every tech needed to reach it is queued in order. Each tech shows its turns, what it unlocks and its boost (for example, founding a second city pays 40% of Writing at once); a toast tells you when a boost lands. The top bar now shows your era and what you are researching, and the advice line reminds you to choose research. Units, buildings and improvements now need their tech, and horses and iron only appear on the map once you know Animal Husbandry and Bronze Working. Rivals now expand, build armies, declare war when clearly stronger and attack at good odds. Press J (or AI journal) to read why each rival did what it did. You are at peace with everyone at the start: point at a rival's unit or city and the odds panel offers a Declare war button.
+
+- Technology: 40 techs across four eras, costs scaled by era and game speed, overflow into the queue, boosts with five kinds of trigger, eras by share of techs known, and content gated by tech.
+- War and peace: factions start at peace and declare war before attacking; raiders are always at war with everyone. Units cannot walk into a foreign city.
+- The AI (`src/ai`): picks a victory path (conquest, science or score), plans research, city sites, production and war, moves every unit, and writes a journal of reasons with the next two options it weighed. It reads only its own view and sends ordinary commands.
+- Cities now earn a little science and culture per citizen, so research moves at a sensible pace.
+- Toasts stack, so a farm built and the boost it earned both show.
+- Tests: 150 unit tests (10 for research, five full 150-turn AI games with no refused commands, the fairness poison test, Large map AI turns under 2 seconds, and same seed, same game) and 30 browser tests, including the tree, queueing and the journal on all three screen sizes.
+
 ## Phase 7: Combat and the battle module interface
 
 What you can try: start a game and wait for raiders (camps appear in land nobody can see from about turn 6, marked with a dark tent once found). Select a fighting unit and point at an enemy (first tap on touch): the panel shows your win chance, the HP each side should lose, both strengths and every modifier (hills, forest, river crossing, flanking, wounds, fortified, promotions). Click (or tap again) to attack; if the enemy is out of reach your unit walks to the nearest hex it can attack from. A report says what each side dealt. Units earn experience; at 15 a promotion appears under Needs attention and you pick one of two. Take a city with a melee unit once its defence is at 0 HP and choose Keep or Raze (original capitals cannot be razed). Cities show their defence HP and, once they have walls, can shoot once a turn. Walk into an empty raider camp for 30 gold. For experimenting, `?debug=1` in the address adds developer cheats (see DECISIONS).

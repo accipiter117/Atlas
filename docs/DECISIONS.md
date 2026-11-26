@@ -82,7 +82,7 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 
 ## Phase 6
 
-- **Nothing is tech-gated yet.** Buildings, wonders and units would normally need techs, which arrive in phase 8; until then they are gated by their other requirements (other buildings, coast or river, capital, faction, strategic resources). Phase 8 adds the tech requirements.
+- **Nothing is tech-gated yet.** Buildings, wonders and units would normally need techs, which arrive in phase 8; until then they are gated by their other requirements (other buildings, coast or river, capital, faction, strategic resources). Phase 8 added the tech requirements.
 - **A free upkeep allowance.** With upkeep on, a new faction (no city, a warrior costing 1 gold) went broke on turn 1. Units now get a free allowance of 2 gold plus 1 per city (`economy.freeUpkeep`, `freeUpkeepPerCity`), and everyone starts with 10 gold (`economy.startingGold`).
 - **Bankruptcy.** Gold never stays below zero: when it would, one unit with upkeep is chosen by the seeded dice, disbands, and gold is set to zero. A warning event fires (and the advice line speaks) when gold will run out within 2 turns.
 - **Amenities.** A city needs 1 amenity per 2 citizens, rounded down. Luxuries count only once improved (a plantation on wine), each kind going to up to 4 cities, unhappiest first. The thresholds live in `tuning.json` rather than a separate `amenities.json`. Unhappiness cuts every yield except the food citizens eat; rebel units are left for later.
@@ -112,6 +112,20 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **What you see of an enemy unit** now includes whether it is fortified and its promotions, because the odds would otherwise be wrong.
 - **`?debug=1`** adds developer cheats to the game (placing a unit, setting experience), like the plan's dev page. They edit the state outside the rules, so they exist only with that address; the browser tests use them to set up a fight.
 - **Rival factions still do not attack**; they will once the real AI arrives in phase 8. Only raiders fight back for now.
+
+## Phase 8
+
+- **Wars are minimal until diplomacy (phase 12).** Every pair of factions starts at peace; one command declares war, and nothing ends one yet. You cannot attack someone you are at peace with; the odds panel offers Declare war instead. Raiders are at war with everyone.
+- **Foreign cities block movement.** No unit may stop in or pass through another faction's city; the only way in is to capture it.
+- **Raiders take civilians.** A raider moving onto a hex with only builders or settlers removes them (it never takes them home), so lone settlers need escorts.
+- **Citizens yield a little science and culture** (`tuning.cities.perCitizen`). Without it, research crawled at one tech every 25 turns.
+- **Boosts are counted from events.** Each faction keeps counters (farms built, scouts trained, units killed and so on); when a counter reaches a tech's trigger, 40% of its cost is paid once. Kills count for the killer.
+- **Era** is the latest era in which you know at least half the techs. Later start eras grant every tech of the eras before (`tuning.start.grantErasBefore`).
+- **The AI's memory lives outside the game state**, so saves stay small and the AI cannot sneak information past its view. It is rebuilt from nothing after loading, which costs it only its journal and remembered city sites.
+- **AI war and attack thresholds** are data in `rules/base-ancient/ai/weights.json`: it declares war when its army is clearly larger than what it can see of yours, and attacks only when the win chance and the damage ratio are both good enough. It never founds a city until it has seen the hexes around the site.
+- **Known leak:** a rival's city on a hex you explored earlier shows in your view even if it was founded after you last saw the hex. The AI's view has the same leak, so it is fair, but it will be fixed with the save format in phase 9.
+- **Content order:** `tools/gen/base-ancient-content.py` runs first, then `tools/gen/base-ancient-techs.py`, which adds tech requirements to the content.
+- **The Civics tab** is in the tree screen already but disabled until phase 11.
 
 ## Later
 

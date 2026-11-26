@@ -274,6 +274,7 @@
     "journal.empty": "Nothing recorded yet.",
     "journal.turn": "Turn {n}",
     "journal.instead": "Also weighed: {list}",
+    "journal.times": "({n} times)",
     "journal.close": "Close",
     "game.trees": "Research (R)",
     "game.journal": "AI journal (J)"

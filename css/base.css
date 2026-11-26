@@ -278,4 +278,7 @@ body {
 .game-yields .era { color: var(--ink-soft); }
 .journal { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; padding-top: 8px; }
 .journal-faction h3 { margin: 0 0 4px; }
-.journal-faction ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13.5px; }
+.journal-faction ol { margin: 0; padding-left: 30px; display: grid; gap: 4px; font-size: 13.5px; }
+.journal-alt { display: block; }
+.tree-grid { grid-template-rows: auto; }
+.tree-era { padding-bottom: 4px; }

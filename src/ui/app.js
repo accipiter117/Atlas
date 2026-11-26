@@ -12,12 +12,20 @@ import { createModManager } from './modManager.js';
 
 let toastTimer = 0;
 
+/** Short messages. Several at once (a farm built and the boost it earned) stack, newest last, up to four. */
 function toast(doc, message) {
   const el = doc.querySelector('[data-toast]');
-  el.textContent = message;
+  const line = doc.createElement('div');
+  line.textContent = message;
+  if (el.classList.contains('show')) {
+    el.append(line);
+    while (el.childElementCount > 4) el.firstElementChild.remove();
+  } else {
+    el.replaceChildren(line);
+  }
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600 + 900 * (el.childElementCount - 1));
 }
 
 function show(doc, id) {

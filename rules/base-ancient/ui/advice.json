@@ -27,7 +27,7 @@
     },
     {
       "id": "research",
-      "priority": 85,
+      "priority": 75,
       "condition": "noResearch",
       "textKey": "advice.research",
       "actionKey": "advice.research.do",

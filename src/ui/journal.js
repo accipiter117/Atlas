@@ -38,16 +38,35 @@ export function sentence(ruleset, text, factionName, entry) {
   return template ? formatText(template, named(ruleset, text, factionName, entry.params)) : entry.reasonKey;
 }
 
+/** A short name for an option the AI weighed: the tech, item or path itself. */
+function shortName(ruleset, text, factionName, entry) {
+  const p = named(ruleset, text, factionName, entry.params ?? {});
+  return p.tech ?? p.item ?? p.path ?? p.improvement ?? p.promotion ?? p.target ?? sentence(ruleset, text, factionName, entry);
+}
+
+/** Merge repeats on the same turn ("A unit explores the unknown" four times becomes one line). */
+function grouped(ruleset, text, factionName, journal) {
+  const out = [];
+  for (const e of journal) {
+    const line = sentence(ruleset, text, factionName, e);
+    const last = out[out.length - 1];
+    if (last && last.turn === e.turn && last.line === line && !e.alternatives?.length) last.n += 1;
+    else out.push({ turn: e.turn, line, n: 1, alternatives: e.alternatives ?? [] });
+  }
+  return out;
+}
+
 export function renderJournal(doc, host, { ais, factions, ruleset, text, factionName, onClose }) {
   const tt = (k, a) => t(text, k, a);
   const sections = factions.filter((f) => ais[f.id]).map((f) => {
     const journal = (ais[f.id].memory.journal ?? []).filter((e) => e.type !== 'endTurn').slice(-40).reverse();
     return el(doc, 'section', { class: 'journal-faction', dataset: { faction: f.id } },
       el(doc, 'h3', {}, factionName(f.id)),
-      journal.length ? el(doc, 'ol', {}, ...journal.map((e) => el(doc, 'li', {},
-        el(doc, 'span', { class: 'muted small' }, `${tt('journal.turn', { n: e.turn })} · `),
-        sentence(ruleset, text, factionName, e),
-        e.alternatives?.length ? el(doc, 'span', { class: 'muted small' }, ` ${tt('journal.instead', { list: e.alternatives.map((a) => sentence(ruleset, text, factionName, a)).join(' / ') })}`) : null)))
+      journal.length ? el(doc, 'ol', {}, ...grouped(ruleset, text, factionName, journal).slice(0, 25).map((g) => el(doc, 'li', {},
+        el(doc, 'span', { class: 'muted small' }, `${tt('journal.turn', { n: g.turn })}: `),
+        g.line,
+        g.n > 1 ? el(doc, 'span', { class: 'muted small' }, ` ${tt('journal.times', { n: g.n })}`) : null,
+        g.alternatives.length ? el(doc, 'span', { class: 'muted small journal-alt' }, tt('journal.instead', { list: g.alternatives.map((a) => shortName(ruleset, text, factionName, a)).join(', ') })) : null)))
         : el(doc, 'p', { class: 'muted' }, tt('journal.empty')));
   });
   host.replaceChildren(

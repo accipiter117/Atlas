@@ -6,7 +6,7 @@ Play it: https://accipiter117.github.io/Atlas/
 
 ## Where things stand
 
-Phase 7 of 22. Pick one of eight peoples, found cities, raise buildings and wonders, improve the land, and fight raiders and rivals with odds shown before every attack, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Technology and a real computer opponent come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
+Phase 8 of 22. Pick one of eight peoples, found cities, research a 40-tech tree with boosts, raise buildings and wonders, improve the land, and face rivals who expand, declare war and explain themselves in a journal, with odds shown before every attack, on a seeded hex world under fog of war. The rules load from stackable data mods (see the Mods screen). Victory, game setup and saving come next. See `CHANGELOG.md` for progress and `docs/PLAN.md` for the whole plan.
 
 ## Running it
 
