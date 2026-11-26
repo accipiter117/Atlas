@@ -127,6 +127,23 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Content order:** `tools/gen/base-ancient-content.py` runs first, then `tools/gen/base-ancient-techs.py`, which adds tech requirements to the content.
 - **The Civics tab** is in the tree screen already but disabled until phase 11.
 
+## Phase 9
+
+- **Science projects are wonder entries with `project: true`** (the schema already allowed it). Each faction builds each project once, in any city; they are not stored as buildings, cannot be bought, and other cities of the same faction building one get their production back as gold. A new `requires.projects` lets Voyage Beyond need the other two. Their techs: Scientific Method, Cartography and Navigation.
+- **Conquest** counts each faction's very first city (now remembered with `foundedBy`, so a faction refounding after losing everything does not get a second original capital). Nobody wins by conquest while a living rival has yet to found its capital. The last faction standing also wins by conquest.
+- **Knock-outs**: a faction with no cities and no settler leaves at the end of the round. Rule tests whose maps have no cities by design switch this off with `setup.elimination: false`.
+- **Score** adds citizens, cities, techs, wonders, buildings and projects, weighted by `tuning.score`. Ties go to the earlier seat.
+- **Turn limits** by speed live in `tuning.victory.turnLimits`. A mod setting the score victory's `turnLimit` to null (lock-era) means no limit.
+- **Victories are checked only at the end of a round** (section 3.14), so taking the last capital mid-round wins when the round ends. A won game refuses every command (`gameOver`); "one more turn" can come later.
+- **The size budget test lives in `tools/check-size.mjs`**, not the unit tests, so the 330-turn game is played once per check. `npm run check` plays a Small 4-faction game (about 45 seconds); CI also runs `--full`, the Large 8-faction game the budget is about (about 6 minutes until phase 10's speed work). Measured: 44 KB and 132 KB against 1,500 KB.
+- **Phase 8's 150-turn AI test** became the phase 9 "full game to a victory" test (Quick speed, so up to 220 turns), which covers it.
+- **The AI's memory is saved as its journal only.** Remembered city sites and the like are rebuilt after loading; the journal travels with slots and autosaves (not with export codes, to keep them short).
+- **Saving belongs to the app, not the game screen**: the game screen hands over a snapshot (state, log, journal) and the app writes it to browser storage. If the browser blocks storage (some private windows) saves last until the tab closes.
+- **Difficulty** stays at Prince (no bonuses either way) and is greyed on the setup screen; the plan gives no phase for `difficulty.json`, so it is noted for the phase 10 tuning work. Teams, events, disasters, conversions and the other battle modes are greyed with the phase they arrive in.
+- **Settings** (not in any phase of the plan) is a small screen: motion and developer mode, kept in `atlas:settings`.
+- **`?faction=<id>` in the address still skips setup** with a quick default game (used by the browser tests); `?debug=1` adds `autoplay`, which lets an AI play your seat (the full-game browser test).
+- **The city visibility leak noted in phase 8 is still open.** Fixing it means remembering what each faction last saw of each city, which changes the state shape; it waits for the next save version, with a migration.
+
 ## Later
 
 - Nothing yet.

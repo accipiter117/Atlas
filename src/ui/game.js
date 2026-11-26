@@ -17,6 +17,8 @@ import { factionCard } from './factionCards.js';
 import { createAi, runAiTurn, rankTechs } from '../ai/index.js';
 import { renderTrees } from './trees.js';
 import { renderJournal } from './journal.js';
+import { renderVictory, renderEnd } from './victoryPanel.js';
+import { renderGameMenu, codeBox } from './gameMenu.js';
 import { createMapView } from '../render/canvas.js';
 import { attachMapInput } from './input.js';
 import { t, formatText } from '../data/text.js';
@@ -85,21 +87,38 @@ export function rankOptions(v, ruleset, city, tt) {
   }).sort((a, b) => b.score - a.score || a.turns - b.turns || a.item.id.localeCompare(b.item.id));
 }
 
-export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, players = 4, mapSize = 'small', mapType = 'continents', faction = null, debug = false }) {
+/**
+ * The game screen. Starts a new game from `setup` (or a quick default built
+ * from seed and faction), or carries on from `resume` ({ state, log, journal })
+ * when a save is loaded. `hooks` connect it to the app: saveSlot, exportCode,
+ * autosave, quit and newGame.
+ */
+export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, setup: given = null, resume = null, players = 4, mapSize = 'small', mapType = 'continents', faction = null, debug = false, hooks = {} }) {
   const tt = (key, args) => t(text, key, args);
-  const setup = {
+  const setup = resume ? resume.state.setup : given ?? {
     seed,
     players: [{ kind: 'human', name: tt('game.you'), ...(faction ? { faction } : {}) }, ...Array.from({ length: players - 1 }, (_, n) => ({ kind: 'ai', name: tt('game.rival', { n: n + 1 }) }))],
     map: { size: mapSize, type: mapType },
     raiders: 'on',
   };
-  let state = createGame(ruleset, setup);
-  const human = 'f0';
+  let state = resume ? resume.state : createGame(ruleset, setup);
+  // Every command that changed the game, in order: with the seed, this rebuilds it exactly (saves, replays).
+  const log = resume ? resume.log.slice() : [];
+  /** The one way this screen changes the game: apply a command and log it. */
+  function exec(cmd) {
+    const r = applyCommand(state, cmd, ruleset);
+    if (r.ok) { state = r.state; log.push(cmd); }
+    return r;
+  }
+  const human = state.factions.find((f) => f.kind === 'human')?.id ?? 'f0';
   const palette = ruleset.skin.seatColours ?? ['#c23b22', '#2f6fbf', '#e0a526', '#6a4c9c'];
   const colours = Object.fromEntries(state.factions.map((f, i) => [f.id, palette[i % palette.length]]));
   colours.raiders = ruleset.skin.raiderColour ?? '#3d3d3d';
   const $ = (sel) => root.querySelector(sel);
-  const ais = Object.fromEntries(state.factions.filter((f) => f.kind === 'ai').map((f) => [f.id, createAi(ruleset, f.id)]));
+  const ais = Object.fromEntries(state.factions.filter((f) => f.kind === 'ai').map((f) => [f.id, createAi(ruleset, f.id, {
+    journal: resume?.journal?.[f.id] ?? [],
+    recordOff: setup.recordAI === 'off',
+  })]));
   let v = view(state, human, ruleset);
   let selected = null;        // unit id
   let openCity = null;        // city id
@@ -110,6 +129,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let aim = null;             // { tile, spec, odds } for the enemy being pointed at
   let shootingCity = null;    // a city choosing what to shoot
   let lastTouch = false;
+  let autoplayAi = null;      // ?debug=1 autoplay: an AI plays your seat too
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
   doc.defaultView.__atlasGame = { get state() { return state; }, get view() { return v; }, mapView, human, ruleset, ais };
@@ -124,6 +144,19 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         state = next;
         refresh();
         return id;
+      },
+      /** Let an AI play your seat as well, for `rounds` rounds or until the game ends (the full-game browser test). */
+      autoplay(rounds = 1) {
+        autoplayAi ??= createAi(ruleset, human);
+        const all = [];
+        for (let i = 0; i < rounds && !gameOver(); i += 1) {
+          const before = state.turn;
+          while (state.turn === before && !state.winner && humanAlive()) all.push(...playComputerSeats());
+          if (!humanAlive()) while (!state.winner && state.turn === before) all.push(...playComputerSeats());
+        }
+        refresh();
+        checkEnd();
+        return { turn: state.turn, winner: state.winner ?? null, refusals: Object.values(ais).concat(autoplayAi).flatMap((a) => a.refusals), log: log.length };
       },
       setXp(unitId, xp) {
         const next = JSON.parse(JSON.stringify(state));
@@ -253,54 +286,83 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'unitDisbanded' && e.reason === 'bankrupt') toast(tt('game.bankrupt', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'improvementBuilt') toast(tt('game.improvementBuilt', { name: ruleset.text[ruleset.improvements[e.improvement]?.nameKey] ?? e.improvement, n: Math.max(0, e.charges) }));
       if (e.type === 'cityFounded') toast(tt('game.cityFounded', { city: e.name }));
+      if (e.type === 'projectCompleted') toast(tt('game.projectCompleted', { faction: civName(e.faction), project: ruleset.text[ruleset.wonders[e.project]?.nameKey] ?? e.project, n: (state.projects?.[e.faction] ?? []).length }));
+      if (e.type === 'factionEliminated') toast(tt(e.faction === human ? 'game.youEliminated' : 'game.eliminated', { faction: civName(e.faction) }));
       if (e.type === 'unitBuilt' && !e.bought) toast(tt('game.unitBuilt', { city: city?.name ?? '', unit: itemName({ kind: 'unit', id: e.unitType }) }));
     }
   }
 
   function run(cmd) {
-    const r = applyCommand(state, cmd, ruleset);
+    const r = exec(cmd);
     if (!r.ok) {
       toast(refusal(r.error));
       return null;
     }
-    state = r.state;
     refresh();
     showEvents(r.events);
+    checkEnd();
     return r;
+  }
+
+  const humanAlive = () => state.factions.find((f) => f.id === human)?.alive !== false;
+  const gameOver = () => Boolean(state.winner) || !humanAlive();
+
+  /** Everything a save needs right now. */
+  function snapshot() {
+    return { state, log, journal: Object.fromEntries(Object.entries(ais).map(([id, ai]) => [id, ai.memory.journal ?? []])) };
+  }
+  function saveLabel() {
+    const civ = v.factions.find((f) => f.id === human)?.civ;
+    const size = ruleset.text[ruleset.mapSizes?.[setup.map?.size]?.nameKey] ?? setup.map?.size ?? '';
+    const type = ruleset.text[ruleset.mapTypes?.[setup.map?.type]?.nameKey] ?? setup.map?.type ?? '';
+    return tt('save.label', { faction: ruleset.text[ruleset.factions?.[civ]?.nameKey] ?? '', turn: state.turn, size, type });
+  }
+  function autosaveNow() {
+    const every = setup.autosave ?? 'every';
+    if (every === 'off' || !hooks.autosave || gameOver()) return;
+    if (every === 'five' && state.turn % 5 !== 0) return;
+    hooks.autosave(snapshot(), saveLabel());
+  }
+
+  let endShown = false;
+  function checkEnd() {
+    if (!gameOver() || endShown) return;
+    endShown = true;
+    showEnd();
   }
 
   /** Let every computer seat play until it is your turn again. */
   function playComputerSeats() {
     const events = [];
     let guard = 0;
-    while (currentFactionId(state) !== human && guard < 64) {
+    while (!state.winner && (currentFactionId(state) !== human || autoplayAi) && guard < 64) {
       guard += 1;
       const me = currentFactionId(state);
-      const ai = ais[me];
-      const r = runAiTurn(ai, () => view(state, me, ruleset), (cmd) => {
-        const res = applyCommand(state, cmd, ruleset);
-        if (res.ok) state = res.state;
-        return res;
-      });
+      const ai = ais[me] ?? autoplayAi;
+      const r = runAiTurn(ai, () => view(state, me, ruleset), exec);
       events.push(...r.events);
-      if (currentFactionId(state) === me) {
-        const res = applyCommand(state, { type: 'endTurn', faction: me }, ruleset);
-        if (res.ok) { state = res.state; events.push(...res.events); }
+      if (!state.winner && currentFactionId(state) === me) {
+        const res = exec({ type: 'endTurn', faction: me });
+        if (res.ok) events.push(...res.events);
       }
+      if (autoplayAi && currentFactionId(state) === human) break;
     }
     return events;
   }
 
   /** End your turn, let the computer seats play, and come back at your next turn. */
   function endTurn() {
-    if (currentFactionId(state) !== human) return;
+    if (currentFactionId(state) !== human || gameOver()) return;
     const all = [];
-    let r = applyCommand(state, { type: 'endTurn', faction: human }, ruleset);
-    state = r.state;
+    const r = exec({ type: 'endTurn', faction: human });
+    if (!r.ok) { toast(refusal(r.error)); return; }
     all.push(...r.events);
     all.push(...playComputerSeats());
     refresh();
     showEvents(all);
+    autosaveNow();
+    checkEnd();
+    if (gameOver()) return;
     if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
     else selectNextIdle();
   }
@@ -811,6 +873,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       b: () => { const u = selectedUnit(); if (u && isFounder(u)) act('foundCity'); else return false; },
       r: () => openTrees(),
       j: () => openJournal(),
+      v: () => openVictory(),
       f: () => act('fortify'),
       s: () => (selectedUnit() ? act('skip') : false),
       z: () => act('sleep'),
@@ -838,6 +901,49 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     panel.hidden = false;
   }
   $('[data-action="journal"]').onclick = openJournal;
+  const nameOf = (id) => (id === human ? tt('victory.you', { faction: civName(id) }) : civName(id));
+  function openVictory() {
+    renderVictory(doc, panel.querySelector('[data-field="panel-body"]'), { state, ruleset, text, human, name: nameOf, colours, onClose: () => { panel.hidden = true; } });
+    panel.hidden = false;
+  }
+  $('[data-action="victory"]').onclick = openVictory;
+  async function exportInto(out) {
+    if (!hooks.exportCode) return;
+    out.replaceChildren(el(doc, 'p', { class: 'small muted' }, tt('menu.working')));
+    const code = await hooks.exportCode(snapshot(), saveLabel());
+    out.replaceChildren(codeBox(doc, text, code, `atlas-turn-${state.turn}.txt`));
+  }
+  function openMenu() {
+    renderGameMenu(doc, panel.querySelector('[data-field="panel-body"]'), {
+      text, label: saveLabel(),
+      onSave: async (label, out) => {
+        out.replaceChildren(el(doc, 'p', { class: 'small muted' }, tt('menu.working')));
+        const r = await hooks.saveSlot?.(snapshot(), label);
+        if (r?.ok) out.replaceChildren(el(doc, 'p', { class: 'ok', dataset: { field: 'saved' } }, tt('menu.saved', { label })));
+        else {
+          out.replaceChildren(el(doc, 'p', { class: 'warn' }, r?.message ?? tt('menu.saveFailed')));
+          await exportInto(out.appendChild(el(doc, 'div')));
+        }
+      },
+      onExport: (out) => exportInto(out),
+      onVictory: openVictory,
+      onTitle: () => { panel.hidden = true; hooks.quit?.(); },
+      onClose: () => { panel.hidden = true; },
+    });
+    panel.hidden = false;
+  }
+  $('[data-action="game-menu"]').onclick = openMenu;
+  function showEnd() {
+    renderEnd(doc, panel.querySelector('[data-field="panel-body"]'), {
+      state, ruleset, text, human, name: nameOf,
+      onExport: () => exportInto(panel.querySelector('[data-field="end-code"]')),
+      onNew: () => { panel.hidden = true; hooks.newGame?.(); },
+      onTitle: () => { panel.hidden = true; hooks.quit?.(); },
+      onClose: () => { panel.hidden = true; },
+    });
+    panel.hidden = false;
+    hooks.ended?.();
+  }
   // Your faction's card, from the chip in the top bar.
   const overlay = doc.querySelector('[data-field="overlay"]');
   $('[data-action="faction"]').onclick = () => {
@@ -851,11 +957,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const showClose = $('[data-action="faction"]').onclick;
   $('[data-action="faction"]').onclick = () => { overlay.querySelector('[data-action="close-overlay"]').hidden = false; showClose(); };
 
-  // The computer seats before you in the first round play now.
-  playComputerSeats();
+  // The computer seats before you in the first round play now (a loaded game is already at your turn).
+  if (!resume) playComputerSeats();
   refresh();
   const firstUnit = myUnits()[0];
   if (firstUnit) mapView.centreOnTile(firstUnit.tile);
   selectNextIdle();
-  return { destroy: () => mapView.destroy(), get state() { return state; } };
+  checkEnd();
+  return { destroy: () => mapView.destroy(), get state() { return state; }, snapshot };
 }

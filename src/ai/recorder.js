@@ -3,6 +3,8 @@
 // journal screen (J) reads it. Kept to the last 50 turns.
 
 export function record(memory, turn, cmd, choice, alternatives = []) {
+  // Setup "AI journal: off" (memory.recordOff) keeps nothing.
+  if (memory.recordOff) return;
   memory.journal ??= [];
   memory.journal.push({
     turn, type: cmd.type, reasonKey: choice.reasonKey, params: choice.params ?? {},

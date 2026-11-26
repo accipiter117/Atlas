@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test('title screen: five buttons, no console errors, big enough to tap', async ({ page }, info) => {
+test('title screen: six buttons, no console errors, big enough to tap', async ({ page }, info) => {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -11,7 +11,7 @@ test('title screen: five buttons, no console errors, big enough to tap', async (
   await page.goto('/');
   await expect(page).toHaveTitle('Atlas');
   const menu = page.locator('#title [data-menu] .btn');
-  await expect(menu).toHaveText(['Continue', 'New game', 'Load', 'Mods', 'Settings']);
+  await expect(menu).toHaveText(['Continue', 'New game', 'Load', 'Import code', 'Mods', 'Settings']);
   await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
   await expect(page.locator('#game')).toBeHidden();
 
@@ -25,12 +25,21 @@ test('title screen: five buttons, no console errors, big enough to tap', async (
   const touch = info.project.use.hasTouch;
   const press = (name) => (touch ? page.getByRole('button', { name, exact: true }).tap() : page.getByRole('button', { name, exact: true }).click());
 
+  // Load with nothing saved says so; Settings remembers developer mode.
   await press('Load');
-  await expect(page.locator('[data-toast]')).toHaveText(/phase 9/);
+  await expect(page.locator('#load')).toBeVisible();
+  await expect(page.locator('[data-field="save-list"]')).toContainText('No saved games yet');
+  await page.locator('#load [data-action="back"]').click();
+  await press('Settings');
+  await page.locator('[data-setting="developer"]').check();
+  await page.locator('#settings [data-action="back"]').click();
+  await expect(page.locator('#title [data-dev-link]')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('#title [data-dev-link]')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
-test('keyboard: arrows move through the menu and Enter opens the faction picker', async ({ page }, info) => {
+test('keyboard: arrows move through the menu and Enter opens the setup screen', async ({ page }, info) => {
   test.skip(Boolean(info.project.use.hasTouch), 'keyboard run is for laptops');
   await page.goto('/?seed=42');
   await expect(page.getByRole('button', { name: 'New game' })).toBeFocused();
@@ -38,6 +47,6 @@ test('keyboard: arrows move through the menu and Enter opens the faction picker'
   await expect(page.getByRole('button', { name: 'Load' })).toBeFocused();
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('Enter');
-  await expect(page.locator('#pick')).toBeVisible();
+  await expect(page.locator('#setup')).toBeVisible();
   await expect(page.locator('#game')).toBeHidden();
 });

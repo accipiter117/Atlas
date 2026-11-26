@@ -1,5 +1,15 @@
 # Changelog
 
+## Phase 9: Victory, setup and saves (the playable core)
+
+What you can try: press New game and you get the setup screen. Pick the Quick preset (a Small map, 3 rivals, Quick speed) or set every option yourself: map type, size, sea level, resources, world age, seed, your faction (or See the cards), each rival's faction, which victories count, the turn limit, game speed, starting era, raiders, fog of war, the AI journal and autosave. Options whose systems come later are shown greyed with the phase they arrive in. Play, and the game autosaves at the start of each of your turns. Menu saves to a named slot, exports a code (copy or download) and takes you back to the title, where Continue picks up your latest save; Load lists every save and autosave (load, export or delete), and Import code takes a pasted code or a .txt file. Press V (or Victory) to see how close everyone is to each victory. When someone wins (or you are knocked out) the end screen shows the winner, the victory, a score table, the world seed and an export button.
+
+- Victories: conquest (hold every original capital), science (finish the Great Observatory, Atlas of the World and Voyage Beyond) and score (highest score at the turn limit: 220 turns at Quick, 330 at Standard). Checked at the end of each round; a won game accepts no more moves.
+- Factions with no cities and no settler are knocked out at the end of a round.
+- Saves: named slots, three rolling autosaves, short command keys, gzip, a clear message and an export code when a save will not fit, mod checks on loading, and replay from the seed.
+- A small Settings screen: motion (follow my device, reduce, full) and developer mode (shows the map viewer link).
+- Tests: 169 unit tests (victories in scripted scenarios and not before, saves, the v1 migration fixture, and five full Small Quick AI games played to a win with no refused commands) and 34 browser tests, including a whole Small Quick game played to the end screen. The size check plays a 330-turn game and saves it: 44 KB for a Small game, 132 KB for a Large 8-faction game, against a 1,500 KB budget.
+
 ## Phase 8: Technology and the first real AI
 
 What you can try: start a game and press R (or tap the science figure in the top bar) to open the technology tree. Pick a tech to research it now; press Queue path on a locked one and every tech needed to reach it is queued in order. Each tech shows its turns, what it unlocks and its boost (for example, founding a second city pays 40% of Writing at once); a toast tells you when a boost lands. The top bar now shows your era and what you are researching, and the advice line reminds you to choose research. Units, buildings and improvements now need their tech, and horses and iron only appear on the map once you know Animal Husbandry and Bronze Working. Rivals now expand, build armies, declare war when clearly stronger and attack at good odds. Press J (or AI journal) to read why each rival did what it did. You are at peace with everyone at the start: point at a rival's unit or city and the odds panel offers a Declare war button.

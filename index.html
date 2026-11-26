@@ -15,13 +15,14 @@
       <h1 id="title-heading" class="title">Atlas</h1>
       <p class="subtitle">Build an empire, one hex at a time.</p>
       <ul class="menu" role="list" data-menu>
-        <li><button class="btn" type="button" data-action="continue" disabled title="No saved game yet">Continue</button></li>
+        <li><button class="btn" type="button" data-action="continue" disabled>Continue</button></li>
         <li><button class="btn primary" type="button" data-action="new">New game</button></li>
-        <li><button class="btn" type="button" data-action="load" data-say="Loading saved games arrives in phase 9.">Load</button></li>
+        <li><button class="btn" type="button" data-action="load">Load</button></li>
+        <li><button class="btn" type="button" data-action="import">Import code</button></li>
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
-        <li><button class="btn" type="button" data-action="settings" data-say="Settings arrive in phase 9.">Settings</button></li>
+        <li><button class="btn" type="button" data-action="settings">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 8: research, and rivals who expand and fight. Developer <a href="dev.html">map viewer</a>.</p>
+      <p class="footnote">Phase 9: a whole game, from setup to victory, saved as you go.<span data-dev-link hidden> Developer <a href="dev.html">map viewer</a>.</span></p>
     </div>
   </main>
 
@@ -36,12 +37,64 @@
     </div>
   </main>
 
+  <main id="setup" class="screen" hidden aria-labelledby="setup-heading">
+    <div class="card wide setup" data-field="setup-body"></div>
+  </main>
+
+  <main id="load" class="screen" hidden aria-labelledby="load-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="load-heading">Load a game</h2>
+        <button class="btn back" type="button" data-action="back">Title screen</button>
+      </div>
+      <p class="mods-intro">Your saves and the last three autosaves, newest first. Saves live in this browser only: export a code to keep a game safe or move it to another device.</p>
+      <ul class="save-list" data-field="save-list"></ul>
+    </div>
+  </main>
+
+  <main id="import" class="screen" hidden aria-labelledby="import-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="import-heading">Import a game</h2>
+        <button class="btn back" type="button" data-action="back">Title screen</button>
+      </div>
+      <p class="mods-intro">Paste a code that starts with ATLAS1: or choose a .txt file you downloaded.</p>
+      <textarea class="code-box" rows="6" data-field="import-code" aria-label="Save code"></textarea>
+      <div class="end-actions">
+        <label class="btn small file-btn">Choose file<input type="file" accept=".txt,text/plain" data-field="import-file"></label>
+        <button class="btn small primary" type="button" data-action="import-go">Load this game</button>
+      </div>
+      <div data-field="import-status" aria-live="polite"></div>
+    </div>
+  </main>
+
+  <main id="settings" class="screen" hidden aria-labelledby="settings-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="settings-heading">Settings</h2>
+        <button class="btn back" type="button" data-action="back">Title screen</button>
+      </div>
+      <div class="setup-groups">
+        <section class="setup-group">
+          <label class="setup-row"><span class="setup-label">Motion and animation</span>
+            <select name="motion" data-setting="motion">
+              <option value="device">Follow my device</option>
+              <option value="reduce">Reduce motion</option>
+              <option value="full">Full motion</option>
+            </select></label>
+          <label class="tick setup-row"><input type="checkbox" data-setting="developer"><span>Developer mode (shows the map viewer link)</span></label>
+        </section>
+      </div>
+    </div>
+  </main>
+
   <main id="game" class="screen game" hidden aria-label="Game">
     <header class="game-bar">
-      <button class="btn small" type="button" data-action="back">Menu</button>
+      <button class="btn small" type="button" data-action="game-menu">Menu</button>
       <button class="btn small faction-chip" type="button" data-action="faction">Faction</button>
       <strong class="game-turn" data-field="turn">Turn 1</strong>
       <span class="game-yields" data-field="yields"></span>
+      <button class="btn small" type="button" data-action="victory" title="V">Victory</button>
       <button class="btn small" type="button" data-action="journal" title="J">AI journal</button>
       <span class="game-hint" data-field="hint"></span>
     </header>

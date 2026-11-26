@@ -245,6 +245,27 @@
       "perWonder": 10,
       "perBuilding": 1,
       "perProject": 25
+    },
+    "setup": {
+      "defaultPreset": "standard",
+      "presets": {
+        "quick": {
+          "size": "small",
+          "ais": 3,
+          "speed": "quick"
+        },
+        "standard": {
+          "size": "large",
+          "ais": 7,
+          "speed": "standard"
+        },
+        "epic": {
+          "size": "huge",
+          "ais": 9,
+          "speed": "epic"
+        }
+      },
+      "maxAis": 11
     }
   }
 }

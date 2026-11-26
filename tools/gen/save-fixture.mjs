@@ -17,6 +17,6 @@ if (existsSync(path) && !process.argv.includes('--force')) {
 }
 const g = aiGame(ruleset, { seed: 7, players: 2, turns: 12 });
 const save = createSave({ state: g.state, log: g.log, label: 'Fixture, turn 13', now: '2026-11-26T12:00:00.000Z' });
-save.setup = { ...save.setup, mods: ['base-ancient@1.0.0'] };
+save.setup = { ...save.setup, mods: ['base-ancient@0.1.0'] };
 writeFileSync(path, `${JSON.stringify(save)}\n`);
 console.log(`wrote ${path} (${Math.round(JSON.stringify(save).length / 1000)} KB, ${save.log.length} commands)`);

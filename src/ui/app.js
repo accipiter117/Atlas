@@ -1,14 +1,21 @@
-// The title screen, the Mods screen and starting a game.
+// The title screen and everything around a game: setup, the faction cards,
+// Continue, Load, Import code, Mods and Settings, plus saving (this file owns
+// the browser's storage; the game screen only asks).
 //
 // Words on fixed screens live in index.html markup; words built on the fly
-// (the mod report, button labels for screen readers) come from
-// text/engine.en-GB.json, so this file holds no player-facing sentences.
+// come from text/engine.en-GB.json, so this file holds no player-facing sentences.
 
 import { ENGINE_VERSION } from '../sim/index.js';
 import { loadRuleset } from '../data/loader.js';
+import { t } from '../data/text.js';
 import { createGameScreen } from './game.js';
 import { showFactionPicker } from './factionCards.js';
 import { createModManager } from './modManager.js';
+import { renderSetup, defaultSetup, toSetup } from './setup.js';
+import { codeBox } from './gameMenu.js';
+import {
+  createSave, saveToSlot, autosave, listSaves, latestSave, loadSave, deleteSave, exportCode, importCode, memoryStorage, modCheck, SaveTooBigError,
+} from '../save/save.js';
 
 let toastTimer = 0;
 
@@ -32,6 +39,7 @@ function show(doc, id) {
   for (const screen of doc.querySelectorAll('.screen')) screen.hidden = screen.id !== id;
   const first = doc.querySelector(`#${id} .btn:not(:disabled)`);
   first?.focus({ preventScroll: true });
+  doc.defaultView.scrollTo?.(0, 0);
 }
 
 /** A fresh random seed from the browser. Only the seed is random; the game itself is fully seeded. */
@@ -41,33 +49,243 @@ function newSeed() {
   return buf[0] % 1_000_000_000;
 }
 
+/** localStorage, or an in-memory stand-in if the browser blocks it (private windows). */
+function browserStorage(win) {
+  try {
+    const s = win.localStorage;
+    s.setItem('atlas:probe', '1');
+    s.removeItem('atlas:probe');
+    return s;
+  } catch {
+    return memoryStorage();
+  }
+}
+
+function el(doc, tag, props = {}, ...children) {
+  const node = doc.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') node.className = v;
+    else if (k === 'dataset') Object.assign(node.dataset, v);
+    else if (k === 'onclick') node.addEventListener('click', v);
+    else node.setAttribute(k, v);
+  }
+  node.append(...children.flat().filter((c) => c !== null && c !== undefined && c !== false));
+  return node;
+}
+
 export function startApp(doc, { loadModSources, loadSheets } = {}) {
+  const win = doc.defaultView;
+  const storage = browserStorage(win);
   const modsScreen = doc.getElementById('mods');
   const gameScreen = doc.getElementById('game');
+  const params = new URLSearchParams(win.location.search);
   let modManager = null;
   let game = null;
   let sourcesPromise = null;
-  const sources = () => { sourcesPromise ??= loadModSources(); return sourcesPromise; };
+  let setupCfg = null;      // the setup screen's choices, kept while it is open
+  let returnTo = 'title';   // where the faction cards' back button goes
+  let engineText = {};
+  const sources = () => {
+    sourcesPromise ??= loadModSources().then((s) => { engineText = s.engineText; return s; });
+    return sourcesPromise;
+  };
+  const tt = (k, a) => t(engineText, k, a);
+  const say = (m) => toast(doc, m);
+
+  // ---------- Settings (atlas:settings) ----------
+  function readSettings() {
+    try { return { motion: 'device', developer: false, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { motion: 'device', developer: false }; }
+  }
+  function applySettings() {
+    const s = readSettings();
+    doc.documentElement.dataset.motion = s.motion;
+    for (const n of doc.querySelectorAll('[data-dev-link]')) n.hidden = !s.developer;
+    doc.querySelector('[data-setting="motion"]').value = s.motion;
+    doc.querySelector('[data-setting="developer"]').checked = s.developer;
+  }
+  for (const input of doc.querySelectorAll('[data-setting]')) {
+    input.addEventListener('change', () => {
+      const s = readSettings();
+      s[input.dataset.setting] = input.type === 'checkbox' ? input.checked : input.value;
+      try { storage.setItem('atlas:settings', JSON.stringify(s)); } catch { /* settings are a nicety */ }
+      applySettings();
+    });
+  }
+
+  // ---------- Rulesets ----------
+  async function rulesFor(selection, options = {}) {
+    const src = await sources();
+    const result = loadRuleset({ available: src.available, selection, options, engineVersion: ENGINE_VERSION });
+    if (!result.ok) return { error: tt('app.rulesErrors', { n: result.report.errors }) };
+    return { ruleset: result.ruleset, text: { ...src.engineText, ...result.ruleset.text }, src };
+  }
+  async function versions() {
+    const src = await sources();
+    return Object.fromEntries(Object.entries(src.available).map(([id, m]) => { try { return [id, JSON.parse(m.manifest).version]; } catch { return [id, null]; } }));
+  }
+
+  // ---------- Saving (hooks the game screen calls) ----------
+  function makeHooks() {
+    return {
+      async saveSlot(snap, label) {
+        try {
+          const save = createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal });
+          await saveToSlot(storage, `s${Date.now().toString(36)}`, save);
+          refreshTitle();
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, message: e instanceof SaveTooBigError ? tt('save.tooBig') : String(e.message ?? e) };
+        }
+      },
+      async autosave(snap, label) {
+        try {
+          await autosave(storage, createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal }));
+          refreshTitle();
+        } catch (e) {
+          say(e instanceof SaveTooBigError ? tt('save.autosaveTooBig') : tt('save.autosaveFailed'));
+        }
+      },
+      exportCode(snap, label) {
+        return exportCode(createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString() }));
+      },
+      quit() { game?.destroy(); game = null; refreshTitle(); show(doc, 'title'); },
+      newGame() { game?.destroy(); game = null; refreshTitle(); actions.new(); },
+    };
+  }
+
+  async function startGame({ setup = null, resume = null, selection = ['base-ancient'], options = {}, quick = null }) {
+    const loaded = await rulesFor(selection, options);
+    if (loaded.error) { say(loaded.error); return; }
+    const sheets = await loadSheets(loaded.ruleset.skin.art);
+    game?.destroy();
+    show(doc, 'game');
+    game = createGameScreen(doc, gameScreen, {
+      ruleset: loaded.ruleset, text: loaded.text, sheets, toast: say, setup, resume, debug: params.has('debug'), hooks: makeHooks(), ...(quick ?? {}),
+    });
+    gameScreen.querySelector('#game-map').focus({ preventScroll: true });
+  }
+
+  /** Open a save: check its mods, warn about changed ones, then carry on from the snapshot. */
+  async function openSave(save) {
+    const check = modCheck(save, await versions());
+    if (check.missing.length) { say(tt('save.missingMods', { list: check.missing.join(', ') })); return false; }
+    const selection = (save.setup?.mods ?? ['base-ancient']).map((m) => String(m).split('@')[0]);
+    if (check.changed.length) say(tt('save.modsChanged', { list: check.changed.map((c) => tt('save.modChange', c)).join(', '), turn: save.snapshot.turn }));
+    await startGame({ resume: { state: save.snapshot.state, log: save.log, journal: save.recorder?.journal ?? null }, selection, options: save.setup?.modOptions ?? {} });
+    return true;
+  }
+
+  // ---------- Title, Load and Import ----------
+  function refreshTitle() {
+    const btn = doc.querySelector('[data-action="continue"]');
+    const latest = latestSave(storage);
+    btn.disabled = !latest;
+    btn.title = latest ? latest.label : '';
+  }
+
+  function renderLoad() {
+    const list = doc.querySelector('[data-field="save-list"]');
+    const saves = listSaves(storage);
+    if (!saves.length) { list.replaceChildren(el(doc, 'li', { class: 'muted' }, tt('load.none'))); return; }
+    list.replaceChildren(...saves.map((entry) => el(doc, 'li', { class: 'save-item', dataset: { save: entry.id } },
+      el(doc, 'div', { class: 'save-info' },
+        el(doc, 'strong', {}, entry.label || entry.id),
+        el(doc, 'span', { class: 'small muted' }, tt(entry.kind === 'autosave' ? 'load.autosave' : 'load.saved', { when: new Date(entry.savedAt).toLocaleString(), kb: Math.ceil((entry.bytes ?? 0) / 1000) }))),
+      el(doc, 'div', { class: 'end-actions' },
+        el(doc, 'button', { type: 'button', class: 'btn small primary', dataset: { loadSave: entry.id }, onclick: async () => { const s = await loadSave(storage, entry).catch(() => null); if (s) await openSave(s); else say(tt('load.broken')); } }, tt('load.load')),
+        el(doc, 'button', { type: 'button', class: 'btn small', dataset: { exportSave: entry.id }, onclick: async (e) => {
+          const s = await loadSave(storage, entry).catch(() => null);
+          if (!s) return;
+          const li = e.target.closest('li');
+          li.querySelector('.code-wrap')?.remove();
+          li.append(codeBox(doc, engineText, await exportCode(s), `atlas-turn-${entry.turn}.txt`));
+        } }, tt('load.export')),
+        el(doc, 'button', { type: 'button', class: 'btn small', dataset: { deleteSave: entry.id }, onclick: (e) => {
+          const b = e.target.closest('button');
+          if (b.dataset.confirm !== '1') { b.dataset.confirm = '1'; b.textContent = tt('load.reallyDelete'); return; }
+          deleteSave(storage, entry);
+          renderLoad();
+          refreshTitle();
+        } }, tt('load.delete'))))));
+  }
+
+  const importStatus = (msg, cls = 'warn') => doc.querySelector('[data-field="import-status"]').replaceChildren(el(doc, 'p', { class: cls }, msg));
+  doc.querySelector('[data-field="import-file"]').addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (file) doc.querySelector('[data-field="import-code"]').value = (await file.text()).trim();
+  });
+
+  // ---------- Setup ----------
+  async function openSetup() {
+    const loaded = await rulesFor(['base-ancient']);
+    if (loaded.error) { say(loaded.error); return; }
+    const { ruleset, text, src } = loaded;
+    const manifests = Object.fromEntries(Object.entries(src.available).map(([id, m]) => { try { return [id, JSON.parse(m.manifest)]; } catch { return [id, {}]; } }));
+    const devIds = new Set(src.index.mods.filter((m) => m.dev).map((m) => m.id));
+    const mods = Object.values(manifests).filter((m) => m.type === 'tweak' && !devIds.has(m.id));
+    setupCfg ??= defaultSetup(ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous: readLastSetup() });
+    const host = doc.querySelector('[data-field="setup-body"]');
+    const draw = () => renderSetup(doc, host, {
+      ruleset, text, mods, cfg: setupCfg, newSeed, limit: { maxAis: ruleset.tuning?.setup?.maxAis ?? 11 },
+      onBack: () => { setupCfg = null; show(doc, 'title'); },
+      onPickFaction: (cfg) => {
+        returnTo = 'setup';
+        show(doc, 'pick');
+        showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, (civ) => { cfg.faction = civ; returnTo = 'title'; show(doc, 'setup'); draw(); });
+      },
+      onStart: async (cfg) => {
+        const { setup, selection, options } = toSetup(ruleset, cfg, { manifests, text });
+        rememberSetup(cfg);
+        setupCfg = null;
+        await startGame({ setup, selection, options });
+      },
+    });
+    draw();
+    show(doc, 'setup');
+  }
+  function readLastSetup() {
+    try {
+      const s = JSON.parse(storage.getItem('atlas:lastSetup') ?? 'null');
+      return s && typeof s === 'object' ? s : null;
+    } catch { return null; }
+  }
+  function rememberSetup(cfg) {
+    const { seed: _seed, ...rest } = cfg;
+    try { storage.setItem('atlas:lastSetup', JSON.stringify(rest)); } catch { /* a nicety */ }
+  }
 
   const actions = {
     async new() {
-      const src = await sources();
-      const { ruleset, ok, report } = loadRuleset({ available: src.available, selection: ['base-ancient'], engineVersion: ENGINE_VERSION });
-      if (!ok) { toast(doc, `${report.errors} errors in the rules`); return; }
-      const text = { ...src.engineText, ...ruleset.text };
-      const params = new URLSearchParams(doc.defaultView.location.search);
-      const start = async (faction) => {
-        const sheets = await loadSheets(ruleset.skin.art);
-        game?.destroy();
-        show(doc, 'game');
-        const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
-        game = createGameScreen(doc, gameScreen, { ruleset, text, sheets, seed, faction, debug: params.has('debug'), toast: (m) => toast(doc, m) });
-        gameScreen.querySelector('#game-map').focus({ preventScroll: true });
-      };
-      if (params.has('faction') && ruleset.factions[params.get('faction')]) { await start(params.get('faction')); return; }
-      show(doc, 'pick');
-      showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, start);
+      await sources();
+      // ?faction=<id> skips setup with a quick default game (used by the browser tests and for quick checks).
+      if (params.has('faction')) {
+        const loaded = await rulesFor(['base-ancient']);
+        if (loaded.ruleset?.factions?.[params.get('faction')]) {
+          const seed = params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed();
+          await startGame({ quick: { seed, faction: params.get('faction') } });
+          return;
+        }
+      }
+      await openSetup();
     },
+    async continue() {
+      await sources();
+      const latest = latestSave(storage);
+      if (!latest) return;
+      const save = await loadSave(storage, latest).catch(() => null);
+      if (save) await openSave(save); else say(tt('load.broken'));
+    },
+    async load() { await sources(); renderLoad(); show(doc, 'load'); },
+    async import() { await sources(); doc.querySelector('[data-field="import-status"]').replaceChildren(); show(doc, 'import'); },
+    async 'import-go'() {
+      const code = doc.querySelector('[data-field="import-code"]').value.trim();
+      if (!code) { importStatus(tt('import.empty')); return; }
+      let save;
+      try { save = await importCode(code); } catch (e) { importStatus(tt('import.bad', { problem: String(e.message ?? e) })); return; }
+      importStatus(tt('import.ok', { label: save.label }), 'ok');
+      await openSave(save);
+    },
+    settings() { applySettings(); show(doc, 'settings'); },
     async mods() {
       show(doc, 'mods');
       if (!modManager) {
@@ -80,17 +298,20 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       }
       modManager.render();
     },
-    back() { show(doc, 'title'); },
+    back() {
+      if (!doc.getElementById('pick').hidden && returnTo === 'setup') { returnTo = 'title'; show(doc, 'setup'); return; }
+      show(doc, 'title');
+    },
   };
 
   doc.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
-    if (!btn || btn.disabled) return;
-    if (btn.dataset.say) { toast(doc, btn.dataset.say); return; }
+    if (!btn || btn.disabled || !gameScreen.hidden && gameScreen.contains(btn)) return;
+    if (btn.dataset.say) { say(btn.dataset.say); return; }
     actions[btn.dataset.action]?.();
   });
 
-  // Keyboard extras: arrow keys move through a menu, Escape leaves the Mods screen.
+  // Keyboard extras: arrow keys move through a menu, Escape leaves a side screen.
   doc.addEventListener('keydown', (e) => {
     const menu = e.target.closest?.('[data-menu]');
     if (menu && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
@@ -99,10 +320,12 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       const next = buttons[(i + (e.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length];
       next.focus();
       e.preventDefault();
-    } else if ((!modsScreen.hidden || !doc.getElementById('pick').hidden) && e.key === 'Escape') {
+    } else if (e.key === 'Escape' && ['mods', 'pick', 'load', 'import', 'settings'].some((id) => !doc.getElementById(id).hidden)) {
       actions.back();
     }
   });
 
+  applySettings();
+  refreshTitle();
   show(doc, 'title');
 }

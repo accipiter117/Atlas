@@ -10,6 +10,9 @@ test('faction picker, faction card, a builder farms, the drawer shows buildings 
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto('/?seed=42');
   await page.getByRole('button', { name: 'New game' }).click();
+  // The setup screen: a Small map with 3 rivals (Quick preset), then see the faction cards.
+  await page.locator('[data-preset="quick"]').click();
+  await page.locator('[data-action="see-cards"]').click();
   await expect(page.locator('.faction-card')).toHaveCount(8);
   for (const card of await page.locator('.faction-card').all()) {
     await expect(card.locator('.trait').first()).not.toBeEmpty();
@@ -17,6 +20,8 @@ test('faction picker, faction card, a builder farms, the drawer shows buildings 
   }
   await page.screenshot({ path: `test-results/factions-${info.project.name}.png`, fullPage: true });
   await page.locator('[data-pick="rome"]').click();
+  await expect(page.locator('#setup select[name="faction"]')).toHaveValue('rome');
+  await page.locator('[data-action="start-game"]').click();
   await page.waitForFunction(() => window.__atlasGame);
   await expect(page.locator('[data-action="faction"]')).toHaveText('Rome');
   await page.locator('[data-action="faction"]').click();
