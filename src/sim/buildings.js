@@ -41,7 +41,7 @@ export function buildingProblem(state, ruleset, city, id, kind) {
   if (kind === 'building' && def.replaces && hasBuilding(ruleset, city, def.replaces)) return 'built';
   if (req.capital && !city.capital) return 'notCapital';
   if (req.tech && !knows(state, city.faction, req.tech)) return 'needsTech';
-  if (req.civic) return 'needsCivic';
+  if (req.civic && !knows(state, city.faction, req.civic, 'civics')) return 'needsCivic';
   for (const b of req.buildings ?? []) if (!hasBuilding(ruleset, city, b)) return 'needsBuilding';
   for (const p of req.projects ?? []) if (!(state.projects?.[city.faction] ?? []).includes(p)) return 'needsProject';
   if (req.nearTerrain && !nearTerrain(state, ruleset, city, req.nearTerrain)) return 'needsTerrain';

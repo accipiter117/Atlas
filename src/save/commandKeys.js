@@ -12,7 +12,7 @@ const TYPES = {
   setFocus: 'SF', lockTile: 'LT', unlockTile: 'UT', buyTile: 'BT', attack: 'AT', cityAttack: 'CA',
   resolveBattle: 'RB', autoResolveBattle: 'AB', captureChoice: 'CC', promote: 'PR',
   setResearch: 'SR', queueResearch: 'QR', declareWar: 'DW', setGovernment: 'SG', setPolicy: 'SY',
-  choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL',
+  choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL', startTradeRoute: 'TR',
 };
 const FIELDS = {
   type: 'T', faction: 'F', unit: 'U', to: 'D', city: 'C', item: 'I', tile: 'L', target: 'G',

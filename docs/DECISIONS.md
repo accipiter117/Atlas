@@ -192,6 +192,16 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **Two leaders lean religious** (Hatshepsut and Boudica), so the religious path is tried; without them no AI founded a religion in trial games.
 - **L toggles the religion lens.** Its pips sit above the city banner so units in the city do not hide them.
 
+## Phase 14
+
+- **The trader becomes the route.** It leaves the map while the route runs (it cannot be attacked on the way) and comes back to its home city when the route ends, ready to be sent again. A city can start at most 3 routes (`tuning.trade.routesPerCity`), never two to the same city.
+- **Land first:** a route goes by land when a land path of 15 hexes or fewer exists (ignoring units), otherwise by sea when both cities touch water and a water path of 30 or fewer exists. Roads are laid along land routes the moment they start.
+- **Destinations:** any of your cities, or a city of a faction you have met and are not at war with. War with the destination's owner ends the route at your next turn.
+- **perResource** in `trade.json` counts the kinds of improved luxury and strategic resource the destination city works.
+- **Religion along routes:** each end of a route presses its majority religion on the other at full strength (`tuning.trade.religiousPressureShare`), however far apart they are.
+- **Resource deals now transfer** (the plan's "resource deal transfers amenities"): this changes the phase 12 rule, where the giver kept its own copy. The giver keeps the resource only if it works another copy; the AI's price for giving reflects that (`dealValues.spareShare` and `lastShare`).
+- **The traders' routes shown to you** are your own and those ending in your cities.
+
 ## Later
 
 - Nothing yet.

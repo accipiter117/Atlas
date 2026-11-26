@@ -1,0 +1,9 @@
+{
+  "contentType": "trade",
+  "entries": [
+    {"id": "domestic_land", "nameKey": "trade.domestic_land.name", "kind": "domestic", "domain": "land", "originYields": {"food": 2, "production": 1}, "destinationYields": {"food": 1}, "perResource": {"production": 0.5}},
+    {"id": "domestic_sea", "nameKey": "trade.domestic_sea.name", "kind": "domestic", "domain": "sea", "originYields": {"food": 3, "production": 1}, "destinationYields": {"food": 1}, "perResource": {"food": 0.5}},
+    {"id": "foreign_land", "nameKey": "trade.foreign_land.name", "kind": "foreign", "domain": "land", "originYields": {"gold": 3, "science": 1}, "destinationYields": {"gold": 1}, "perResource": {"gold": 1}},
+    {"id": "foreign_sea", "nameKey": "trade.foreign_sea.name", "kind": "foreign", "domain": "sea", "originYields": {"gold": 4, "science": 1}, "destinationYields": {"gold": 1, "science": 1}, "perResource": {"gold": 1}}
+  ]
+}

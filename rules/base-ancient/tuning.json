@@ -143,7 +143,10 @@
     "trade": {
       "landRange": 15,
       "seaRange": 30,
-      "routeTurns": 30
+      "routeTurns": 30,
+      "routesPerCity": 3,
+      "religiousPressureShare": 1.0,
+      "roads": true
     },
     "espionage": {
       "capBase": 1,
@@ -186,7 +189,9 @@
         "minAllianceOpinion": 10,
         "minPactOpinion": 5,
         "minOpenBordersOpinion": -5,
-        "peaceOpinionShare": 0.25
+        "peaceOpinionShare": 0.25,
+        "spareShare": 0.15,
+        "lastShare": 0.8
       },
       "agenda": {
         "largeEmpireRatio": 1.0,

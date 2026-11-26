@@ -151,6 +151,14 @@
       }
     },
     {
+      "id": "trade",
+      "planner": "trade",
+      "weights": {
+        "tradersPerCity": 0.5,
+        "value": 9
+      }
+    },
+    {
       "id": "thresholds",
       "planner": "thresholds",
       "weights": {

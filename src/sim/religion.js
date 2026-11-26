@@ -119,10 +119,20 @@ export function religionRound(state, ruleset, events) {
   for (const c of cities) fit(c);
   const sources = cities.map((c) => ({ c, r: majorityOf(c), p: pressureFrom(state, ruleset, c), hex: tileHex(state.map, c.tile) })).filter((x) => x.r);
   if (!sources.length) return;
+  // Trade routes carry each end's religion to the other, whatever the distance (phase 14).
+  const routeIn = {};
+  const share = ruleset.tuning?.trade?.religiousPressureShare ?? 1;
+  for (const r of state.trade?.routes ?? []) {
+    for (const [from, to] of [[r.origin, r.dest], [r.dest, r.origin]]) {
+      const src = sources.find((x) => x.c.id === from);
+      if (src && state.cities[to]) (routeIn[to] ??= []).push({ r: src.r, p: src.p * share });
+    }
+  }
   for (const target of cities) {
     const th = tileHex(state.map, target.tile);
     const incoming = {};
     for (const s of sources) if (hexDistance(s.hex, th) <= range) incoming[s.r] = (incoming[s.r] ?? 0) + s.p;
+    for (const x of routeIn[target.id] ?? []) incoming[x.r] = (incoming[x.r] ?? 0) + x.p;
     target.pressure ??= {};
     for (const [r, p] of Object.entries(incoming)) target.pressure[r] = (target.pressure[r] ?? 0) + p;
     const before = majorityOf(target);

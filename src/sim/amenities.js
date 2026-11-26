@@ -8,7 +8,7 @@
 
 import { sumHook, buildingDef, effectsFor } from './effects/index.js';
 import { citiesOf } from './cities.js';
-import { wearinessAmenities, receivedResources } from './diplomacy.js';
+import { wearinessAmenities, receivedResources, givenResources } from './diplomacy.js';
 
 /** Luxury kinds a faction has improved somewhere in its land. */
 export function luxuriesOf(state, ruleset, factionId) {
@@ -22,7 +22,16 @@ export function luxuriesOf(state, ruleset, factionId) {
     if (res?.class !== 'luxury' || map.improvement?.[i] < 0) continue;
     if (map.improvementIds[map.improvement[i]] === res.improvement) kinds.add(id);
   }
-  // Luxuries received in deals count too.
+  // A luxury given away in a deal leaves only if it was the last copy; luxuries received count too.
+  for (const id of new Set(givenResources(state, factionId))) {
+    if (!kinds.has(id)) continue;
+    let copies = 0;
+    for (let i = 0; i < state.owner.length; i += 1) {
+      const o = state.owner[i];
+      if (o !== null && state.cities[o]?.faction === factionId && map.resource[i] >= 0 && map.resourceIds[map.resource[i]] === id && map.improvement?.[i] >= 0 && map.improvementIds[map.improvement[i]] === ruleset.resources[id].improvement) copies += 1;
+    }
+    if (copies - givenResources(state, factionId).filter((r) => r === id).length <= 0) kinds.delete(id);
+  }
   for (const id of receivedResources(state, factionId)) if (ruleset.resources[id]?.class === 'luxury') kinds.add(id);
   return [...kinds].sort();
 }

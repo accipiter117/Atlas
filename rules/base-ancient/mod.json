@@ -36,6 +36,7 @@
     "diplomacy.json",
     "beliefs.json",
     "religions.json",
+    "trade.json",
     "victories.json",
     "focuses.json",
     "ui/advice.json",

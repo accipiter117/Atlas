@@ -400,3 +400,12 @@ body {
 .rel-beliefs { flex-basis: 100%; padding-left: 22px; }
 .religion-tab input[type="text"], .religion-tab select { min-height: var(--target); font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
 .game-yields .lens.on { font-weight: 700; color: var(--accent); }
+
+/* Phase 14: trade. */
+.trade-dests { display: grid; gap: 6px; margin-bottom: 8px; grid-column: 1 / -1; }
+.actions .muted.small { grid-column: 1 / -1; }
+.trade-dests h4 { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); }
+.trade-dest { display: grid; gap: 1px; }
+.trade-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.trade-list li { display: grid; gap: 2px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--panel); }
+.trade-dest .small { font-size: 13px; }

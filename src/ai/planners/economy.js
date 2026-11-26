@@ -4,6 +4,7 @@
 // lies unimproved, defenders when a city has none (more under threat, and an
 // army at war), buildings and wonders by what they would add here.
 
+import { wantedTraders } from './trade.js';
 import { buildOptions, itemCost, cityYields, adjacencyBonus, buildingDef } from '../../sim/index.js';
 import { categoryWeight, weightsOf, dist } from '../evaluate.js';
 
@@ -37,6 +38,13 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
         if (builders >= Math.min(w.maxBuilders ?? 4, Math.ceil(myCities.length * (w.builderPerCities ?? 1.5) / 2))) continue;
         value = 7 * categoryWeight(ruleset, view, memory, 'builder');
         reasonKey = 'ai.reason.builder';
+      } else if ((def.tags ?? []).includes('trader')) {
+        // Traders while routes are short of the wanted number (each route was a trader).
+        const routes = (view.trade?.routes ?? []).filter((r) => r.faction === view.me).length;
+        const traders = mine.filter((u) => isTag(u, 'trader')).length;
+        if (routes + traders >= wantedTraders(ruleset, view)) continue;
+        value = (weightsOf(ruleset, 'trade').value ?? 9) * categoryWeight(ruleset, view, memory, 'gold');
+        reasonKey = 'ai.reason.trader';
       } else if (def.class === 'recon') {
         // One scout while most of the map is unknown.
         const known = view.fog.filter((f) => f !== 0).length / view.fog.length;

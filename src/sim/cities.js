@@ -13,7 +13,7 @@ import { tileYields, factionEffects, YIELD_NAMES } from './yields.js';
 import { effectsFor, sumHook, runHook, buildingDef } from './effects/index.js';
 import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildings.js';
 import { knows, speedMultiplier } from './progression.js';
-import { receivedResources } from './diplomacy.js';
+import { receivedResources, givenResources } from './diplomacy.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -147,13 +147,15 @@ export function hasResource(state, ruleset, factionId, resourceId) {
   if (!want || !map.improvement) return false;
   if (want.revealedBy && !knows(state, factionId, want.revealedBy)) return false;
   if (receivedResources(state, factionId).includes(resourceId)) return true;
+  // Copies given away in deals are not yours to use (phase 14).
+  let copies = -givenResources(state, factionId).filter((r) => r === resourceId).length;
   for (let i = 0; i < state.owner.length; i += 1) {
     const o = state.owner[i];
     if (o === null || state.cities[o]?.faction !== factionId) continue;
     if (map.resource[i] < 0 || map.resourceIds[map.resource[i]] !== resourceId) continue;
-    if (map.improvement[i] >= 0 && map.improvementIds[map.improvement[i]] === want.improvement) return true;
+    if (map.improvement[i] >= 0 && map.improvementIds[map.improvement[i]] === want.improvement) copies += 1;
   }
-  return false;
+  return copies > 0;
 }
 
 /** Can this city build this item right now? */
@@ -164,7 +166,7 @@ export function canBuild(state, ruleset, city, item) {
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;
-    if (def.requires?.civic) return false; // civics arrive in phase 11
+    if (def.requires?.civic && !knows(state, city.faction, def.requires.civic, 'civics')) return false;
     if (def.requires?.building && !city.buildings.includes(def.requires.building)) return false;
     if (def.requires?.resource && !hasResource(state, ruleset, city.faction, def.requires.resource)) return false;
     // A faction's unique unit hides the unit it replaces.

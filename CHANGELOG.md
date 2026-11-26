@@ -1,5 +1,17 @@
 # Changelog
 
+## Phase 14: Trade
+
+What you can try: research the Foreign Trade civic and build a trader. Select it in one of your cities and its card lists every city it can reach, best first, with what your city gets and what they get. Tap one: the trader becomes a 30-turn route, a road is laid along the way at once, and both ends gain (domestic routes bring food and production, foreign ones gold and science, plus a little for each resource the destination works; a market adds 2 gold to foreign routes). When the route ends the trader comes home to be sent again; a war with the destination ends it early. Routes also carry your religion to the far city. Empire (E) now has a Trade tab with every route and its yields each way. In Diplomacy, a spare luxury (one you have twice) is worth offering to a rival for gold per turn; give away your only copy and you lose its amenity.
+
+- `trade.js` with the route tables in `trade.json`: traders, `startTradeRoute`, 15 hexes by land and 30 by sea between coastal cities, 30-turn routes, yields to both ends, roads along land routes, routes ending at war, and religious pressure along routes.
+- The trader unit (after Foreign Trade); the market's `tradeRouteYield` effect (a new handler).
+- Resource deals now really hand the resource over: the giver loses the amenity (or the units it allows) unless it has a spare copy, and the AI values a spare copy far below its last one.
+- The trader's destination list, the Trade tab, toasts for routes starting, ending and arriving.
+- The AI's trade planner.
+- Fixed: units that need a civic (the trader is the first) could never be built, because of a leftover check from phase 6; buildings needing a civic now check it properly too.
+- Tests: 210 unit tests (route ranges by land and sea, yields by table, roads along the path, 30-turn expiry and war ending routes, religion along routes, luxuries changing hands) and 48 browser tests (a trader's destinations with yields each way, the road, the Trade tab).
+
 ## Phase 13: Religion
 
 What you can try: faith now has a purpose. Build a shrine; at 25 faith (scaled by game speed, so less at Quick) the advice line offers a pantheon: tap Faith in the top bar (or E, then Religion) and choose one, unique in the world. At 200 faith, with a shrine or temple in a city, found a religion there: pick one of eight, give it your own name if you like, and choose a follower belief (it helps every city that follows your religion, whoever owns it) and a founder belief (yours alone, some paying per follower city). Your holy city converts at once, and every city spreads its religion to cities within 10 hexes each turn. Press L (or Religion lens) to see coloured pips above each city, one per citizen. In a city that follows your religion, the city drawer offers a missionary for faith: walk it next to any city and Preach to convert two people (three uses). If most people in more than half of every faction's cities follow your religion, you win a religious victory. Only half as many religions as factions can exist, so do not wait too long.

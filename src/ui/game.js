@@ -19,6 +19,7 @@ import { renderTrees } from './trees.js';
 import { renderEmpire } from './empire.js';
 import { renderDiplomacy } from './diplomacy.js';
 import { renderReligionTab, religionName } from './religionTab.js';
+import { renderTradeTab, renderTraderList } from './tradeTab.js';
 import { renderJournal } from './journal.js';
 import { renderVictory, renderEnd } from './victoryPanel.js';
 import { renderGameMenu, codeBox } from './gameMenu.js';
@@ -212,6 +213,13 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
         w.terminate();
         return { direct: fingerprint(direct.state), worker: fingerprint(reply.state), commands: [direct.commands.length, reply.commands?.length] };
       },
+      /** Reveal the whole map to you (as the plan's developer page does). */
+      reveal() {
+        const next = JSON.parse(JSON.stringify(state));
+        next.fog[human] = next.fog[human].map((f) => Math.max(f, 1));
+        state = next;
+        refresh();
+      },
       /** Add faith to your stock (religion tests). */
       faith(n) {
         const next = JSON.parse(JSON.stringify(state));
@@ -276,6 +284,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const netGold = () => myCities().reduce((n, c) => n + yieldsOf(c).total.gold, 0) - upkeepOf(knownWorld(v), ruleset, human).total;
   const goldTurnsLeft = () => { const net = netGold(); return net < 0 ? Math.floor((v.stocks?.gold ?? 0) / -net) + 1 : Infinity; };
   const techName = (id) => ruleset.text[ruleset.techs?.[id]?.nameKey] ?? id;
+  const cityNameOf = (id) => v.cities.find((c) => c.id === id)?.name ?? state.cities?.[id]?.name ?? '';
   const civicName = (id) => ruleset.text[ruleset.civics?.[id]?.nameKey] ?? id;
   const civName = (factionId) => { const f = v.factions.find((x) => x.id === factionId); return ruleset.text[ruleset.factions?.[f?.civ]?.nameKey] ?? f?.name ?? ''; };
   const starving = () => myCities().filter((c) => yieldsOf(c).surplus < 0);
@@ -380,6 +389,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'religionFounded') toast(tt('game.religionFounded', { faction: civName(e.faction), religion: e.name || religionName(ruleset, v, e.religion) }));
       if (e.type === 'cityConverted' && e.faction === human && e.religion) toast(tt('game.cityConverted', { city: e.name, religion: religionName(ruleset, v, e.religion) }));
       if (e.type === 'religionSpread' && e.faction === human) toast(tt('game.religionSpread', { n: e.converted, city: e.name }));
+      if (e.type === 'tradeRouteStarted' && e.faction === human) toast(tt('game.routeStarted', { from: cityNameOf(e.origin), to: cityNameOf(e.dest) }));
+      if (e.type === 'tradeRouteStarted' && e.faction !== human && e.destFaction === human) toast(tt('game.routeToYou', { faction: civName(e.faction), to: cityNameOf(e.dest) }));
+      if (e.type === 'tradeRouteEnded' && e.faction === human) toast(tt('game.routeEnded', { from: cityNameOf(e.origin), to: cityNameOf(e.dest) }));
       if (e.type === 'civicLearned' && e.faction === human) toast(tt('game.civicLearned', { item: civicName(e.item) }));
       if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
@@ -939,6 +951,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       }
     }
     const preach = ruleset.units[u.type]?.faithOnly && u.religion ? preachTarget(world0(), u) : null;
+    const isTrader = (ruleset.units[u.type]?.tags ?? []).includes('trader');
+    if (isTrader) improve.push(renderTraderList(doc, { world: world0(), view: v, ruleset, text, unit: u, name: civName,
+      onStart: (city) => { const r = run({ type: 'startTradeRoute', faction: human, unit: u.id, city }); if (r) selectNextIdle(); } }));
     fill(actions, ...improve, ...[
       preach ? el(doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { act: 'spreadReligion' }, disabled: u.moves <= 0,
         onclick: () => { const r = run({ type: 'spreadReligion', faction: human, unit: u.id }); if (r) selectNextIdle(); } }, tt('game.action.preach', { city: preach.name })) : null,
@@ -1123,6 +1138,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     renderEmpire(doc, panel.querySelector('[data-field="panel-body"]'), {
       world, view: v, ruleset, text, pick: pickSlot, tab,
       onTab: (t2) => { pickSlot = null; openEmpire(t2); },
+      tradeTab: ruleset.trade ? () => renderTradeTab(doc, { world, view: v, ruleset, text, name: civName }) : null,
       religionTab: ruleset.beliefs ? () => renderReligionTab(doc, {
         world, view: v, ruleset, text, name: civName, form: foundForm,
         act: {

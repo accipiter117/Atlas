@@ -387,6 +387,31 @@ export function receivedResources(state, f) {
   return (state.diplomacy?.resources ?? []).filter((r) => r.to === f).map((r) => r.resource);
 }
 
+/** Resources a faction has given away in running deals (one entry per copy given). */
+export function givenResources(state, f) {
+  return (state.diplomacy?.resources ?? []).filter((r) => r.from === f).map((r) => r.resource);
+}
+
+/** How many improved copies of a resource a faction works in its land. */
+export function ownedCopies(state, ruleset, f, resourceId) {
+  const map = state.map;
+  const want = ruleset.resources?.[resourceId];
+  if (!want || !map?.improvement) return 0;
+  let n = 0;
+  for (let i = 0; i < (state.owner ?? []).length; i += 1) {
+    const o = state.owner[i];
+    if (o === null || state.cities[o]?.faction !== f) continue;
+    if (map.resource[i] < 0 || map.resourceIds[map.resource[i]] !== resourceId) continue;
+    if (map.improvement[i] >= 0 && map.improvementIds[map.improvement[i]] === want.improvement) n += 1;
+  }
+  return n;
+}
+
+/** Copies left for the faction itself: owned, less those given away. */
+export function keptCopies(state, ruleset, f, resourceId) {
+  return ownedCopies(state, ruleset, f, resourceId) - givenResources(state, f).filter((r) => r === resourceId).length;
+}
+
 /** Why a deal cannot be made (a code), or null. deal: { from, to, give: [items], get: [items] }. */
 export function dealProblem(state, ruleset, deal) {
   const { from, to } = deal;
@@ -413,7 +438,7 @@ export function dealProblem(state, ruleset, deal) {
     if (x.type === 'goldPerTurn' && (!Number.isInteger(x.amount) || x.amount <= 0 || x.amount > 100)) return 'badAmount';
     if (x.type === 'resource') {
       if (!ruleset.resources?.[x.resource] || ruleset.resources[x.resource].class === 'bonus') return 'badItem';
-      if (!ownsResource(state, ruleset, x.giver, x.resource)) return 'noResource';
+      if (keptCopies(state, ruleset, x.giver, x.resource) <= 0) return 'noResource';
       if (ownsResource(state, ruleset, x.taker, x.resource) || receivedResources(state, x.taker).includes(x.resource)) return 'alreadyHasResource';
     }
     if (TREATY_ITEMS.has(x.type)) {
@@ -454,7 +479,10 @@ export function evaluateDeal(state, ruleset, holder, deal, { opinion = null } = 
     if (x.type === 'goldPerTurn') return sign * x.amount * (V.goldPerTurnTurns ?? 30) * (V.goldPerTurnDiscount ?? 0.7) * (V.perGold ?? 1);
     if (x.type === 'resource') {
       const kind = ruleset.resources?.[x.resource]?.class === 'strategic' ? 'strategic' : 'luxury';
-      return sign > 0 ? (V[kind] ?? 40) : -(V[kind] ?? 40) * 0.3;
+      if (sign > 0) return V[kind] ?? 40;
+      // Giving away a spare copy (one you have twice) costs little; your last one costs its amenity or units.
+      const spare = keptCopies(state, ruleset, x.giver, x.resource) >= 2;
+      return -(V[kind] ?? 40) * (spare ? (V.spareShare ?? 0.15) : (V.lastShare ?? 0.8));
     }
     return 0;
   };

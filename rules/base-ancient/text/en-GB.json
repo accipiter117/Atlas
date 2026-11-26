@@ -145,7 +145,7 @@
     "building.library.name": "Library",
     "building.library.text": "+2 science, and +1 science for every 2 mountains in the city's land. One scholar slot.",
     "building.market.name": "Market",
-    "building.market.text": "+3 gold. One merchant slot.",
+    "building.market.text": "+3 gold. One merchant slot. Foreign trade routes from this city pay +2 gold.",
     "building.lighthouse.name": "Lighthouse",
     "building.lighthouse.text": "+1 food and +1 gold; sea units built here cost less. Coastal cities only.",
     "building.water_mill.name": "Water mill",
@@ -707,6 +707,15 @@
     "ai.reason.toPreach": "A missionary walks to {city}.",
     "advice.pantheon": "You have the faith for a pantheon: choose one.",
     "advice.foundReligion": "You can found a religion: choose its name and beliefs.",
-    "advice.religion.do": "Open the Religion tab"
+    "advice.religion.do": "Open the Religion tab",
+    "trade.domestic_land.name": "Domestic land route",
+    "trade.domestic_sea.name": "Domestic sea route",
+    "trade.foreign_land.name": "Foreign land route",
+    "trade.foreign_sea.name": "Foreign sea route",
+    "unit.trader.name": "Trader",
+    "unit.trader.text": "Sets up a trade route from its city to another, yours or a rival's, for 30 turns: both ends gain, and a road is laid along the way.",
+    "ai.reason.tradeRoute": "A trader set up a route to {city}.",
+    "ai.reason.toTradeCity": "A trader heads for {city} to start a route.",
+    "ai.reason.trader": "{city} trains a trader: trade routes pay."
   }
 }

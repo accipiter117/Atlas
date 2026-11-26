@@ -9,7 +9,7 @@
 import { line } from '../core/hex.js';
 import { neighbourCache, tileHex, tileIndex } from './map.js';
 import { factionUnits, unitDef, promotionSum } from './units.js';
-import { sumHook } from './effects/index.js';
+import { sumHook, effectsFor } from './effects/index.js';
 
 export const UNEXPLORED = 0;
 export const EXPLORED = 1;
@@ -22,9 +22,9 @@ function blocksSight(state, ruleset, t) {
   return f?.blocksSight === true;
 }
 
-export function sightRange(state, ruleset, unit) {
+export function sightRange(state, ruleset, unit, effects = undefined) {
   const base = unitDef(ruleset, unit)?.sight ?? ruleset.tuning?.sight?.default ?? 2;
-  const bonus = (state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }) : 0) + promotionSum(ruleset, unit, 'sightBonus');
+  const bonus = (state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }, effects) : 0) + promotionSum(ruleset, unit, 'sightBonus');
   return base + bonus + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0);
 }
 
@@ -66,8 +66,11 @@ export function updateVisibility(state, ruleset, factionId) {
     state.fog[factionId] = fog;
   }
   for (let i = 0; i < n; i += 1) if (fog[i] === VISIBLE) fog[i] = EXPLORED;
-  for (const u of factionUnits(state, factionId)) {
-    for (const t of tilesInSight(state, ruleset, u.tile, sightRange(state, ruleset, u))) fog[t] = VISIBLE;
+  // The faction's effects once, not once per unit (phase 14 speed work).
+  const units = factionUnits(state, factionId);
+  const effects = units.length && state.factions ? effectsFor(state, ruleset, factionId) : undefined;
+  for (const u of units) {
+    for (const t of tilesInSight(state, ruleset, u.tile, sightRange(state, ruleset, u, effects))) fog[t] = VISIBLE;
   }
   // Cities see around themselves, and a faction always sees its own land.
   const cityRange = ruleset.tuning?.sight?.city ?? 2;

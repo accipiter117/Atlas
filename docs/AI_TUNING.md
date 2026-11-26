@@ -180,6 +180,30 @@ religious (Hatshepsut 1.4, Boudica 1.3; everyone else 0.8).
 - Faction wins stay even (Egypt 7 of 24, Rome 6 of 22, Persia 6 of 26, Britons 3 of 15).
 - Large 8-faction rounds at turn 200: 427 to 651 ms in Node.
 
+### 2026-11-26: phase 14, trade (ai-v9, 40 games, seeds 1000 to 1039)
+
+A rules change, compared on the same 40 seeds: phase 13 (ai-v8) against phase 14 (ai-v9, with
+the trade planner: traders while routes are short of half the cities, and each trader sent on
+the best route by category weights; weights in `ai/weights.json` "trade").
+
+| Line | Before (ai-v8) | After (ai-v9) |
+| --- | --- | --- |
+| Science wins | 12 (30%) | 17 (43%) |
+| Religious wins | 15 (38%) | 12 (30%) |
+| Score wins | 13 (33%) | 11 (28%) |
+| Conquest wins | 0 | 0 |
+| Average victory turn | 195 | 192 |
+| Most wins (faction) | Egypt 7 of 24 | Carthage 8 of 17 (47%, within twice the average) |
+| Errors | 0 | 0 |
+
+- In sample games each AI runs about 4 to 15 routes at a time, domestic and foreign, renewing
+  them every 30 turns.
+- A leftover check from phase 6 had stopped every unit that needs a civic from being built; it
+  was found and removed while testing traders.
+- Large 8-faction rounds at turn 200: about 0.6 to 1.2 s in Node (empires are bigger now: 54
+  cities by turn 200 against 47). Opinions are now worked out only when read, and a faction's
+  effects once per sight update, which keeps this under the 2 s target.
+
 ## Open problems
 
 - **Conquest wins 0%.** Taking every original capital in 220 Quick turns needs a sustained

@@ -9,6 +9,7 @@
 //      yieldPercent and cityYieldPercent effects and the city's amenities
 // Every effect goes through the registry in src/sim/effects.
 
+import { cityTradeYields } from './trade.js';
 import { effectsFor, yieldHook, buildingDef } from './effects/index.js';
 import { adjacencyBonus } from './buildings.js';
 import { amenitiesFor } from './amenities.js';
@@ -84,6 +85,11 @@ export function cityYields(state, ruleset, city, effects = effectsFor(state, rul
   const perSpecialist = ruleset.tuning?.specialists?.yield ?? 2;
   for (const [y, n] of Object.entries(city.specialists ?? {})) {
     if (n > 0) sources.push({ step: 2, kind: 'specialists', count: n, yields: { ...zero(), [y]: n * perSpecialist } });
+  }
+  // Trade routes starting or ending here (phase 14).
+  if (state.trade?.routes?.length) {
+    const tr = cityTradeYields(state, ruleset, city, effects);
+    if (Object.keys(tr).length) sources.push({ step: 2, kind: 'trade', yields: add(zero(), tr) });
   }
   const flat = yieldHook('cityFlat', state, ruleset, city.faction, { city }, effects);
   if (Object.keys(flat).length) sources.push({ step: 2, kind: 'effects', yields: add(zero(), flat) });

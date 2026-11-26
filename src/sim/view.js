@@ -86,15 +86,30 @@ export function view(state, factionId, ruleset = null) {
       modifiers: {},
       nextDeal: d.nextDeal,
     };
-    out.opinions = {};
-    if (ruleset) {
-      for (const f of state.factions) {
-        if (f.id === factionId || !d.met.includes(factionId < f.id ? `${factionId}|${f.id}` : `${f.id}|${factionId}`)) continue;
-        out.opinions[f.id] = { mine: opinionOf(state, ruleset, factionId, f.id), theirs: opinionOf(state, ruleset, f.id, factionId) };
-      }
-    }
+    // Worked out only when read (the AI reads them once a turn, but asks for a view after every move).
+    let opinions = null;
+    Object.defineProperty(out, 'opinions', {
+      enumerable: true,
+      get() {
+        if (!opinions) {
+          opinions = {};
+          if (ruleset) {
+            for (const f of state.factions) {
+              if (f.id === factionId || !d.met.includes(factionId < f.id ? `${factionId}|${f.id}` : `${f.id}|${factionId}`)) continue;
+              opinions[f.id] = { mine: opinionOf(state, ruleset, factionId, f.id), theirs: opinionOf(state, ruleset, f.id, factionId) };
+            }
+          }
+        }
+        return opinions;
+      },
+    });
   }
   out.wondersBuilt = { ...(state.wondersBuilt ?? {}) };
+  // Trade routes that start or end in your cities (phase 14).
+  if (state.trade) {
+    const own = new Set(Object.values(state.cities ?? {}).filter((c) => c.faction === factionId).map((c) => c.id));
+    out.trade = { routes: state.trade.routes.filter((r) => r.faction === factionId || own.has(r.dest)).map((r) => ({ ...r, path: r.path.slice() })), nextRoute: state.trade.nextRoute };
+  }
   // Pantheons and religions (founders, holy cities, beliefs) are public (phase 13).
   out.religion = state.religion ? JSON.parse(JSON.stringify(state.religion)) : null;
   // Finished projects and the winner are announced to everyone, so every view has them.
@@ -133,6 +148,7 @@ export function worldFromView(v) {
     wars: v.wars ?? [],
     diplomacy: v.diplomacy ?? undefined,
     religion: v.religion ?? undefined,
+    trade: v.trade ?? undefined,
     wondersBuilt: v.wondersBuilt ?? {}, projects: v.projects ?? {}, winner: v.winner ?? null,
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,
