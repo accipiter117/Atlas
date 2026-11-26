@@ -1,0 +1,7 @@
+- Games: 40 (small, quick speed, 4 players, mods base-ancient), seeds 1000 to 1039
+- AI: rules-dev/ai/ai-v2.json
+- Wins by victory: conquest 0 (0%), science 4 (10%), score 36 (90%)
+- Average victory turn: 219; stalled games: 0
+- Win rate by faction: britons 2/15, carthage 3/17, egypt 8/24, gaul 3/19, greece 7/18, han 6/19, persia 9/26, rome 2/22
+- Errors: 0 refused commands, 0 NaN, 0 crashes; slowest round 310 ms
+- Healthy ranges: conquest victories 0%, under 5%

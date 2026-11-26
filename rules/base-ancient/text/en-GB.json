@@ -474,6 +474,22 @@
     "wonder.atlas_of_the_world.name": "Atlas of the World",
     "wonder.atlas_of_the_world.text": "Science victory project 2 of 3: map every coast and river.",
     "wonder.voyage_beyond.name": "Voyage Beyond",
-    "wonder.voyage_beyond.text": "Science victory project 3 of 3: sail past the edge of the known world. Needs the other two projects first."
+    "wonder.voyage_beyond.text": "Science victory project 3 of 3: sail past the edge of the known world. Needs the other two projects first.",
+    "difficulty.settler.name": "Settler",
+    "difficulty.settler.summary": "You: +30% production, science, culture and gold.",
+    "difficulty.chieftain.name": "Chieftain",
+    "difficulty.chieftain.summary": "You: +20% production, science, culture and gold.",
+    "difficulty.warlord.name": "Warlord",
+    "difficulty.warlord.summary": "You: +10% production, science, culture and gold.",
+    "difficulty.prince.name": "Prince",
+    "difficulty.prince.summary": "Level ground: no bonuses for anyone.",
+    "difficulty.king.name": "King",
+    "difficulty.king.summary": "AI: +10% production, science, culture and gold; +1 warrior.",
+    "difficulty.emperor.name": "Emperor",
+    "difficulty.emperor.summary": "AI: +20% production, science, culture and gold; +1 settler, +1 warrior.",
+    "difficulty.immortal.name": "Immortal",
+    "difficulty.immortal.summary": "AI: +30% production, science, culture and gold; +1 settler, +2 warriors.",
+    "difficulty.deity.name": "Deity",
+    "difficulty.deity.summary": "AI: +40% production, science, culture and gold; +2 settlers, +2 warriors, +1 builder."
   }
 }

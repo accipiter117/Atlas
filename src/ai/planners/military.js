@@ -3,7 +3,7 @@
 // War: every few turns (from minTurnForWar), against a faction it has met,
 // when its own fighting power is at least declareWarMinStrengthRatio times
 // what it can see of theirs (bolder leaders need less), and only one war at
-// a time. Threat map: for each hex, the strength of enemy units at war with
+// a time (military.maxWars in data). Threat map: for each hex, the strength of enemy units at war with
 // it that could reach it next turn.
 
 import { atWar } from '../../sim/index.js';
@@ -28,13 +28,15 @@ export function considerWar(world, view, ruleset, memory) {
   if (view.turn < (w.minTurnForWar ?? 30) || view.turn - (memory.warCheck ?? -99) < (w.warCheckEvery ?? 5)) return null;
   memory.warCheck = view.turn;
   const others = view.factions.filter((f) => f.id !== view.me && f.alive);
-  if (others.some((f) => atWar(world, view.me, f.id))) return null;
+  const wars = others.filter((f) => atWar(world, view.me, f.id)).length;
+  if (wars >= (w.maxWars ?? 1)) return null;
   const mine = militaryPower(ruleset, view.units.filter((u) => u.faction === view.me));
   const bold = personalityOf(ruleset, view).boldness;
   const need = (th.declareWarMinStrengthRatio ?? 1.4) / Math.max(0.3, bold);
   const pathBoost = memory.path === 'conquest' || memory.path === 'sandbox' ? 0.85 : 1.15;
   let best = null;
   for (const f of others) {
+    if (atWar(world, view.me, f.id)) continue;
     const theirCities = view.cities.filter((c) => c.faction === f.id);
     if (!theirCities.length) continue; // not met
     const theirs = militaryPower(ruleset, view.units.filter((u) => u.faction === f.id)) + theirCities.length * 12;

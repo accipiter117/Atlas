@@ -1,0 +1,7 @@
+- Games: 20 (small, quick speed, 4 players, mods base-ancient), seeds 2030 to 2039, seats swapped
+- Challenger rules-dev/ai/ai-v5.json against champion ai-v2 (as committed): challenger won 11 of 20 decided games (55%); keep only above 55%
+- Wins by victory: conquest 0 (0%), science 3 (15%), score 17 (85%)
+- Average victory turn: 219; stalled games: 0
+- Win rate by faction: britons 0/10, carthage 6/10, egypt 1/8, gaul 2/18, greece 0/8, han 0/4, persia 1/8, rome 10/14
+- Errors: 0 refused commands, 0 NaN, 0 crashes; slowest round 269 ms
+- Healthy ranges: conquest victories 0%, under 5%

@@ -1,0 +1,7 @@
+{
+  "id": "ai-v5",
+  "description": "Like ai-v4, but only AIs on the conquest path wear cities down with melee and value siege engines more; everyone else plays as ai-v2.",
+  "aiWeights": {
+    "thresholds": { "weights": { "cityMeleeMinDealt": 15, "cityMeleePaths": ["conquest"] } }
+  }
+}

@@ -29,6 +29,7 @@
     "ai/personalities.json",
     "ai/weights.json",
     "leaders.json",
+    "difficulty.json",
     "victories.json",
     "focuses.json",
     "ui/advice.json",

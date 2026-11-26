@@ -47,6 +47,7 @@ export function defaultSetup(ruleset, { seed, previous = null } = {}) {
     fog: 'on',
     recordAI: 'on',
     autosave: 'every',
+    difficulty: Object.values(ruleset.difficulty ?? {}).find((d) => d.default)?.id ?? 'prince',
   };
   return previous ? { ...base, ...previous, seed } : base;
 }
@@ -73,7 +74,7 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
     autosave: cfg.autosave,
     battleMode: 'auto',
     battleModule: 'auto',
-    difficulty: 'prince',
+    difficulty: cfg.difficulty ?? 'prince',
   };
   if (cfg.turnLimit === 'none') setup.turnLimit = null;
   if (cfg.turnLimit === 'custom') setup.turnLimit = Math.max(10, Math.min(2000, Math.round(Number(cfg.customTurns) || 300)));
@@ -180,8 +181,11 @@ export function renderSetup(doc, host, { ruleset, text, mods, cfg, onStart, onBa
   const pace = group(tt('setup.group.pace'),
     row(tt('setup.speed'), select('speed', cfg.speed, Object.keys(ruleset.tuning?.speeds ?? {}).map((id) => ({ value: id, label: tt(`setup.speed.${id}`) })), (v) => { cfg.speed = v; changed(); })),
     row(tt('setup.startEra'), select('startEra', cfg.startEra, eras.map((e) => ({ value: e.id, label: say(e.nameKey, e.id) })), (v) => { cfg.startEra = v; })));
+  const levels = Object.values(ruleset.difficulty ?? {}).sort((a, b) => a.index - b.index);
+  const level = ruleset.difficulty?.[cfg.difficulty];
   const difficulty = group(tt('setup.group.difficulty'),
-    row(tt('setup.difficulty'), select('difficulty', 'prince', [{ value: 'prince', label: tt('setup.prince') }], () => {}, { disabled: true }), later(10)),
+    row(tt('setup.difficulty'), select('difficulty', cfg.difficulty, levels.map((d) => ({ value: d.id, label: say(d.nameKey, d.id) })), (v) => { cfg.difficulty = v; })),
+    el(doc, 'p', { class: 'small', dataset: { field: 'difficulty-bonus' } }, level ? say(level.summaryKey, '') : ''),
     el(doc, 'p', { class: 'small muted' }, tt('setup.princeNote')));
   const world = group(tt('setup.group.world'),
     row(tt('setup.raiders'), select('raiders', cfg.raiders, choose('setup.raidersOpt', ['off', 'on', 'raging']), (v) => { cfg.raiders = v; })),

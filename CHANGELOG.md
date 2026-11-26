@@ -1,5 +1,16 @@
 # Changelog
 
+## Phase 10: Simulator, speed and the first tuning pass
+
+What you can try: start a Standard game (a Large map with 7 rivals) and end a turn. The rivals now move in the background ("Rivals are moving..." in the advice line) while you can still pan the map, and their turns are 4 to 5 times quicker than before. The setup screen's Difficulty now works, from Settler to Deity, and shows exactly what each level gives (Emperor: AI +20% production, science, culture and gold; +1 settler, +1 warrior). On the developer page (Settings, Developer mode, then the map viewer link) open Simulation tools: Mini-simulation plays AI-only games and shows who won and how; Jump turns plays to any turn and shows how long each of the last rounds took. `docs/AI_TUNING.md` has the win tables by faction and victory type.
+
+- Speed: pathfinding no longer scans every unit on the map for every hex it considers, and each move no longer copies the map layers that never change. Games play exactly as before (same fingerprints). A Large 8-faction round at turn 200 takes about 0.2 s in Node and under 0.3 s in Chromium.
+- The rivals play in a Web Worker, with the same code as the page, and a test proves both give exactly the same game.
+- `npm run sim`: the AI against AI simulator, in parallel threads, with challenger against champion and seats swapped. `npm run perf` times Large rounds at turn 200. `npm run replay` rebuilds an exported save and names the first refused command.
+- AI tuning, kept only when the new version beats the old: rivals may now fight two wars at once (wars never end until diplomacy), and armies on the conquest path head for capitals. Three other versions lost their head-to-head batches and were reverted; all are recorded in `docs/AI_TUNING.md`.
+- Difficulty levels in `difficulty.json`, the only advantages anyone gets.
+- Tests: 176 unit tests (worker against direct play, the simulator's repeatability and seat swapping, difficulty) and 36 browser tests (the worker in Chromium, the page drawing frames while rivals move, the developer tools).
+
 ## Phase 9: Victory, setup and saves (the playable core)
 
 What you can try: press New game and you get the setup screen. Pick the Quick preset (a Small map, 3 rivals, Quick speed) or set every option yourself: map type, size, sea level, resources, world age, seed, your faction (or See the cards), each rival's faction, which victories count, the turn limit, game speed, starting era, raiders, fog of war, the AI journal and autosave. Options whose systems come later are shown greyed with the phase they arrive in. Play, and the game autosaves at the start of each of your turns. Menu saves to a named slot, exports a code (copy or download) and takes you back to the title, where Continue picks up your latest save; Load lists every save and autosave (load, export or delete), and Import code takes a pasted code or a .txt file. Press V (or Victory) to see how close everyone is to each victory. When someone wins (or you are knocked out) the end screen shows the winner, the victory, a score table, the world seed and an export button.

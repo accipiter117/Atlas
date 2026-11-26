@@ -342,7 +342,7 @@
     "setup.startEra": "Starting era",
     "setup.difficulty": "Difficulty",
     "setup.prince": "Prince (level ground)",
-    "setup.princeNote": "Prince gives nobody a bonus. Other levels and their listed AI bonuses arrive with the tuning work.",
+    "setup.princeNote": "These bonuses are the only advantages anyone gets: the computer players see and play by exactly the same rules as you.",
     "setup.raiders": "Raiders",
     "setup.raidersOpt.off": "Off",
     "setup.raidersOpt.on": "On",

@@ -2,7 +2,7 @@
 // Their systems arrive in phases 9 to 16; the schemas exist now so mods can be
 // checked against them from day one.
 
-import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields } from './fields.js';
+import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields, refs } from './fields.js';
 
 export const trade = entryType('trade', {
   kind: req(oneOf(['domestic', 'foreign'])),
@@ -36,6 +36,16 @@ export const events = entryType('events', {
   })),
   textKey: req(key()),
   choices: req(list(obj({ textKey: req(key()), effects: effects() }), { min: 1 })),
+});
+
+// Difficulty (section 9.5): the only advantages anyone gets, all listed on the setup screen.
+export const difficulty = entryType('difficulty', {
+  index: req(int(0, 20)),
+  default: bool(),
+  aiEffects: effects(),
+  humanEffects: effects(),
+  aiStartUnits: refs('units'),
+  summaryKey: req(key()),
 });
 
 export const victories = entryType('victories', {

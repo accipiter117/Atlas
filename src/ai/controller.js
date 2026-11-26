@@ -43,7 +43,10 @@ export function createAi(ruleset, factionId, memory = {}) {
     const amen = myCities.length ? amenitiesFor(world, ruleset, me) : {};
     const enemyCities = view.cities.filter((c) => c.faction !== me && (world.wars ?? []).some((w) => w.split('|').includes(c.faction) && w.split('|').includes(me)));
     const capital = myCities.find((c) => c.capital) ?? myCities[0];
-    const warTarget = enemyCities.length && capital ? enemyCities.slice().sort((a, b) => dist(view.map, a.tile, capital.tile) - dist(view.map, b.tile, capital.tile) || a.tile - b.tile)[0].tile : null;
+    // The nearest enemy city; on the conquest path, original capitals count as this many hexes nearer (data).
+    const capPull = memory.path === 'conquest' ? (mil.capitalTargetPull ?? 0) : 0;
+    const warDist = (c) => dist(view.map, c.tile, capital.tile) - (c.originalCapital ? capPull : 0);
+    const warTarget = enemyCities.length && capital ? enemyCities.slice().sort((a, b) => warDist(a) - warDist(b) || a.tile - b.tile)[0].tile : null;
 
     // Garrisons: each city keeps its nearest fighting units.
     memory.garrison ??= {};

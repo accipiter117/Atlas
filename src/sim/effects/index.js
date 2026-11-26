@@ -51,6 +51,12 @@ export function hasBuilding(ruleset, city, id) {
  * the scope it uses: the faction's trait, its leader's trait, and every
  * building and wonder in its cities (plus timed effects on a city).
  */
+/** The game's difficulty level (setup.difficulty, else the ruleset's default), or null. */
+export function difficultyOf(state, ruleset) {
+  const all = ruleset.difficulty ?? {};
+  return all[state.setup?.difficulty] ?? Object.values(all).find((d) => d.default) ?? null;
+}
+
 export function effectsFor(state, ruleset, factionId) {
   const out = [];
   const f = state.factions.find((x) => x.id === factionId);
@@ -58,6 +64,9 @@ export function effectsFor(state, ruleset, factionId) {
   for (const e of civ?.trait?.effects ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'trait', id: civ.trait.id } });
   const leader = civ?.leaders?.[0] ? ruleset.leaders?.[civ.leaders[0]] : null;
   for (const e of leader?.trait?.effects ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'leader', id: leader.trait.id } });
+  // Difficulty (section 9.5): the labelled bonuses from difficulty.json, the only advantages anyone gets.
+  const level = difficultyOf(state, ruleset);
+  for (const e of (f?.kind === 'human' ? level?.humanEffects : f?.kind === 'ai' ? level?.aiEffects : null) ?? []) out.push({ ...e, scope: e.scope ?? 'everyCity', source: { kind: 'difficulty', id: level.id } });
   for (const city of Object.values(state.cities ?? {})) {
     if (city.faction !== factionId) continue;
     for (const b of city.buildings ?? []) {

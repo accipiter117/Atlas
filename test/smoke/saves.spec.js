@@ -19,7 +19,10 @@ async function setUpQuick(page, info) {
   await expect(page.locator('select[name="mapSize"]')).toHaveValue('small');
   await expect(page.locator('select[name="ais"]')).toHaveValue('3');
   await expect(page.locator('select[name="speed"]')).toHaveValue('quick');
-  await expect(page.locator('select[name="difficulty"]')).toBeDisabled();
+  await expect(page.locator('select[name="difficulty"]')).toHaveValue('prince');
+  await page.locator('select[name="difficulty"]').selectOption('emperor');
+  await expect(page.locator('[data-field="difficulty-bonus"]')).toContainText('+1 settler');
+  await page.locator('select[name="difficulty"]').selectOption('prince');
   await expect(page.locator('#setup')).toContainText('Coming in phase');
   await page.locator('select[name="faction"]').selectOption('greece');
   if (info) await page.screenshot({ path: `test-results/setup-${info.project.name}.png`, fullPage: true });

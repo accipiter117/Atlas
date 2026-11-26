@@ -25,6 +25,40 @@
     <span class="fingerprint">map <span data-field="hash"></span></span>
     <span class="hint">Drag or use arrow keys to pan; wheel, pinch or + and - to zoom.</span>
   </div>
+  <details class="dev-tools" data-field="tools">
+    <summary>Simulation tools</summary>
+    <div class="dev-tools-body">
+      <section>
+        <h2>Mini-simulation</h2>
+        <p class="hint">Plays AI-only games in a Web Worker (the page stays usable) and shows who won and how. Same results as <code>npm run sim</code> for the same seeds.</p>
+        <div class="dev-row">
+          <label class="field">Games <input id="mini-games" type="number" min="1" max="40" value="10"></label>
+          <label class="field">First seed <input id="mini-seed" type="number" min="0" value="1000"></label>
+          <label class="field">Size <select id="mini-size"></select></label>
+          <label class="field">Speed <select id="mini-speed"></select></label>
+          <label class="field">Players <input id="mini-players" type="number" min="2" max="12" value="4"></label>
+          <button id="mini-run" class="btn small primary" type="button">Run</button>
+        </div>
+        <p data-field="mini-status" aria-live="polite"></p>
+        <div class="dev-tables">
+          <table data-field="mini-civs"></table>
+          <table data-field="mini-victories"></table>
+        </div>
+      </section>
+      <section>
+        <h2>Jump turns</h2>
+        <p class="hint">Plays an AI-only game to the chosen turn in a Web Worker, then shows how long each of the last ten rounds took (target: under 2 seconds on a Large map with 8 players).</p>
+        <div class="dev-row">
+          <label class="field">Seed <input id="jump-seed" type="number" min="0" value="2024"></label>
+          <label class="field">Size <select id="jump-size"></select></label>
+          <label class="field">Players <input id="jump-players" type="number" min="2" max="12" value="8"></label>
+          <label class="field">To turn <input id="jump-turn" type="number" min="2" max="600" value="200"></label>
+          <button id="jump-run" class="btn small primary" type="button">Play</button>
+        </div>
+        <p data-field="jump-status" aria-live="polite"></p>
+      </section>
+    </div>
+  </details>
   <div id="map-host" class="map-host"></div>
   <script type="module" src="src/dev.js"></script>
 </body>

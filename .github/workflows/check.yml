@@ -20,6 +20,8 @@ jobs:
       - run: npm run smoke
       # The real save budget: a full 330-turn Large game with 8 factions (several minutes).
       - run: node tools/check-size.mjs --full
+      # Speed target: Large 8-faction rounds at turn 200 under 2 seconds (section 11.6).
+      - run: npm run perf
       - uses: actions/upload-artifact@v4
         if: always()
         with:

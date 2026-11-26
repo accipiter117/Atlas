@@ -1,0 +1,680 @@
+{
+  "options": {
+    "games": 20,
+    "size": "small",
+    "type": "continents",
+    "speed": "quick",
+    "players": 4,
+    "mods": [
+      "base-ancient"
+    ],
+    "seeds": [
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019
+    ],
+    "swap": true,
+    "challenger": "rules-dev/ai/ai-v3.json",
+    "quiet": true,
+    "json": "docs/sim/ai-v3-vs-ai-v2.json",
+    "md": "docs/sim/ai-v3-vs-ai-v2.md"
+  },
+  "report": {
+    "games": 20,
+    "decided": 20,
+    "stalled": 0,
+    "winRateByCiv": {
+      "britons": {
+        "games": 8,
+        "wins": 5,
+        "rate": 0.625
+      },
+      "carthage": {
+        "games": 12,
+        "wins": 0,
+        "rate": 0
+      },
+      "egypt": {
+        "games": 12,
+        "wins": 6,
+        "rate": 0.5
+      },
+      "gaul": {
+        "games": 14,
+        "wins": 2,
+        "rate": 0.14285714285714285
+      },
+      "greece": {
+        "games": 8,
+        "wins": 1,
+        "rate": 0.125
+      },
+      "han": {
+        "games": 4,
+        "wins": 0,
+        "rate": 0
+      },
+      "persia": {
+        "games": 10,
+        "wins": 4,
+        "rate": 0.4
+      },
+      "rome": {
+        "games": 12,
+        "wins": 2,
+        "rate": 0.16666666666666666
+      }
+    },
+    "winsByVictory": {
+      "conquest": 0,
+      "science": 0,
+      "score": 20
+    },
+    "averageVictoryTurn": 220,
+    "errors": {
+      "refusals": 0,
+      "nan": 0,
+      "crashes": 0
+    },
+    "worstRoundMs": 245,
+    "versions": {
+      "challenger": {
+        "games": 20,
+        "wins": 9
+      },
+      "champion": {
+        "games": 20,
+        "wins": 11
+      }
+    }
+  },
+  "games": [
+    {
+      "seed": 2010,
+      "civs": [
+        "greece",
+        "gaul",
+        "carthage",
+        "britons"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "britons",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 166
+    },
+    {
+      "seed": 2010,
+      "civs": [
+        "greece",
+        "gaul",
+        "carthage",
+        "britons"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "britons",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 173
+    },
+    {
+      "seed": 2011,
+      "civs": [
+        "britons",
+        "persia",
+        "gaul",
+        "egypt"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 1,
+        "civ": "persia",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 181
+    },
+    {
+      "seed": 2011,
+      "civs": [
+        "britons",
+        "persia",
+        "gaul",
+        "egypt"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 0,
+        "civ": "britons",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 175
+    },
+    {
+      "seed": 2012,
+      "civs": [
+        "carthage",
+        "persia",
+        "britons",
+        "gaul"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "britons",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 245
+    },
+    {
+      "seed": 2012,
+      "civs": [
+        "carthage",
+        "persia",
+        "britons",
+        "gaul"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "britons",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 115
+    },
+    {
+      "seed": 2013,
+      "civs": [
+        "gaul",
+        "rome",
+        "persia",
+        "egypt"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "persia",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 206
+    },
+    {
+      "seed": 2013,
+      "civs": [
+        "gaul",
+        "rome",
+        "persia",
+        "egypt"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "persia",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 167
+    },
+    {
+      "seed": 2014,
+      "civs": [
+        "carthage",
+        "gaul",
+        "rome",
+        "egypt"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 202
+    },
+    {
+      "seed": 2014,
+      "civs": [
+        "carthage",
+        "gaul",
+        "rome",
+        "egypt"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 194
+    },
+    {
+      "seed": 2015,
+      "civs": [
+        "han",
+        "carthage",
+        "egypt",
+        "gaul"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 64
+    },
+    {
+      "seed": 2015,
+      "civs": [
+        "han",
+        "carthage",
+        "egypt",
+        "gaul"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 85
+    },
+    {
+      "seed": 2016,
+      "civs": [
+        "persia",
+        "greece",
+        "carthage",
+        "rome"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "rome",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 192
+    },
+    {
+      "seed": 2016,
+      "civs": [
+        "persia",
+        "greece",
+        "carthage",
+        "rome"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 0,
+        "civ": "persia",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 133
+    },
+    {
+      "seed": 2017,
+      "civs": [
+        "rome",
+        "carthage",
+        "egypt",
+        "britons"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 127
+    },
+    {
+      "seed": 2017,
+      "civs": [
+        "rome",
+        "carthage",
+        "egypt",
+        "britons"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 2,
+        "civ": "egypt",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 117
+    },
+    {
+      "seed": 2018,
+      "civs": [
+        "rome",
+        "egypt",
+        "greece",
+        "gaul"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "gaul",
+        "victory": "score",
+        "turn": 220,
+        "version": "champion"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 163
+    },
+    {
+      "seed": 2018,
+      "civs": [
+        "rome",
+        "egypt",
+        "greece",
+        "gaul"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "gaul",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 157
+    },
+    {
+      "seed": 2019,
+      "civs": [
+        "greece",
+        "han",
+        "persia",
+        "rome"
+      ],
+      "versions": [
+        "challenger",
+        "champion",
+        "challenger",
+        "champion"
+      ],
+      "winner": {
+        "seat": 0,
+        "civ": "greece",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 84
+    },
+    {
+      "seed": 2019,
+      "civs": [
+        "greece",
+        "han",
+        "persia",
+        "rome"
+      ],
+      "versions": [
+        "champion",
+        "challenger",
+        "champion",
+        "challenger"
+      ],
+      "winner": {
+        "seat": 3,
+        "civ": "rome",
+        "victory": "score",
+        "turn": 220,
+        "version": "challenger"
+      },
+      "stalled": false,
+      "turns": 220,
+      "refusals": 0,
+      "refusalSamples": [],
+      "nan": [],
+      "error": null,
+      "worstRoundMs": 97
+    }
+  ]
+}

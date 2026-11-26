@@ -1,0 +1,5 @@
+{
+  "id": "example",
+  "description": "An example challenger patch (used by the tests): AI weights only, merged over rules/base-ancient/ai/weights.json for the challenger's seats.",
+  "aiWeights": { "science": { "weights": { "project": 12 } } }
+}

@@ -8,7 +8,7 @@
 
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
-import { sumHook } from './effects/index.js';
+import { sumHook, difficultyOf } from './effects/index.js';
 import { atWar } from './diplomacy.js';
 
 export const CIVILIAN = 'civilian';
@@ -103,7 +103,9 @@ export function placeStartingUnits(state, ruleset) {
   state.factions.forEach((faction, n) => {
     const start = state.map.starts[n];
     if (start === undefined) return;
-    for (const typeId of era.startUnits ?? []) {
+    // Higher difficulties give computer players extra starting units (difficulty.json).
+    const extra = faction.kind === 'ai' ? difficultyOf(state, ruleset)?.aiStartUnits ?? [] : [];
+    for (const typeId of [...(era.startUnits ?? []), ...extra]) {
       if (!ruleset.units[typeId]) continue;
       // Breadth-first from the start tile to the nearest tile that takes this unit.
       const seen = new Set([start]);

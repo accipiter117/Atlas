@@ -7,12 +7,14 @@ import { generateMap, ENGINE_VERSION } from '../sim/index.js';
 import { hashValue } from '../core/hash.js';
 import { createMapView } from '../render/canvas.js';
 import { attachMapInput } from './input.js';
+import { startDevTools } from './devTools.js';
 
 export async function startMapViewer(doc, { loadModSources }) {
   const $ = (sel) => doc.querySelector(sel);
   const { available } = await loadModSources();
   const { ruleset, ok } = loadRuleset({ available, selection: ['base-ancient'], engineVersion: ENGINE_VERSION });
   if (!ok) { $('[data-field="info"]').textContent = 'base-ancient did not load.'; return; }
+  startDevTools(doc, ruleset);
 
   const typeSel = $('#map-type');
   const sizeSel = $('#map-size');

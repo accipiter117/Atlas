@@ -57,6 +57,8 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
         const domain = def.domain ?? 'land';
         if (domain === 'sea') continue;
         value = (needDefence ? 12 : 8) * (strength / 30) * urgency * categoryWeight(ruleset, view, memory, 'military');
+        // Siege engines matter more in a war (military.siegeAtWar in data; 1 when absent).
+        if (war && !needDefence && def.class === 'siege') value *= mil.siegeAtWar ?? 1;
         reasonKey = needDefence ? 'ai.reason.defender' : 'ai.reason.army';
       } else {
         continue;

@@ -1,0 +1,8 @@
+{
+  "id": "ai-v4",
+  "description": "Melee units wear cities down (attack a city when the blow deals 15 or more and leaves them healthy), and siege engines are worth 1.6 times as much while at war.",
+  "aiWeights": {
+    "thresholds": { "weights": { "cityMeleeMinDealt": 15 } },
+    "military": { "weights": { "siegeAtWar": 1.6 } }
+  }
+}

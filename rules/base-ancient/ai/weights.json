@@ -155,6 +155,8 @@
         "threatUrgency": 3,
         "armyPerCityAtWar": 2,
         "warCheckEvery": 5,
+        "maxWars": 2,
+        "capitalTargetPull": 6,
         "minTurnForWar": 30
       }
     },

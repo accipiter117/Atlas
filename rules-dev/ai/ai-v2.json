@@ -1,0 +1,5 @@
+{
+  "id": "ai-v2",
+  "description": "Two wars at once instead of one (wars never end until diplomacy), and conquest armies treat original capitals as 6 hexes nearer.",
+  "aiWeights": { "military": { "weights": { "maxWars": 2, "capitalTargetPull": 6 } } }
+}

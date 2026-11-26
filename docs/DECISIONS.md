@@ -144,6 +144,16 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **`?faction=<id>` in the address still skips setup** with a quick default game (used by the browser tests); `?debug=1` adds `autoplay`, which lets an AI play your seat (the full-game browser test).
 - **The city visibility leak noted in phase 8 is still open.** Fixing it means remembering what each faction last saw of each city, which changes the state shape; it waits for the next save version, with a migration.
 
+## Phase 10
+
+- **Speed without changing the game.** Pathfinding builds one table of who stands where per search (`occupancy`), and `applyCommand` shares the map layers that never change after generation (terrain, hills, features, resources, rivers) between the old and new state. Every timed game keeps its exact fingerprint. Nothing in the rules may write to those layers after map generation.
+- **The Web Worker plays only the computer seats.** Your own commands still apply on the page straight away (so clicks feel instant); when you end your turn the state goes to the worker and comes back with the rivals' commands for the save log, the events and the AI journals. If a browser cannot start a module worker (or with `?worker=off`), the same code runs on the page. The AI's memory lives in the worker; the page keeps the journals for the J screen and saves.
+- **AI versions are data patches.** A challenger is `rules-dev/ai/<tag>.json`, merged over the AI weights for its seats only; the game's rules are never patched. `src/ai/version.js` names the champion. Batch results (every game) are kept in `docs/sim/`.
+- **Conquest is still under 5% of wins**, the one healthy range not met; every attempt so far lost its head-to-head batch. `docs/AI_TUNING.md` lists what was tried and the next ideas (diplomacy in phase 12 first).
+- **Difficulty** (section 9.5) is `difficulty.json`: eight levels, Prince the default with no bonuses. Above Prince the AI gets percentage bonuses on production, science, culture and gold and extra starting units; below it you get the percentage bonuses. They work through the ordinary effects system (source "difficulty") and each level's summary is shown on the setup screen. The plan's "below Prince the AI also plays less sharply" is not done yet.
+- **The size and speed checks run in CI**: `check-size --full` (the Large 330-turn save) and `npm run perf` (Large rounds at turn 200). Locally, `npm run check` keeps the faster Small save check.
+- **Persia** won half the baseline games; with the ai-v2 AI it wins about a third (within range), so its trait (every land unit moves one hex further) is unchanged for now. Faction balance is phase 16's job.
+
 ## Later
 
 - Nothing yet.

@@ -38,7 +38,7 @@ function approach(world, view, ruleset, unit, goal, range = 1) {
 const move = (view, unit, to, reasonKey, params, score = 1) => ({ cmd: { type: 'moveUnit', faction: view.me, unit: unit.id, to }, reasonKey, params, score });
 
 /** The best attack this unit can make now, if the odds are good enough. */
-export function bestAttack(world, view, ruleset, unit) {
+export function bestAttack(world, view, ruleset, unit, path = null) {
   const th = weightsOf(ruleset, 'thresholds');
   const seen = (t) => view.fog[t] === VISIBLE;
   const candidates = [];
@@ -55,6 +55,9 @@ export function bestAttack(world, view, ruleset, unit) {
     let ok = false;
     if (o.city) {
       ok = o.ranged ? o.dealt >= 5 : (o.defenderHp === 0 || o.win >= (th.cityAttackMinWinChance ?? 0.7));
+      // Wearing a city down with melee (thresholds.cityMeleeMinDealt in data; off when absent).
+      const wearPaths = th.cityMeleePaths ?? null;
+      if (!ok && !o.ranged && th.cityMeleeMinDealt && (!wearPaths || wearPaths.includes(path))) ok = o.dealt >= th.cityMeleeMinDealt && o.attackerHp - o.taken >= (th.attackMinHpAfter ?? 35);
     } else if (o.ranged) {
       ok = o.dealt >= 8;
     } else {
@@ -102,7 +105,7 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
   }
 
   if (combatKind(ruleset, unit) === 'none') return null;
-  const attack = bestAttack(world, view, ruleset, unit);
+  const attack = bestAttack(world, view, ruleset, unit, memory.path ?? null);
   if (attack) return attack;
 
   // Badly hurt: go home and heal.
