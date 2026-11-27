@@ -4,43 +4,111 @@
 // (a padlock) and what nearby tiles would cost to buy.
 
 import { HEX_SCREEN, cornerOffsets, edgeCorners, tileCentre } from '../hexDraw.js';
+import { shade } from '../art/placeholders.js';
 
 const screen = (map, cam, t) => {
   const p = tileCentre(map, t);
   return { x: (p.x - cam.x) * cam.zoom, y: (p.y - cam.y) * cam.zoom };
 };
 
-/** Lines along every hex edge where ownership changes, in the owner's colour. */
-export function drawBorders(ctx, map, cam, owner, cityColour, nbs) {
+/** Hex rows and columns overlapping the visible world rectangle (with a margin of one). */
+function visibleRange(map, view) {
+  const rowH = HEX_SCREEN * 1.5;
+  const colW = HEX_SCREEN * Math.sqrt(3);
+  return {
+    r0: Math.max(0, Math.floor(view.y / rowH) - 1), r1: Math.min(map.height - 1, Math.ceil((view.y + view.h) / rowH) + 1),
+    c0: Math.max(0, Math.floor(view.x / colW) - 1), c1: Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1),
+  };
+}
+
+/**
+ * Borders (graphics overhaul G3, docs/OVERHAUL.md 4.2): a 12% tint of the owner's colour
+ * on owned land, and one continuous edge per territory, a line in the faction colour with
+ * a darker line inside it. Lines between two cities of the same faction disappear, and a
+ * faction you are at war with has its border dashed.
+ */
+export function drawBorders(ctx, map, cam, owner, factionOf, colourOf, nbs, atWar = new Set(), view = null) {
   if (!owner) return;
-  const corners = cornerOffsets(HEX_SCREEN * cam.zoom * 0.97);
-  ctx.lineWidth = Math.max(2, 3 * cam.zoom);
-  ctx.lineCap = 'round';
-  for (let i = 0; i < owner.length; i += 1) {
-    const o = owner[i];
-    if (o === null || o === undefined) continue;
-    const p = screen(map, cam, i);
-    if (p.x < -100 || p.y < -100 || p.x > ctx.canvas.width + 100 || p.y > ctx.canvas.height + 100) continue;
-    ctx.strokeStyle = cityColour(o);
-    ctx.beginPath();
-    for (let d = 0; d < 6; d += 1) {
-      const j = nbs[i][d];
-      const other = j >= 0 ? owner[j] : null;
-      if (other !== null && other !== undefined && cityColour(other) === cityColour(o)) continue;
-      const [a, b] = edgeCorners(d);
-      ctx.moveTo(p.x + corners[a].x, p.y + corners[a].y);
-      ctx.lineTo(p.x + corners[b].x, p.y + corners[b].y);
+  const z = cam.zoom;
+  const full = cornerOffsets(HEX_SCREEN * z);
+  const outer = cornerOffsets(HEX_SCREEN * z * 0.95);
+  const inner = cornerOffsets(HEX_SCREEN * z * 0.95 - Math.max(2, 2.6 * z));
+  const range = view ? visibleRange(map, view) : { r0: 0, r1: map.height - 1, c0: 0, c1: map.width - 1 };
+  const byFaction = new Map();
+  for (let r = range.r0; r <= range.r1; r += 1) {
+    for (let c = range.c0; c <= range.c1; c += 1) {
+      const i = r * map.width + c;
+      const o = owner[i];
+      if (o === null || o === undefined) continue;
+      const f = factionOf(o);
+      if (f === null) continue;
+      if (!byFaction.has(f)) byFaction.set(f, []);
+      byFaction.get(f).push(i);
     }
-    ctx.stroke();
+  }
+  for (const [f, tiles] of byFaction) {
+    const colour = colourOf(f);
+    // The tint.
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = colour;
+    ctx.beginPath();
+    for (const i of tiles) {
+      const p = screen(map, cam, i);
+      ctx.moveTo(p.x + full[0].x, p.y + full[0].y);
+      for (let k = 1; k < 6; k += 1) ctx.lineTo(p.x + full[k].x, p.y + full[k].y);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // The edge: where the neighbour belongs to someone else (or no one).
+    const edges = [];
+    for (const i of tiles) {
+      for (let d = 0; d < 6; d += 1) {
+        const j = nbs[i][d];
+        const other = j >= 0 ? owner[j] : null;
+        if (other !== null && other !== undefined && factionOf(other) === f) continue;
+        edges.push([i, d]);
+      }
+    }
+    const war = atWar.has(f);
+    for (const [corners, style, width] of [[outer, colour, Math.max(1.5, 2.6 * z)], [inner, shade(colour, -0.32), Math.max(1.5, 2.2 * z)]]) {
+      ctx.strokeStyle = style;
+      ctx.lineWidth = width;
+      ctx.lineCap = war ? 'butt' : 'round';
+      ctx.setLineDash(war ? [7 * Math.max(z, 0.6), 5 * Math.max(z, 0.6)] : []);
+      ctx.beginPath();
+      for (const [i, d] of edges) {
+        const p = screen(map, cam, i);
+        const [a, b] = edgeCorners(d);
+        ctx.moveTo(p.x + corners[a].x, p.y + corners[a].y);
+        ctx.lineTo(p.x + corners[b].x, p.y + corners[b].y);
+      }
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
   }
 }
 
-export function drawCities(ctx, map, cam, cities, colourOf, selectedCity, religionLens = null) {
+export function drawCities(ctx, map, cam, cities, colourOf, selectedCity, religionLens = null, strategic = false) {
   const z = cam.zoom;
   for (const c of cities) {
     const p = screen(map, cam, c.tile);
     const colour = colourOf(c.faction);
-    // A little walled town: wall, two towers, a keep.
+    // The strategic view (zoomed far out): just a dot and the name plate.
+    if (strategic) {
+      ctx.fillStyle = '#1b140d';
+      ctx.fillRect(p.x - 5, p.y - 5, 10, 10);
+      ctx.fillStyle = colour;
+      ctx.fillRect(p.x - 4, p.y - 4, 8, 8);
+    } else drawTown(ctx, p, z, colour);
+    // Banner: population and name.
+    drawPlate(ctx, c, p, z, colour, selectedCity, religionLens, strategic);
+  }
+}
+
+/** A little walled town: wall, two towers, a keep. */
+function drawTown(ctx, p, z, colour) {
+  {
     const w = 34 * z;
     const h = 20 * z;
     const x = p.x - w / 2;
@@ -57,14 +125,18 @@ export function drawCities(ctx, map, cam, cities, colourOf, selectedCity, religi
     ctx.fillStyle = colour;
     ctx.fillRect(p.x - 7 * z, y - 12 * z, 14 * z, 14 * z);
     ctx.strokeRect(p.x - 7 * z, y - 12 * z, 14 * z, 14 * z);
-    // Banner: population and name.
-    ctx.font = `600 ${Math.round(Math.max(11, 13 * z))}px system-ui, sans-serif`;
+  }
+}
+
+function drawPlate(ctx, c, p, z, colour, selectedCity, religionLens, strategic) {
+  {
+    ctx.font = `600 ${strategic ? 11 : Math.round(Math.max(11, 13 * z))}px system-ui, sans-serif`;
     const label = c.name;
     const tw = ctx.measureText(label).width;
     const bh = Math.max(16, 20 * z);
     const bw = tw + bh + 14;
     const bx = p.x - bw / 2;
-    const by = p.y - HEX_SCREEN * z * 0.95;
+    const by = strategic ? p.y - bh - 7 : p.y - HEX_SCREEN * z * 0.95;
     ctx.fillStyle = 'rgba(20, 22, 28, 0.88)';
     ctx.fillRect(bx, by, bw, bh);
     ctx.fillStyle = colour;

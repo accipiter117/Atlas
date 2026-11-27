@@ -14,6 +14,13 @@ const DEFAULTS = {
   },
   feature: { forest: '#2f5a2a', jungle: '#2d6b35', marsh: '#5f7d63', floodplain: '#8fa35a', oasis: '#3f9bb5', reef: '#e48c8c' },
   resource: { bonus: '#f4e6a1', luxury: '#c77dd8', strategic: '#c9c9c9' },
+  // Graphics overhaul G3: the colours of everything else on the map (a skin's "placeholders.map" overrides any).
+  map: {
+    parchment: '#d8c59a', parchmentInk: '#6b5434', foam: '#e8f3f4', beach: '#d9c58c', snow: '#eef2f4',
+    river: '#3f86ad', riverLight: '#8fc8df', road: '#7d5f35', roadStone: '#b7a27c', bridge: '#6b4a2b',
+    ink: '#3b2a17', crop: '#d8c26a', spoil: '#8c7a62', timber: '#7a5530', metal: '#c2c7cc', fence: '#e3d6b8',
+    bush: '#4c7a2c', stone: '#c4bdb1', hide: '#b08454',
+  },
 };
 
 function hashColour(id) {
@@ -25,8 +32,16 @@ export function placeholderColour(registry, group, id) {
   return registry.placeholders?.[group]?.[id] ?? DEFAULTS[group]?.[id] ?? hashColour(id);
 }
 
-/** Lighten (amount > 0) or darken (amount < 0) a #rrggbb colour. */
+/** Lighten (amount > 0) or darken (amount < 0) a #rrggbb colour (remembered, as the terrain asks for the same ones often). */
+const SHADES = new Map();
 export function shade(hex, amount) {
+  const key = `${hex}|${amount}`;
+  let out = SHADES.get(key);
+  if (out === undefined) { out = shadeOf(hex, amount); SHADES.set(key, out); }
+  return out;
+}
+
+function shadeOf(hex, amount) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return hex;
   const n = parseInt(hex.slice(1), 16);
   const f = (v) => Math.max(0, Math.min(255, Math.round(v + 255 * amount)));
@@ -81,17 +96,6 @@ export function drawTerrainPattern(ctx, cx, cy, size, terrainId, role, base, til
   }
 }
 
-export function drawHills(ctx, cx, cy, base, tile) {
-  const rand = fxRandom(tile, 77);
-  ctx.fillStyle = shade(base, -0.18);
-  for (const [ox, oy] of [[-5, 2], [3, -2], [1, 5]]) {
-    const x = Math.round(cx + ox + (rand() - 0.5) * 2);
-    const y = Math.round(cy + oy);
-    ctx.fillRect(x - 2, y, 5, 1);
-    ctx.fillRect(x - 1, y - 1, 3, 1);
-  }
-}
-
 export function drawFeature(ctx, cx, cy, size, featureId, colour, tile) {
   const rand = fxRandom(tile, idSeed(featureId));
   switch (featureId) {
@@ -141,55 +145,4 @@ export function drawResource(ctx, cx, cy, colour) {
   ctx.fillRect(x - 2, y - 1, 5, 3);
   ctx.fillStyle = shade(colour, 0.25);
   ctx.fillRect(x - 1, y - 1, 1, 1);
-}
-
-/** A small mark for an improvement: furrows, a pick, a fence, a fort, a hut, a boat. */
-export function drawImprovement(ctx, cx, cy, id) {
-  const ink = '#3b2a17';
-  switch (id) {
-    case 'farm':
-      ctx.fillStyle = '#d8c26a';
-      for (let y = -5; y <= 5; y += 3) ctx.fillRect(cx - 7, cy + y, 14, 1);
-      break;
-    case 'mine':
-      ctx.fillStyle = ink;
-      ctx.fillRect(cx - 4, cy - 1, 8, 5);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(cx - 2, cy + 1, 4, 3);
-      break;
-    case 'pasture':
-      ctx.fillStyle = '#e9e2cf';
-      ctx.fillRect(cx - 7, cy + 3, 14, 1);
-      for (let x = -7; x <= 7; x += 4) ctx.fillRect(cx + x, cy, 1, 4);
-      break;
-    case 'plantation':
-      ctx.fillStyle = '#4c7a2c';
-      for (let x = -6; x <= 6; x += 4) ctx.fillRect(cx + x - 1, cy - 2, 3, 5);
-      break;
-    case 'quarry':
-      ctx.fillStyle = '#bdb7ad';
-      ctx.fillRect(cx - 5, cy - 2, 4, 4);
-      ctx.fillRect(cx + 1, cy, 5, 3);
-      break;
-    case 'camp':
-      ctx.fillStyle = '#a9773f';
-      for (let k = 0; k < 5; k += 1) ctx.fillRect(cx - k, cy - 4 + k, k * 2 + 1, 1);
-      break;
-    case 'fishing_boats':
-      ctx.fillStyle = '#6b4a2b';
-      ctx.fillRect(cx - 5, cy + 1, 10, 2);
-      ctx.fillStyle = '#f2f2f2';
-      ctx.fillRect(cx - 1, cy - 5, 3, 6);
-      break;
-    case 'fort':
-      ctx.fillStyle = ink;
-      ctx.fillRect(cx - 6, cy - 3, 12, 1);
-      ctx.fillRect(cx - 6, cy + 4, 12, 1);
-      ctx.fillRect(cx - 6, cy - 3, 1, 8);
-      ctx.fillRect(cx + 5, cy - 3, 1, 8);
-      break;
-    default:
-      ctx.fillStyle = ink;
-      ctx.fillRect(cx - 2, cy - 2, 4, 4);
-  }
 }

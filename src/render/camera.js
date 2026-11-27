@@ -3,7 +3,7 @@
 // World units are screen pixels at 100% zoom. Zoom runs from 50% to 200%
 // (section 10). All the maths is pure, so it is tested in Node.
 
-export const MIN_ZOOM = 0.5;
+export const MIN_ZOOM = 0.3;
 export const MAX_ZOOM = 2;
 
 export function createCamera(x = 0, y = 0, zoom = 1) {

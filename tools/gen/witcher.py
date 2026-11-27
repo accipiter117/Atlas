@@ -221,6 +221,14 @@ skin = OD([('contentType', 'skin'), ('values', OD([
     ('factionColours', True),
     # Graphics overhaul tokens (docs/OVERHAUL.md section 2): cold slate and iron instead of walnut and brass.
     ('tokens', OD([('walnut', 'rgba(36, 40, 43, 0.94)'), ('walnut-solid', '#24282b'), ('brass', '#8d969b'), ('brass-inner', '#454c52'), ('panel-ink', '#e4e7e9'), ('gold', '#b8c4cc')])),
+    # Graphics overhaul G3: a colder, darker land (code-drawn terrain colours, docs/OVERHAUL.md 4.1).
+    ('placeholders', OD([
+        ('terrain', OD([('grassland', '#5d7a45'), ('plains', '#87865a'), ('desert', '#b3a37a'), ('tundra', '#79837a'), ('snow', '#dfe6ea'),
+                        ('coast', '#3f6f86'), ('ocean', '#22475e'), ('lake', '#3e7a92'), ('mountain', '#6a6966')])),
+        ('feature', OD([('forest', '#24452a'), ('jungle', '#2a4e33'), ('marsh', '#4f6655')])),
+        ('map', OD([('parchment', '#c9c3b2'), ('parchmentInk', '#3d3f44'), ('beach', '#b5aa8c'), ('foam', '#dde7ea'), ('river', '#33708f'),
+                    ('riverLight', '#7fb0c6'), ('road', '#5f4a32'), ('roadStone', '#9c9386')])),
+    ])),
     ('raiderColour', '#2b2b2b'),
 ]))])
 open(W + 'skin/skin.json', 'w').write(json.dumps(skin, indent=2, ensure_ascii=False) + '\n')

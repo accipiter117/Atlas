@@ -31,3 +31,19 @@ export function drawIcon(ctx, atlas, name, x, y, size = 16) {
   ctx.imageSmoothingEnabled = smooth;
   return true;
 }
+
+const CLASS_ICONS = new Set(['melee', 'ranged', 'anti_cavalry', 'cavalry', 'siege', 'recon', 'naval_melee', 'naval_ranged', 'civilian']);
+
+/** The icon for a unit type: its job for civilians, its class otherwise (a class's "icon" in the rules wins). */
+export function unitIconName(ruleset, type) {
+  const def = ruleset.units[type];
+  const tags = def?.tags ?? [];
+  if (tags.includes('founder')) return 'founder';
+  if (tags.includes('worker')) return 'worker';
+  if (tags.includes('trader')) return 'trader';
+  if (tags.includes('spy')) return 'spy';
+  if (def?.faithOnly) return 'missionary';
+  const cls = ruleset.unitClasses?.[def?.class];
+  if (cls?.icon) return cls.icon;
+  return CLASS_ICONS.has(def?.class) ? `class-${def.class}` : cls?.civilian ? 'class-civilian' : 'class-melee';
+}

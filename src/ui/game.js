@@ -496,6 +496,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (v.pendingEvent) showEventDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
+    // Borders of factions you are at war with are dashed (graphics overhaul G3).
+    const world = knownWorld(v);
+    mapView.setWar(v.factions.filter((f) => f.id !== human && atWar(world, human, f.id)).map((f) => f.id));
     refreshMinimap();
     render();
   }
@@ -849,8 +852,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function onHover(sx, sy) {
     if (sx === null) hexLeave(); else hexHover(sx, sy, mapView.tileAt(sx, sy));
     const u = selectedUnit();
-    if (sx === null || !u) { mapView.setHover(null); if (!pendingTarget) mapView.setPath(null, null); return; }
+    if (sx === null) { mapView.setHover(null); if (!pendingTarget) mapView.setPath(null, null); return; }
     const tile = mapView.tileAt(sx, sy);
+    // With nothing selected the hovered hex still gets its soft outline (G3).
+    if (!u) { mapView.setHover(tile >= 0 && v.fog[tile] !== UNEXPLORED ? tile : null); return; }
     if (combatKind(ruleset, u) !== 'none' && enemyAt(tile)) {
       if (aim?.tile !== tile) aimAt(tile);
       return;

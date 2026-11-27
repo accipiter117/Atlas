@@ -1,5 +1,16 @@
 # Changelog
 
+## Graphics overhaul G3: terrain, borders and the strategic view
+
+The map has soft edges, coastlines, light and tall terrain now, and what you have not explored is an old campaign map rather than a black void.
+
+What you can try: look at any coast (a pale shallow band, a line of foam, a fringe of beach) and where two kinds of land meet (they fray into each other instead of stopping at a hard hex edge). Mountains rise above their hexes with snow caps, hills are lit from the top left, forests and jungle are proper stands of trees, rivers are wider with a light centre and widen towards the sea, roads are dirt tracks with bridges over rivers, and every improvement has its own little picture (farm rows, mine entrance, fenced pasture, plantation bushes, quarry cuts, tents, fishing boats, a fort). Unexplored land is parchment with ink clouds, and your explored land frays into it. Borders are a coloured edge with a darker line inside and a faint tint over the land; borders between your own cities are gone, and a faction you are at war with has a dashed border. Zoom right out (now down to 30%): below 60% the map switches to a strategic view with plain terrain, units as small flags with their class icon, and cities as name plates. Rest the mouse on a hex for its soft outline even with nothing selected; G still shows the grid. The Witcher has a colder, darker land and Killzone scorched greys and rust. Water sparkles and clouds drift slowly unless Settings says Reduce motion.
+
+- `src/render/layers/terrain.js` rewritten: the ground is drawn pixel by pixel into the chunk cache with dithered blending, foam, beaches, shallow water and frayed edges; then patterns, rivers, roads and bridges, props in row order, improvements and resources. A second, simpler set of chunks for the strategic view. Chunks just outside the screen are built while the page is idle.
+- `src/render/art/terrainProps.js`: mountains, hills, trees and improvement art in code, lit from the top left; all colours through the art registry, so a skin's `placeholders` replace them (`tools/gen/witcher.py` and `killzone.py` now write terrain palettes).
+- Borders (`src/render/layers/cities.js`): one edge per territory, inner line, 12% tint, dashed at war. Cities and units have a strategic form.
+- Tests: a browser test that the terrain draws the same pixels twice, unexplored land is parchment, the strategic view switches at 60%, sparkle only runs with motion allowed, war borders draw, and a frame stays fast; the Huge map panning test still passes (zoom limit updated). Screenshots are in `docs/shots/G3/`.
+
 ## Graphics overhaul G2: the new game screen
 
 The map now fills the whole window and everything else floats over it in walnut panels with brass edges, so at 1366x768 you see far more of the map than before.

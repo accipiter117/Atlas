@@ -280,6 +280,11 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G2: the top bar shows six empire yields.** Food is the surplus after eating, production the sum of every city's; gold and faith show the stock and the rate. Amenities are per city, so they stay in the city panel rather than the bar.
 - **G2: hex tooltips on hover only, for now.** On a laptop a hex tooltip appears after the tooltip delay (at least a quarter of a second, so sweeping the mouse does not flicker). Touch keeps tapping to select; the same information for touch comes with the phone pass.
 - **G2: the phone grid absorbs the new markup.** Under 900px the floating panels fold back into the phase 21 grid (progress widget, minimap and toggles hidden, the end-turn button its own row), so the 820px touch project keeps working while the phone layout stays frozen.
+- **G3: blending is computed per pixel when a chunk is built.** Each pixel finds its hex and the nearest edge (a dot product per neighbour), then an ordered 4x4 dither anchored to the world mixes in the neighbour's colour near the edge, so chunks meet without seams and the same map always looks the same. A full chunk costs about 8 ms to build (up from a few), so the map view now builds the chunks just outside the screen while the page is idle; panning a built area costs what it did.
+- **G3: props live in the chunk cache.** Mountains, hills and trees are drawn into the chunks in row order after the ground, with each chunk reaching 10 art pixels above its first row, so tall things overlap the row behind without a separate per-frame layer.
+- **G3: zoom now goes down to 30%.** The strategic view starts below 60%; with the old 50% floor it would have had almost no range. Section 10 of PLAN.md said 50% to 200%.
+- **G3: sparkle and cloud drift follow the motion setting.** "Reduce motion" (or the device's preference under "Follow my device") turns them off; there is no separate switch. They redraw the map about six times a second while on.
+- **G3: the minimap and the front line follow the new look.** Unexplored minimap ground is parchment, and the Killzone front-line tint is filled by strength band, so it no longer draws a hex grid of seams.
 
 ## Later
 

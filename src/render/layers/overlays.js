@@ -142,22 +142,34 @@ export function drawFront(ctx, map, cam, view, front, nbs) {
   const c1 = Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1);
   const { control } = front;
   const sideOf = (v) => (v > 0 ? 0 : v < 0 ? 1 : null);
+  // Tiles grouped by side and by five strengths, each group filled as one shape, so
+  // neighbouring hexes join without the seams that read as a grid (graphics overhaul G3).
+  const full = cornerOffsets(HEX_SCREEN * cam.zoom);
+  const groups = new Map();
   for (let r = r0; r <= r1; r += 1) {
     for (let c = c0; c <= c1; c += 1) {
       const i = r * map.width + c;
       const v = control[i] ?? 0;
       if (!v) continue;
+      const key = `${sideOf(v)}|${Math.min(4, Math.floor(Math.abs(v) / 20))}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(i);
+    }
+  }
+  for (const [key, tiles] of groups) {
+    const [side, level] = key.split('|').map(Number);
+    ctx.globalAlpha = 0.08 + ((level + 0.5) / 5) * 0.2;
+    ctx.fillStyle = front.colours[side];
+    ctx.beginPath();
+    for (const i of tiles) {
       const p = tileCentre(map, i);
       const x = (p.x - cam.x) * cam.zoom;
       const y = (p.y - cam.y) * cam.zoom;
-      ctx.globalAlpha = 0.08 + (Math.abs(v) / 100) * 0.2;
-      ctx.fillStyle = front.colours[sideOf(v)];
-      ctx.beginPath();
-      ctx.moveTo(x + corners[0].x, y + corners[0].y);
-      for (let k = 1; k < 6; k += 1) ctx.lineTo(x + corners[k].x, y + corners[k].y);
+      ctx.moveTo(x + full[0].x, y + full[0].y);
+      for (let k = 1; k < 6; k += 1) ctx.lineTo(x + full[k].x, y + full[k].y);
       ctx.closePath();
-      ctx.fill();
     }
+    ctx.fill();
   }
   ctx.globalAlpha = 1;
   // The line itself: every edge between tiles held by different sides.

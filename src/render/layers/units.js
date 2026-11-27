@@ -5,6 +5,7 @@
 
 import { HEX_SCREEN, tileCentre } from '../hexDraw.js';
 import { HEX_FACING } from '../art/spriteSheet.js';
+import { drawIcon, unitIconName } from '../art/icons.js';
 
 const SPRITE_PX = 48;
 
@@ -67,11 +68,34 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion 
   }
 
   /** Draw units; returns true while any are still walking (so the view keeps redrawing). */
-  function draw(ctx, cam, units, { selected, now }) {
+  /** The strategic view: a small flag in the faction's colour with the unit's class icon. */
+  function drawBanner(ctx, x, y, colour, u, atlas, selected) {
+    ctx.fillStyle = '#1b140d';
+    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 22, 2, 22);
+    ctx.fillRect(Math.round(x) - 9, Math.round(y) - 23, 19, 16);
+    ctx.fillStyle = colour;
+    ctx.fillRect(Math.round(x) - 8, Math.round(y) - 22, 17, 14);
+    if (!drawIcon(ctx, atlas, unitIconName(ruleset, u.type), Math.round(x) + 0.5, Math.round(y) - 15, 12)) {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(Math.round(x) - 2, Math.round(y) - 17, 4, 4);
+    }
+    if (selected) {
+      ctx.strokeStyle = '#ffe36b';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(Math.round(x) - 10, Math.round(y) - 24, 21, 18);
+    }
+  }
+
+  function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null }) {
     const scale = cam.zoom;
     const sorted = units.slice().sort((a, b) => a.tile - b.tile);
     for (const u of sorted) {
       const p = placeOf(u, now);
+      if (strategic) {
+        const civilian = ruleset.unitClasses[ruleset.units[u.type]?.class]?.civilian;
+        drawBanner(ctx, (p.x - cam.x) * scale + (civilian ? -7 : 7), (p.y - cam.y) * scale + 6, colours[u.faction] ?? '#888', u, atlas, u.id === selected);
+        continue;
+      }
       const civilian = ruleset.unitClasses[ruleset.units[u.type]?.class]?.civilian;
       // Civilians stand a little behind (up and left), combat units in front.
       const off = civilian ? -HEX_SCREEN * 0.22 : HEX_SCREEN * 0.12;

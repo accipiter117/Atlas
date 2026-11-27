@@ -4,13 +4,15 @@
 // faction's view (fog and all) in the game.
 
 import { createCamera, clampToWorld, screenToWorld, worldToScreen } from './camera.js';
-import { worldSize, tileCentre, HEX_SCREEN, SQRT3 } from './hexDraw.js';
+import { worldSize, tileCentre, HEX_SCREEN, SQRT3, ART_SCALE } from './hexDraw.js';
 import { loadIconAtlas, drawIcon } from './art/icons.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
 import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline, drawFront } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
+import { placeholderColour, shade } from './art/placeholders.js';
+import { fxRandom } from './fxRandom.js';
 import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/cities.js';
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
@@ -24,7 +26,13 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
   const ctx = canvas.getContext('2d');
   const registry = createRegistry(ruleset.skin);
   const world = worldSize(map);
-  const reducedMotion = () => win.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  // The Settings choice wins over the device's own preference.
+  const reducedMotion = () => {
+    const setting = doc.documentElement?.dataset?.motion;
+    if (setting === 'reduce') return true;
+    if (setting === 'full') return false;
+    return win.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+  };
   const sheets = {};
   let dirty = true;
   for (const [id, desc] of Object.entries(descriptors)) {
@@ -49,6 +57,9 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     path: null,
     pathFrom: null,
     terrain: createTerrainLayer(doc, map, ruleset, registry),
+    atWar: new Set(),
+    ambient: true,
+    strategic: false,
     frames: 0,
     lastFrameMs: 0,
   };
@@ -61,6 +72,11 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
   let yieldsAt = null;
   let atlas = null;
   let lastView = null;
+  let lastAmbient = 0;
+  let idleQueued = false;
+  let parchment = null;
+  // Below this zoom the map switches to the strategic view (section 4.1).
+  const STRATEGIC = 0.6;
   const screenOf = (cam, t) => { const p = tileCentre(view.map, t); return worldToScreen(cam, p.x, p.y); };
   const YIELD_ORDER = ['food', 'production', 'gold', 'science', 'culture', 'faith'];
 
@@ -87,23 +103,32 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const dpr = win.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = view.fog ? '#0b0c10' : '#1d3f5e';
-    ctx.fillRect(0, 0, size.w, size.h);
     const cam = view.cam;
+    // Unexplored land and the world beyond its edge: parchment with ink clouds (the game);
+    // the developer viewer, which sees everything, keeps its plain sea blue.
+    if (view.fog) drawParchment(cam, t0);
+    else { ctx.fillStyle = '#1d3f5e'; ctx.fillRect(0, 0, size.w, size.h); }
     const visible = { x: cam.x, y: cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom };
-    view.terrain.draw(ctx, cam, visible);
+    const strategic = cam.zoom < STRATEGIC;
+    view.strategic = strategic;
+    view.terrain.draw(ctx, cam, visible, strategic);
+    if (ambient()) view.terrain.drawSparkle(ctx, cam, visible, view.fog, t0);
     drawFog(ctx, view.map, cam, visible, view.fog);
     if (view.front) drawFront(ctx, view.map, cam, visible, view.front, neighbourCache(view.map));
     const cityById = new Map(view.cities.map((c) => [c.id, c]));
-    drawBorders(ctx, view.map, cam, view.owner, (cityId) => colours[cityById.get(cityId)?.faction] ?? '#888', neighbourCache(view.map));
+    drawBorders(ctx, view.map, cam, view.owner, (cityId) => cityById.get(cityId)?.faction ?? null, (f) => colours[f] ?? '#888', neighbourCache(view.map), view.atWar, visible);
     drawCityWork(ctx, view.map, cam, view.cityOverlay);
     if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
-    if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.7)');
+    if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.5)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
     drawCamps(ctx, view.map, cam, view.camps);
-    drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens);
+    const cities = () => drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens, strategic);
+    // Close up, units stand in front of their city; in the strategic view the city names go on top.
+    if (!strategic) cities();
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
-    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
+    if (strategic) loadAtlas();
+    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0, strategic, atlas });
+    if (strategic) cities();
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (yieldsAt) drawYieldOverlay(cam, visible);
     if (walking) dirty = true;
@@ -153,6 +178,51 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     }
   }
 
+  /** Water sparkle and drifting clouds: cosmetic, only in the game, never with reduced motion. */
+  const ambient = () => Boolean(view.fog) && view.ambient && !reducedMotion();
+
+  /** The parchment tile: 160 art pixels square, speckled, with curling ink clouds; tiles seamlessly. */
+  function parchmentTile() {
+    const n = 160;
+    const c = doc.createElement('canvas');
+    c.width = n;
+    c.height = n;
+    const p = c.getContext('2d');
+    const base = placeholderColour(registry, 'map', 'parchment');
+    const ink = placeholderColour(registry, 'map', 'parchmentInk');
+    p.fillStyle = base;
+    p.fillRect(0, 0, n, n);
+    const rand = fxRandom(64, 7);
+    const dot = (x, y) => p.fillRect(((Math.round(x) % n) + n) % n, ((Math.round(y) % n) + n) % n, 1, 1);
+    p.fillStyle = shade(base, -0.05);
+    for (let k = 0; k < 800; k += 1) dot(rand() * n, rand() * n);
+    p.fillStyle = shade(base, 0.05);
+    for (let k = 0; k < 500; k += 1) dot(rand() * n, rand() * n);
+    // Two clouds: a row of puffs (half circles) with a curl at one end, in faded ink.
+    p.fillStyle = ink;
+    p.globalAlpha = 0.32;
+    for (const [ox, oy] of [[14, 30], [92, 96], [40, 140]]) {
+      for (let k = 0; k < 3; k += 1) {
+        const cx = ox + k * 7;
+        const r = 4 + (k % 2);
+        for (let a = Math.PI; a <= Math.PI * 2; a += 0.12) dot(cx + Math.cos(a) * r, oy + Math.sin(a) * r);
+      }
+      for (let x = ox - 4; x <= ox + 18; x += 1) dot(x, oy);
+      for (let a = 0; a < Math.PI * 3; a += 0.15) { const r = 1 + a * 0.7; dot(ox + 24 + Math.cos(a) * r, oy - 2 + Math.sin(a) * r); }
+    }
+    p.globalAlpha = 1;
+    return c;
+  }
+
+  function drawParchment(cam, now) {
+    if (!parchment) parchment = ctx.createPattern(parchmentTile(), 'repeat');
+    const k = ART_SCALE * cam.zoom;
+    const drift = ambient() ? (now / 1000) * 3 : 0;
+    parchment.setTransform?.(new win.DOMMatrix([k, 0, 0, k, -(cam.x - drift) * cam.zoom, -cam.y * cam.zoom]));
+    ctx.fillStyle = parchment;
+    ctx.fillRect(0, 0, size.w, size.h);
+  }
+
   function loadAtlas() {
     if (atlas || !win.fetch) return;
     atlas = { ready: false };
@@ -165,7 +235,19 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
 
   function loop() {
     resize();
+    const now = win.performance.now();
+    if (ambient() && now - lastAmbient > 150) { lastAmbient = now; dirty = true; }
     if (dirty) { dirty = false; draw(); }
+    // When nothing else is happening, build the terrain chunks just outside the view, one at a time,
+    // so panning into them later does not have to.
+    if (!dirty && win.requestIdleCallback && !idleQueued) {
+      idleQueued = true;
+      win.requestIdleCallback(() => {
+        idleQueued = false;
+        const cam = view.cam;
+        view.terrain.prebuild({ x: cam.x, y: cam.y, w: size.w / cam.zoom, h: size.h / cam.zoom }, view.strategic);
+      }, { timeout: 500 });
+    }
     const cam = view.cam;
     if (api.onView && (!lastView || lastView.x !== cam.x || lastView.y !== cam.y || lastView.zoom !== cam.zoom || lastView.w !== size.w || lastView.h !== size.h)) {
       lastView = { ...cam, w: size.w, h: size.h };
@@ -204,6 +286,10 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     tileToScreen(t) { return screenOf(view.cam, t); },
     /** The yield overlay: fn(tile) -> yields, or null to turn it off. */
     setYieldOverlay(fn) { yieldsAt = fn; if (fn) loadAtlas(); dirty = true; },
+    /** Factions you are at war with: their borders are drawn dashed. */
+    setWar(factions) { view.atWar = new Set(factions); dirty = true; },
+    /** Water sparkle and cloud drift on or off (they also stop with reduced motion). */
+    setAmbient(on) { view.ambient = on; dirty = true; },
     /** Called with (camera, viewport) whenever either changes (the minimap's frame). */
     onView: null,
     centreOnTile(t) {

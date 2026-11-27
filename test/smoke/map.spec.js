@@ -42,7 +42,7 @@ test('map viewer: same seed same map, pan and zoom work, every type draws', asyn
     for (let k = 0; k < 10; k += 1) await page.mouse.wheel(0, -400);
     expect(await page.evaluate(() => window.__atlasDev.view.camera.zoom)).toBe(2);
     for (let k = 0; k < 20; k += 1) await page.mouse.wheel(0, 400);
-    expect(await page.evaluate(() => window.__atlasDev.view.camera.zoom)).toBe(0.5);
+    expect(await page.evaluate(() => window.__atlasDev.view.camera.zoom)).toBe(0.3);
     await page.keyboard.press('ArrowRight');
   } else {
     // Two-finger pinch outwards zooms in.

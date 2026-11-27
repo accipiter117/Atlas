@@ -24,6 +24,34 @@
       "panel-ink": "#e4e7e9",
       "gold": "#b8c4cc"
     },
+    "placeholders": {
+      "terrain": {
+        "grassland": "#5d7a45",
+        "plains": "#87865a",
+        "desert": "#b3a37a",
+        "tundra": "#79837a",
+        "snow": "#dfe6ea",
+        "coast": "#3f6f86",
+        "ocean": "#22475e",
+        "lake": "#3e7a92",
+        "mountain": "#6a6966"
+      },
+      "feature": {
+        "forest": "#24452a",
+        "jungle": "#2a4e33",
+        "marsh": "#4f6655"
+      },
+      "map": {
+        "parchment": "#c9c3b2",
+        "parchmentInk": "#3d3f44",
+        "beach": "#b5aa8c",
+        "foam": "#dde7ea",
+        "river": "#33708f",
+        "riverLight": "#7fb0c6",
+        "road": "#5f4a32",
+        "roadStone": "#9c9386"
+      }
+    },
     "raiderColour": "#2b2b2b"
   }
 }

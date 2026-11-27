@@ -130,6 +130,14 @@ skin = OD([('contentType', 'skin'), ('values', OD([('id', 'killzone'), ('palette
     ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])), ('art', {}), ('sounds', {}), ('factionColours', True),
     # Graphics overhaul tokens: gunmetal panels, ISA blue edges, Helghast orange-red for alarms.
     ('tokens', OD([('walnut', 'rgba(29, 34, 38, 0.95)'), ('walnut-solid', '#1d2226'), ('brass', '#5b7fa6'), ('brass-inner', '#2c3a48'), ('panel-ink', '#dfe6ec'), ('gold', '#e05a2a'), ('danger', '#e05a2a')])),
+    # Graphics overhaul G3: Helghan's scorched greys and rust (code-drawn terrain colours, docs/OVERHAUL.md 4.1).
+    ('placeholders', OD([
+        ('terrain', OD([('grassland', '#5f6a4c'), ('plains', '#7a6a52'), ('desert', '#9a6a45'), ('tundra', '#6e6e68'), ('snow', '#cfd3d4'),
+                        ('coast', '#3d5664'), ('ocean', '#24343f'), ('lake', '#3c5866'), ('mountain', '#5d5853')])),
+        ('feature', OD([('forest', '#33402e'), ('marsh', '#4d5546')])),
+        ('map', OD([('parchment', '#a9a59c'), ('parchmentInk', '#2c2f33'), ('beach', '#8f7d66'), ('foam', '#c9d3d6'), ('river', '#3b6475'),
+                    ('riverLight', '#7898a4'), ('road', '#4b4038'), ('roadStone', '#8c8378'), ('crop', '#a99a5a'), ('bush', '#4f5a3a')])),
+    ])),
     ('raiderColour', '#2b2b2b')]))])
 open(K + 'skin/skin.json', 'w').write(json.dumps(skin, indent=2, ensure_ascii=False) + '\n')
 text['mapType.inland_sea.text'] = 'Land all round a central sea.'
