@@ -40,3 +40,9 @@ async function loadSheets(art = {}) {
 }
 
 startApp(document, { loadModSources, loadSheets });
+
+// Offline play and Add to Home Screen (phase 21): the service worker caches the
+// game per build. ?nosw=1 skips it (handy when testing a fresh load).
+if ('serviceWorker' in navigator && !new URLSearchParams(location.search).has('nosw')) {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* the game works without it, just not offline */ });
+}

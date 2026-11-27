@@ -59,6 +59,11 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const w = host.clientWidth;
     const h = host.clientHeight;
     if (w === size.w && h === size.h && canvas.width === Math.round(w * dpr)) return;
+    // Keep the same spot in the middle when the map area changes size (a phone's
+    // bottom sheet opening or closing, or the phone turning on its side).
+    if (size.w && size.h && view.cam) {
+      view.cam = clampToWorld({ ...view.cam, x: view.cam.x + (size.w - w) / 2 / view.cam.zoom, y: view.cam.y + (size.h - h) / 2 / view.cam.zoom }, world, w, h);
+    }
     size = { w, h };
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);

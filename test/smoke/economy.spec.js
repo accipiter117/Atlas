@@ -3,6 +3,7 @@
 // spent; the city drawer lists its buildings and amenities.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 test('faction picker, faction card, a builder farms, the drawer shows buildings and amenities', async ({ page }, info) => {
   const errors = [];
@@ -39,6 +40,7 @@ test('faction picker, faction card, a builder farms, the drawer shows buildings 
   // The builder farms a hex where a farm fits.
   await page.locator('[data-action="close-city"]').click();
   const builder = await page.evaluate(() => window.__atlasGame.view.units.find((u) => u.faction === 'f0' && u.type === 'builder'));
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${builder.id}"]`).click();
   await expect(page.locator('[data-field="charges"]')).toHaveText('Charges 3');
   const farm = page.locator('[data-improve="farm"]');

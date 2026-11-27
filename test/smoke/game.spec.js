@@ -4,6 +4,7 @@
 // laptop sizes and with taps only on the touch tablet.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 async function startGame(page) {
   const errors = [];
@@ -58,6 +59,7 @@ test('select a warrior, plan and walk a path over turns, fog in three states, un
   await expect(page.locator('[data-action="next"]')).toHaveText(/Next unit/);
 
   // Select the warrior from the attention list.
+  await openAttention(page);
   await page.locator('.attention-item', { hasText: 'Warrior' }).click();
   await expect(page.locator('.unit-card h2')).toHaveText('Warrior');
   const warrior = await page.evaluate(() => window.__atlasGame.view.units.find((u) => u.type === 'warrior' && u.faction === 'f0'));
@@ -83,8 +85,10 @@ test('select a warrior, plan and walk a path over turns, fog in three states, un
 
   // Every other unit: try each action button.
   const card = page.locator('.unit-panel');
+  await openAttention(page);
   await page.locator('.attention-item', { hasText: 'Settler' }).click();
   await card.getByRole('button', { name: 'Sleep' }).click();
+  await openAttention(page);
   await page.locator('.attention-item', { hasText: 'Builder' }).click();
   await card.getByRole('button', { name: 'Disband' }).click();
   await expect(card.getByRole('button', { name: 'Press again to disband' })).toBeVisible();
@@ -140,6 +144,7 @@ test('reduced motion: units jump instead of walking', async ({ browser }, info) 
   const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1366, height: 768 } });
   const page = await context.newPage();
   await startGame(page);
+  await openAttention(page);
   await page.locator('.attention-item', { hasText: 'Warrior' }).click();
   const warrior = await page.evaluate(() => window.__atlasGame.view.units.find((u) => u.type === 'warrior' && u.faction === 'f0'));
   const target = await targetFor(page, warrior.id);

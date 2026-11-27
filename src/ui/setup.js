@@ -189,7 +189,8 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.tweaks')), el(doc, 'div', { class: 'setup-tweaks' }, ...tweakRows)),
     el(doc, 'p', { class: 'small muted' }, tt('setup.tweaksOrder')));
 
-  // Map.
+  // Map. On a phone (a narrow screen), Small and Standard maps are recommended (phase 21).
+  const phone = (doc.defaultView?.innerWidth ?? 1200) < 900;
   const sizeIds = Object.values(ruleset.mapSizes ?? {}).map((s) => s.id);
   // A front-line game (phase 19) is fought on a fixed map from the rules instead.
   const mapPresets = ruleset.tuning?.frontline?.enabled ? Object.values(ruleset.mapPresets ?? {}) : [];
@@ -199,7 +200,8 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     el(doc, 'p', { class: 'small muted', dataset: { field: 'preset-text' } }, say(ruleset.mapPresets[cfg.map.preset]?.descriptionKey, '')),
     el(doc, 'p', { class: 'small muted' }, tt('setup.frontNote'))) : group(tt('setup.group.map'),
     row(tt('setup.mapType'), select('mapType', cfg.map.type, Object.values(ruleset.mapTypes ?? {}).map((m) => ({ value: m.id, label: say(m.nameKey, m.id) })), (v) => { cfg.map.type = v; })),
-    row(tt('setup.mapSize'), select('mapSize', cfg.map.size, sizeIds.map((id) => ({ value: id, label: say(ruleset.mapSizes[id].nameKey, id) })), (v) => { cfg.map.size = v; changed(); })),
+    row(tt('setup.mapSize'), select('mapSize', cfg.map.size, sizeIds.map((id) => ({ value: id, label: phone && (ruleset.tuning?.setup?.phoneSlowSizes ?? []).includes(id) ? tt('setup.slowOnPhones', { size: say(ruleset.mapSizes[id].nameKey, id) }) : say(ruleset.mapSizes[id].nameKey, id) })), (v) => { cfg.map.size = v; changed(); }),
+      phone ? el(doc, 'p', { class: 'small muted', dataset: { field: 'phone-maps' } }, tt('setup.phoneMaps')) : null),
     row(tt('setup.seaLevel'), select('seaLevel', cfg.map.seaLevel, choose('setup.sea', Object.keys(ruleset.tuning?.mapgen?.seaLevels ?? { low: 1, normal: 1, high: 1 })), (v) => { cfg.map.seaLevel = v; })),
     row(tt('setup.resources'), select('resources', cfg.map.resources, choose('setup.res', Object.keys(ruleset.tuning?.mapgen?.resourceLevels ?? { sparse: 1, standard: 1, abundant: 1 })), (v) => { cfg.map.resources = v; })),
     row(tt('setup.age'), select('age', cfg.map.age, choose('setup.age', Object.keys(ruleset.tuning?.mapgen?.ages ?? { new: 1, standard: 1, old: 1 })), (v) => { cfg.map.age = v; })),

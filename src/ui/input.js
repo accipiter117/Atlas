@@ -14,6 +14,7 @@ export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, key
   let pinch = null;
   let press = null; // where the current single press started, to tell taps from drags
   const TAP_SLOP = 8;
+  const MIN_PINCH = 24;
   el.style.touchAction = 'none';
 
   const local = (e) => {
@@ -29,8 +30,11 @@ export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, key
     pointers.set(e.pointerId, local(e));
     press = pointers.size === 1 && e.button === 0 ? { ...local(e), id: e.pointerId, moved: false, type: e.pointerType } : null;
     if (pointers.size === 2) {
+      // A second finger makes this a pinch: the first finger's press can no longer be a tap
+      // (lifting after a pinch must never send a unit anywhere).
+      press = null;
       const [a, b] = [...pointers.values()];
-      pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
+      pinch = { dist: Math.max(MIN_PINCH, Math.hypot(a.x - b.x, a.y - b.y)), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
     }
   });
 
@@ -51,7 +55,8 @@ export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, key
       view.setCamera(pan(view.camera, now.x - prev.x, now.y - prev.y));
     } else if (pointers.size === 2 && pinch) {
       const [a, b] = [...pointers.values()];
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      // Fingers almost touching would make the zoom jump: measure from at least MIN_PINCH apart.
+      const dist = Math.max(MIN_PINCH, Math.hypot(a.x - b.x, a.y - b.y));
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
       let cam = zoomAt(view.camera, dist / pinch.dist, mid.x, mid.y);
       cam = pan(cam, mid.x - pinch.mid.x, mid.y - pinch.mid.y);

@@ -343,6 +343,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   function select(id, { centre = false } = {}) {
     selected = id;
+    if (id) setSheet(true);
     openCity = null;
     aim = null;
     shootingCity = null;
@@ -359,6 +360,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
 
   function openCityDrawer(id, { centre = false } = {}) {
+    setSheet(true);
     selected = null;
     openCity = id;
     pendingBuy = null;
@@ -902,8 +904,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       ...idle().map((u) => ({ key: u.id, label: tt('game.attention.idle', { unit: unitName(u) }), go: () => select(u.id, { centre: true }), unit: u.id })),
     ];
     $('[data-field="attention-title"]').textContent = tt('game.attention', { n: items.length });
+    $('[data-field="attention-count"]').textContent = String(items.length);
+    // On a phone the list is a drawer: picking an item closes it.
     const lis = items.map((it) => el(doc, 'li', {},
-      el(doc, 'button', { type: 'button', class: `attention-item${it.urgent ? ' urgent' : ''}`, dataset: it.unit ? { unit: it.unit } : {}, onclick: it.go }, it.label)));
+      el(doc, 'button', { type: 'button', class: `attention-item${it.urgent ? ' urgent' : ''}`, dataset: it.unit ? { unit: it.unit } : {}, onclick: () => { setDrawer(false); it.go(); } }, it.label)));
     $('[data-field="attention"]').replaceChildren(...(lis.length ? lis : [el(doc, 'li', { class: 'none' }, tt('game.attention.none'))]));
   }
 
@@ -1304,6 +1308,20 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     });
     panel.hidden = false;
   }
+  // Phone layout (phase 21): the attention drawer and the bottom sheet's handle.
+  function setDrawer(open) {
+    root.classList.toggle('drawer-open', open);
+    $('[data-action="attention-toggle"]').setAttribute('aria-expanded', String(open));
+    $('[data-field="drawer-backdrop"]').hidden = !open;
+    if (open) root.querySelector('.attention .attention-item')?.focus({ preventScroll: true });
+  }
+  function setSheet(open) {
+    root.classList.toggle('sheet-min', !open);
+    $('[data-action="sheet-toggle"]').setAttribute('aria-expanded', String(open));
+  }
+  $('[data-action="attention-toggle"]').onclick = () => setDrawer(!root.classList.contains('drawer-open'));
+  $('[data-field="drawer-backdrop"]').onclick = () => setDrawer(false);
+  $('[data-action="sheet-toggle"]').onclick = () => setSheet(root.classList.contains('sheet-min'));
   $('[data-action="journal"]').onclick = openJournal;
   $('[data-action="empire"]').onclick = () => openEmpire('government');
   $('[data-action="diplomacy"]').onclick = () => openDiplomacy();

@@ -249,6 +249,19 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **No peace on the front**: the war is fought to the end (deals including peace are refused). **No raiders**: the two armies are the only threat.
 - **Defaults from the rules**: a conversion can set the default battle mode and module (Killzone: Ask each time, Killzone platoons) and cap the rivals (Killzone: one).
 
+## Phase 20
+
+- **Skipped for now** at Matthew's request (pass-and-play is not wanted yet). Nothing in the phase was independent of pass-and-play, so nothing from it was built. It can be picked up later as written in docs/PLAN.md.
+
+## Phase 21
+
+- **Phone layout below 900px wide**, so the touch tablet run (820px) uses it too. Older browser tests open the attention drawer first through a small helper.
+- **The bottom sheet has a fixed height while open** (40% of the screen): if it grew and shrank with its content, the map would move between your first tap (showing the odds) and your second (attacking), and the second tap would land on another hex.
+- **Per build without a build step**: GitHub Pages serves the repository as it is, so "per build" is a hash of every app file stamped into sw.js by tools/build-sw.mjs. The browser treats a changed sw.js as a new worker, caches the new build and drops the old one. CI fails if sw.js is stale.
+- **Everything is precached** on install (about 2 MB of code, rules and text), so parts not yet opened, like the Killzone platoon battle, still work offline. Art is cached as it is used and kept across builds.
+- **The phone preset**: a first game on a narrow screen starts from the Quick preset (a Small map); the setup screen recommends Small or Standard and marks Large and Huge as slow on phones (`tuning.setup.phonePreset`, `phoneSlowSizes`).
+- **No rendering changes were needed for speed**: measured frame times on a Standard map at phone size were well within budget.
+
 ## Later
 
 - Nothing yet.

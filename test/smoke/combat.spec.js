@@ -3,6 +3,7 @@
 // put a raider next to your warrior.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 async function pointOf(page, tile) {
   const box = await page.locator('#game-map canvas').boundingBox();
@@ -47,6 +48,7 @@ test('odds before attacking, a battle report, and a promotion', async ({ page },
     return { warrior: w.id, spot, raider };
   });
   expect(setup.spot).toBeGreaterThanOrEqual(0);
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${setup.warrior}"]`).click();
   await expect(page.locator('.unit-card h2')).toHaveText('Warrior');
 
@@ -71,6 +73,7 @@ test('odds before attacking, a battle report, and a promotion', async ({ page },
   expect(after).toBeLessThan(100);
 
   // 13 + 5 experience passes 15: pick a promotion from the short list.
+  await openAttention(page);
   await page.locator(`.attention-item:has-text("can be promoted")`).click();
   const choices = page.locator('[data-field="promote"] [data-promotion]');
   await expect(choices).toHaveCount(2);

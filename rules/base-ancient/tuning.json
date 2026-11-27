@@ -436,7 +436,12 @@
       },
       "maxAis": 11,
       "battleMode": "auto",
-      "battleModule": "tactical"
+      "battleModule": "tactical",
+      "phonePreset": "quick",
+      "phoneSlowSizes": [
+        "large",
+        "huge"
+      ]
     },
     "culture": {
       "influencePerWonder": 3

@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test \"test/**/*.test.js\"",
-    "check": "node tools/check-boundaries.mjs && node tools/check-data.mjs --quiet && node tools/check-text.mjs && node tools/check-size.mjs && eslint . --max-warnings 0 && npm test",
+    "check": "node tools/build-sw.mjs && node tools/check-boundaries.mjs && node tools/check-data.mjs --quiet && node tools/check-text.mjs && node tools/check-size.mjs && eslint . --max-warnings 0 && npm test",
     "smoke": "playwright test --trace off",
     "lint": "eslint . --max-warnings 0",
     "sim": "node tools/sim.mjs",

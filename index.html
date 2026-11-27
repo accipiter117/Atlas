@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atlas</title>
   <meta name="description" content="A hex-based strategy game you can reskin and re-rule with stackable mods.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#8a2b1d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Atlas">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9.5v13L16 30 3 22.5v-13z' fill='%238a2b1d'/%3E%3C/svg%3E">
@@ -22,7 +28,7 @@
         <li><button class="btn" type="button" data-action="mods">Mods</button></li>
         <li><button class="btn" type="button" data-action="settings">Settings</button></li>
       </ul>
-      <p class="footnote">Phase 15: spies, missions and intrigue.<span data-dev-link hidden> Developer <a href="dev.html">map viewer</a>.</span></p>
+      <p class="footnote">Phase 21: play on your phone, even offline.<span data-dev-link hidden> Developer <a href="dev.html">map viewer</a>.</span></p>
     </div>
   </main>
 
@@ -90,14 +96,15 @@
 
   <main id="game" class="screen game" hidden aria-label="Game">
     <header class="game-bar">
-      <button class="btn small" type="button" data-action="game-menu">Menu</button>
+      <button class="btn small bar-btn" type="button" data-action="game-menu" aria-label="Menu"><span class="icon" aria-hidden="true">&#9776;</span><span class="label">Menu</span></button>
+      <button class="btn small bar-btn phone-only" type="button" data-action="attention-toggle" aria-label="Needs attention" aria-expanded="false"><span class="icon" aria-hidden="true">!</span><span class="badge" data-field="attention-count">0</span></button>
       <button class="btn small faction-chip" type="button" data-action="faction">Faction</button>
       <strong class="game-turn" data-field="turn">Turn 1</strong>
       <span class="game-yields" data-field="yields"></span>
-      <button class="btn small" type="button" data-action="empire" title="E">Empire</button>
-      <button class="btn small" type="button" data-action="diplomacy" title="D">Diplomacy</button>
-      <button class="btn small" type="button" data-action="victory" title="V">Victory</button>
-      <button class="btn small" type="button" data-action="journal" title="J">AI journal</button>
+      <button class="btn small bar-btn" type="button" data-action="empire" title="E" aria-label="Empire"><span class="icon" aria-hidden="true">&#9873;</span><span class="label">Empire</span></button>
+      <button class="btn small bar-btn" type="button" data-action="diplomacy" title="D" aria-label="Diplomacy"><span class="icon" aria-hidden="true">&#9993;</span><span class="label">Diplomacy</span></button>
+      <button class="btn small bar-btn" type="button" data-action="victory" title="V" aria-label="Victory"><span class="icon" aria-hidden="true">&#9733;</span><span class="label">Victory</span></button>
+      <button class="btn small bar-btn" type="button" data-action="journal" title="J" aria-label="AI journal"><span class="icon" aria-hidden="true">&#9998;</span><span class="label">AI journal</span></button>
       <span class="game-hint" data-field="hint"></span>
     </header>
     <div class="advice-line" data-field="advice" aria-live="polite"></div>
@@ -106,7 +113,9 @@
       <ul data-field="attention"></ul>
     </aside>
     <div id="game-map" class="map-host" tabindex="0" aria-label="Map"></div>
+    <div class="drawer-backdrop phone-only" data-field="drawer-backdrop" hidden></div>
     <aside class="unit-panel" aria-live="polite">
+      <button class="sheet-handle phone-only" type="button" data-action="sheet-toggle" aria-label="Show or hide the panel" aria-expanded="true"><span aria-hidden="true"></span></button>
       <div class="unit-card" data-field="unit-card"></div>
       <div class="actions" data-field="actions"></div>
       <button class="btn primary next" type="button" data-action="next" title="Enter">Next turn</button>

@@ -167,10 +167,9 @@ body {
 .actions .btn.small { width: 100%; padding: 6px 8px; }
 .btn.danger { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .unit-panel .next { margin-top: auto; min-height: 52px; }
-@media (max-width: 900px) {
-  .screen.game { grid-template-columns: 170px minmax(0, 1fr) 270px; }
-  .game-hint { display: none; }
-}
+/* Phone-only controls (phase 21) are hidden on wider screens. */
+.phone-only { display: none !important; }
+.bar-btn .icon { display: none; font-size: 18px; line-height: 1; }
 .game-yields { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; font-weight: 600; }
 .game-yields .gold { color: #9a7410; }
 .game-yields .science { color: #2f6fbf; }
@@ -446,3 +445,93 @@ body {
 .tactical-end { border: 1px solid var(--accent); border-radius: var(--radius); padding: 10px 12px; background: var(--panel); }
 .tactical-end h3 { margin: 0 0 4px; }
 @media (max-width: 900px) { .tactical-body { grid-template-columns: 1fr; } }
+
+/* ---------- Phase 21: the phone layout (under 900px wide) ----------
+   The map fills the screen; the right panel becomes a bottom sheet you can
+   shrink with its handle; the needs-attention list slides in from the left
+   behind the "!" button (with its count); the top bar shows icons; overlays
+   fill the screen. Safe-area insets keep everything clear of notches and the
+   home bar. Every target stays at least 44px. */
+@media (max-width: 899px) {
+  .phone-only { display: revert !important; }
+  .screen.game {
+    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "bar" "advice" "map" "panel";
+  }
+  .game-bar {
+    display: grid; gap: 4px 6px; padding: 4px 8px; align-items: center;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
+    grid-template-areas: "menu att chip emp dip vic jou" "turn turn yields yields yields yields yields";
+    padding-top: max(4px, env(safe-area-inset-top)); padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right));
+  }
+  .game-bar [data-action="game-menu"] { grid-area: menu; }
+  .game-bar [data-action="attention-toggle"] { grid-area: att; }
+  .game-bar .faction-chip { grid-area: chip; justify-self: start; max-width: 100%; }
+  .game-bar [data-action="empire"] { grid-area: emp; }
+  .game-bar [data-action="diplomacy"] { grid-area: dip; }
+  .game-bar [data-action="victory"] { grid-area: vic; }
+  .game-bar [data-action="journal"] { grid-area: jou; }
+  .game-bar .game-turn { grid-area: turn; font-size: 15px; white-space: nowrap; }
+  .game-hint { display: none; }
+  .bar-btn { min-width: var(--target); padding: 4px 8px; position: relative; }
+  .bar-btn .label { display: none; }
+  .bar-btn .icon { display: inline; }
+  .bar-btn .badge { min-width: 20px; padding: 0 5px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; }
+  .faction-chip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; padding: 4px 8px 4px 10px; font-size: 14px; }
+  .game-bar { gap: 4px; }
+  /* The yields scroll sideways in one line. */
+  .game-yields { grid-area: yields; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 0 12px; font-size: 13px; scrollbar-width: none; align-items: center; }
+  .game-yields::-webkit-scrollbar { display: none; }
+  .game-yields > * { flex: none; }
+  .game-yields .link-like { min-height: var(--target); }
+  .advice-line { padding: 4px 8px; padding-left: max(8px, env(safe-area-inset-left)); font-size: 14px; }
+  /* The attention drawer. */
+  .attention {
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 14; width: min(320px, 86vw); border-right: 1px solid var(--line); background: var(--paper);
+    transform: translateX(-105%); transition: transform var(--speed) ease; box-shadow: var(--shadow);
+    padding-top: max(12px, env(safe-area-inset-top)); padding-left: max(12px, env(safe-area-inset-left)); padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .screen.game.drawer-open .attention { transform: none; }
+  .drawer-backdrop { position: fixed; inset: 0; z-index: 13; background: rgba(10, 12, 16, 0.45); }
+  .drawer-backdrop[hidden] { display: none !important; }
+  /* The bottom sheet. */
+  .unit-panel {
+    border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; gap: 6px;
+    /* A fixed height while open, so the map never shifts under your finger when the panel's content changes. */
+    height: 40vh; height: 40dvh;
+    padding: 0 12px max(10px, env(safe-area-inset-bottom)); padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right));
+    box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.18);
+  }
+  .sheet-handle { position: sticky; top: 0; z-index: 1; width: 100%; min-height: var(--target); margin-bottom: -10px; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; flex: none; }
+  .unit-card h2 { font-size: 19px; }
+  .advice-line { font-size: 13px; min-height: 48px; }
+  .sheet-handle span { width: 44px; height: 5px; border-radius: 3px; background: var(--line); }
+  .screen.game.sheet-min .unit-panel { height: auto; }
+  .screen.game.sheet-min .unit-panel > :not(.sheet-handle):not(.next) { display: none; }
+  .unit-panel .next { margin-top: 4px; min-height: var(--target); position: sticky; bottom: 0; }
+  /* Overlays fill the screen. */
+  .overlay { padding: 0; place-items: stretch; }
+  .overlay-card { width: 100%; min-height: 100%; border-radius: 0; align-content: start; overflow-y: auto;
+    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .panel-overlay { padding: 0; }
+  .panel-card { border-radius: 0; padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); overflow-y: auto; }
+  .battle-screen { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+  .tree-head h2 { font-size: 20px; }
+  /* Menus and setup: more room for the content on a small screen. */
+  .screen:not(.game) { padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+  .card { padding: 20px 14px 16px; }
+  .sheet-handle span { background: var(--ink-soft); opacity: 0.5; }
+}
+/* A phone on its side: the map on the left, the panel on the right. */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
+  .screen.game {
+    grid-template-columns: minmax(0, 1fr) min(300px, 40vw); grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas: "bar bar" "advice advice" "map panel";
+  }
+  .unit-panel { height: auto; max-height: none; border-radius: 0; border-top: 0; border-left: 1px solid var(--line); box-shadow: none; padding-top: 10px; }
+  .sheet-handle { display: none !important; }
+  .screen.game.sheet-min .unit-panel > * { display: revert; }
+  /* One row: buttons, the turn and the scrolling yields. */
+  .game-bar { grid-template-columns: auto auto minmax(0, 8rem) auto minmax(0, 1fr) auto auto auto auto; grid-template-areas: "menu att chip turn yields emp dip vic jou"; }
+  .advice-line { min-height: var(--target); padding-top: 2px; padding-bottom: 2px; }
+}

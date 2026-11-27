@@ -3,6 +3,7 @@
 // out, and the map shows the survivors with the health the battle left them.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 async function pointOf(page, tile) {
   const box = await page.locator('#game-map canvas').boundingBox();
@@ -39,6 +40,7 @@ async function raiderNextToWarrior(page) {
 }
 
 async function attack(page, info, setup) {
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${setup.warrior}"]`).click();
   const pt = await pointOf(page, setup.spot);
   if (info.project.use.hasTouch) { await page.touchscreen.tap(pt.x, pt.y); await page.touchscreen.tap(pt.x, pt.y); } else await page.mouse.click(pt.x, pt.y);

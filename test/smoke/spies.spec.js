@@ -2,6 +2,7 @@
 // success chance before starting it, on the Empire overlay's Spies tab.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 test('spies: post a spy, odds before committing, start a mission', async ({ page }, info) => {
   const errors = [];
@@ -19,6 +20,7 @@ test('spies: post a spy, odds before committing, start a mission', async ({ page
   await page.evaluate(() => window.__atlasGame.debug.autoplay(10));
   await page.evaluate(() => { window.__atlasGame.debug.meetAll(); window.__atlasGame.debug.reveal(); });
   const spy = await page.evaluate(() => { const g = window.__atlasGame; return g.debug.spawn('spy', 'f0', Object.values(g.state.cities).find((c) => c.faction === 'f0').tile); });
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${spy}"]`).click();
   await page.locator('[data-action="post-spy"]').click();
   await expect(panel.locator('[data-tab="spies"]')).toHaveAttribute('aria-selected', 'true');

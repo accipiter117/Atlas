@@ -229,7 +229,14 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const listed = src.index.mods.map((m) => manifests[m.id]).filter(Boolean);
     const mods = listed.filter((m) => m.type === 'tweak' && !devIds.has(m.id));
     const conversions = listed.filter((m) => m.type === 'conversion' && !devIds.has(m.id));
-    setupCfg ??= defaultSetup(base.ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous: readLastSetup() });
+    if (!setupCfg) {
+      const previous = readLastSetup();
+      setupCfg = defaultSetup(base.ruleset, { seed: params.has('seed') ? Number.parseInt(params.get('seed'), 10) || 0 : newSeed(), previous });
+      // A first game on a phone starts from the phone preset (a Small map), since bigger maps are slower there.
+      const phonePreset = base.ruleset.tuning?.setup?.phonePreset;
+      const preset = base.ruleset.tuning?.setup?.presets?.[phonePreset];
+      if (!previous && preset && (doc.defaultView?.innerWidth ?? 1200) < 900) Object.assign(setupCfg, { preset: phonePreset, ais: preset.ais, speed: preset.speed, map: { ...setupCfg.map, size: preset.size } });
+    }
     // Mods that are no longer installed drop out of a remembered setup.
     if (setupCfg.conversion && setupCfg.conversion !== 'none' && !manifests[setupCfg.conversion]) setupCfg.conversion = 'none';
     setupCfg.tweaks = (setupCfg.tweaks ?? []).filter((id) => mods.some((m) => m.id === id));

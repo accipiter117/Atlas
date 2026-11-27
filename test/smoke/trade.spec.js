@@ -2,6 +2,7 @@
 // end gets; starting a route lays a road and shows in the Trade tab.
 
 import { test, expect } from '@playwright/test';
+import { openAttention } from './helpers.js';
 
 test('trade: destinations with yields each way, a road, and the Trade tab', async ({ page }, info) => {
   const errors = [];
@@ -31,12 +32,14 @@ test('trade: destinations with yields each way, a road, and the Trade tab', asyn
   });
   expect(spot).toBeGreaterThanOrEqual(0);
   const settler = await page.evaluate((t) => window.__atlasGame.debug.spawn('settler', 'f0', t), spot);
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${settler}"]`).click();
   await page.locator('[data-act="foundCity"]').click();
   await page.locator('[data-action="close-city"]').click();
 
   // A trader in the capital: its card lists the destinations.
   const trader = await page.evaluate(() => { const g = window.__atlasGame; return g.debug.spawn('trader', 'f0', Object.values(g.state.cities).find((c) => c.capital).tile); });
+  await openAttention(page);
   await page.locator(`.attention-item[data-unit="${trader}"]`).click();
   const dests = page.locator('[data-field="destinations"]');
   await expect(dests).toContainText('Trade route to');

@@ -739,6 +739,8 @@
     "killzone.margin.crushing": "crushingly",
     "killzone.margin.draw": "a draw",
     "front.siteCaptured": "{side} took the {site}.",
-    "front.shift": "The front moved towards {side}."
+    "front.shift": "The front moved towards {side}.",
+    "setup.phoneMaps": "On a phone, Small and Standard maps play most smoothly.",
+    "setup.slowOnPhones": "{size} (slow on phones)"
   }
 }
