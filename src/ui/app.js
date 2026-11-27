@@ -112,7 +112,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
 
   // ---------- Settings (atlas:settings) ----------
   const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70', animSpeed: 'normal', rivalMoves: 'quick', combatCamera: true,
-    confirmEndTurn: true, autoEndTurn: false, showGrid: false, showYields: false, edgeScroll: 'off', zoomSpeed: 'normal', ambient: true, factionColours: 'standard', autosaveEvery: 'every', autosaveKeep: '3' };
+    confirmEndTurn: true, autoEndTurn: false, autoNextUnit: true, showGrid: false, showYields: false, edgeScroll: 'off', zoomSpeed: 'normal', ambient: true, factionColours: 'standard', autosaveEvery: 'every', autosaveKeep: '3' };
   function readSettings() {
     try { return { ...SETTINGS_DEFAULTS, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { ...SETTINGS_DEFAULTS }; }
   }
@@ -125,7 +125,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     doc.documentElement.dataset.combatCamera = s.combatCamera ? 'on' : 'off';
     // Graphics overhaul G7: the rest of section 5.2, read by the game screen and the map.
     for (const k of ['edgeScroll', 'zoomSpeed', 'factionColours', 'autosaveEvery', 'autosaveKeep']) doc.documentElement.dataset[k] = String(s[k]);
-    for (const k of ['confirmEndTurn', 'autoEndTurn', 'showGrid', 'showYields', 'ambient']) doc.documentElement.dataset[k] = s[k] ? 'on' : 'off';
+    for (const k of ['confirmEndTurn', 'autoEndTurn', 'autoNextUnit', 'showGrid', 'showYields', 'ambient']) doc.documentElement.dataset[k] = s[k] ? 'on' : 'off';
     game?.applySettings?.();
     // Interface size (graphics overhaul G1): one CSS variable scales every panel and screen.
     doc.documentElement.style.setProperty('--ui-scale', String(Number(s.uiScale) || 1));

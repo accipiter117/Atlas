@@ -316,6 +316,11 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G8: a city opens on its Production tab**, because the usual reason to open one is to choose what it builds; stepping between cities with the arrows or [ and ] keeps the tab you are on.
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
+## After the overhaul
+
+- **Mouse: left click selects, right click acts.** Left-clicking empty ground lets go of the selection instead of sending the unit there; right-click moves and attacks (as in most strategy games on a computer). A left click on an enemy pins its odds in the panel so the panel's buttons can be reached. Touch keeps its two-tap flow. Right-clicking a rival's unit or city opens a menu with Diplomacy, a deal and war, so diplomacy is reachable from the map as well as from D.
+- **Auto-select after orders is a setting**, on by default, because jumping to the next unit suits most turns but some players want to keep control of the selection.
+
 ## Later
 
 - Nothing yet.

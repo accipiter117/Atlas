@@ -43,7 +43,7 @@ async function attack(page, info, setup) {
   await openAttention(page);
   await page.locator(`.attention-item[data-unit="${setup.warrior}"]`).click();
   const pt = await pointOf(page, setup.spot);
-  if (info.project.use.hasTouch) { await page.touchscreen.tap(pt.x, pt.y); await page.touchscreen.tap(pt.x, pt.y); } else await page.mouse.click(pt.x, pt.y);
+  if (info.project.use.hasTouch) { await page.touchscreen.tap(pt.x, pt.y); await page.touchscreen.tap(pt.x, pt.y); } else await page.mouse.click(pt.x, pt.y, { button: 'right' });
 }
 
 test('ask each time: Fight opens the battlefield and the result reaches the map', async ({ page }, info) => {

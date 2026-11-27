@@ -111,6 +111,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let confirmDisband = false;
   let showAllOptions = false;
   let aim = null;             // { tile, spec, odds } for the enemy being pointed at
+  let aimPinned = false;      // a click (not just pointing) chose this enemy: moving the mouse keeps it
   let shootingCity = null;    // a city choosing what to shoot
   let lastTouch = false;
   let autoplayAi = null;      // ?debug=1 autoplay: an AI plays your seat too
@@ -207,6 +208,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get seed() { return seed; },
     get select() { return select; },
     get selectNextIdle() { return selectNextIdle; },
+    get afterOrders() { return afterOrders; },
     get selected() { return selected; }, set selected(x) { selected = x; },
     get selectedUnit() { return selectedUnit; },
     get setDrawer() { return setDrawer; },
@@ -458,6 +460,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   function select(id, { centre = false } = {}) {
     selected = id;
+    aimPinned = false;
+    closeMapMenu();
     if (id) setSheet(true);
     openCity = null;
     aim = null;
@@ -815,8 +819,18 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       openCityDrawer(founded.city);
       return;
     }
-    if (['fortify', 'skip', 'sleep', 'disband'].includes(type)) selectNextIdle();
+    if (['fortify', 'skip', 'sleep', 'disband'].includes(type)) afterOrders();
     else render();
+  }
+
+  /**
+   * After a unit's orders: the next unit that needs orders (Settings, "Select the next unit
+   * after giving orders", on by default), or, with that off, nothing selected once the unit is done.
+   */
+  function afterOrders() {
+    if ((doc.documentElement.dataset.autoNextUnit ?? 'on') === 'on') { selectNextIdle(); return; }
+    const u = selectedUnit();
+    if (!u || u.moves <= 0 || u.goto !== null || u.activity !== 'none') select(null); else render();
   }
 
   function cityCmd(cmd) {
@@ -836,7 +850,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     pendingTarget = null;
     if (!r) return;
     const after = selectedUnit();
-    if (!after || after.moves <= 0 || after.goto !== null) setTimeout(selectNextIdle, 0);
+    if (!after || after.moves <= 0 || after.goto !== null) setTimeout(afterOrders, 0);
     else render();
   }
 
@@ -903,7 +917,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       const r = run({ type: 'attack', faction: human, unit: u.id, target: tile });
       aim = null;
       mapView.setTarget(null);
-      if (r) setTimeout(selectNextIdle, 0);
+      if (r) setTimeout(afterOrders, 0);
       return;
     }
     if (why === 'atPeace') { aimAt(tile); return; }
@@ -940,9 +954,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       run({ type: 'cityAttack', faction: human, city: c, target: tile });
       return;
     }
+    closeMapMenu();
     if (selectedUnit() && combatKind(ruleset, selectedUnit()) !== 'none' && enemyAt(tile)) {
-      // Mouse: a click attacks (the odds showed on pointing). Touch: the first tap shows the odds.
-      if (lastTouch && aim?.tile !== tile) { aimAt(tile); toast(tt('odds.confirm')); return; }
+      // Mouse: a left click picks the enemy and keeps its odds (and Declare war, at peace) in the
+      // panel; a right click attacks. Touch: the first tap shows the odds, the second attacks.
+      if (!lastTouch) { aimAt(tile); aimPinned = true; if (aim?.odds) toast(tt('odds.rightClick')); return; }
+      if (aim?.tile !== tile) { aimAt(tile); toast(tt('odds.confirm')); return; }
       attackAt(tile);
       return;
     }
@@ -968,7 +985,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     }
     if (city && !u) { openCityDrawer(city.id); return; }
     if (!u) { if (theCity()) select(null); return; }
-    if (lastTouch && pendingTarget !== tile) {
+    // Mouse: a left click away from your units lets go of the selection (right click moves).
+    if (!lastTouch) { if (city) { openCityDrawer(city.id); return; } select(null); return; }
+    if (pendingTarget !== tile) {
       pendingTarget = tile;
       mapView.setHover(tile);
       mapView.setPath(u.tile, plan(u, tile));
@@ -986,18 +1005,69 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     // With nothing selected the hovered hex still gets its soft outline (G3).
     if (!u) { mapView.setHover(tile >= 0 && v.fog[tile] !== UNEXPLORED ? tile : null); return; }
     if (combatKind(ruleset, u) !== 'none' && enemyAt(tile)) {
-      if (aim?.tile !== tile) aimAt(tile);
+      if (aim?.tile !== tile && !aimPinned) aimAt(tile);
       return;
     }
-    if (aim) { aim = null; mapView.setTarget(null); render(); }
+    if (aim && !aimPinned) { aim = null; mapView.setTarget(null); render(); }
     mapView.setHover(tile >= 0 ? tile : null);
     mapView.setPath(u.tile, tile >= 0 && tile !== u.tile ? plan(u, tile) : null);
+  }
+
+  /**
+   * Right click on the map (graphics overhaul follow-up): the action. With one of your units
+   * selected it moves there, or attacks an enemy you are at war with. On a rival's unit or city
+   * it opens a small menu: talk to them in Diplomacy, propose a deal, or declare war. On your
+   * own city it opens the city. The browser's own menu never appears over the map.
+   */
+  function onContext(sx, sy) {
+    hexLeave();
+    closeMapMenu();
+    const tile = mapView.tileAt(sx, sy);
+    if (tile < 0) return;
+    const u = selectedUnit();
+    const world = knownWorld(v);
+    const theirs = (v.fog[tile] === VISIBLE ? v.units.find((x) => x.tile === tile && x.faction !== human) : null) ?? v.cities.find((c) => c.tile === tile && c.faction !== human);
+    const f = theirs?.faction ?? null;
+    const hostile = f === 'raiders' || (f && atWar(world, human, f));
+    if (u && combatKind(ruleset, u) !== 'none' && enemyAt(tile) && hostile) { aimPinned = false; attackAt(tile); return; }
+    if (f && f !== 'raiders') { openMapMenu(sx, sy, tile, f); return; }
+    if (u) { moveTo(tile); return; }
+    const mine = myCities().find((c) => c.tile === tile);
+    if (mine) openCityDrawer(mine.id);
+  }
+
+  // The right-click menu for a rival: one small walnut card at the pointer.
+  let mapMenu = null;
+  function closeMapMenu() { mapMenu?.remove(); mapMenu = null; }
+  function openMapMenu(sx, sy, tile, f) {
+    const world = knownWorld(v);
+    const met = (v.factions ?? []).some((x) => x.id === f) && Boolean(v.opinions?.[f]);
+    const war = atWar(world, human, f);
+    const u = selectedUnit();
+    const item = (action, label, fn, cls = '') => el(doc, 'button', { type: 'button', class: `map-menu-item${cls}`, dataset: { mapAction: action }, onclick: () => { closeMapMenu(); fn(); } }, label);
+    mapMenu = el(doc, 'div', { class: 'map-menu hud-panel', role: 'menu', dataset: { field: 'map-menu' } },
+      el(doc, 'p', { class: 'map-menu-title' }, civName(f)),
+      met ? item('diplomacy', tt('mapMenu.diplomacy', { faction: civName(f) }), () => openDiplomacy(f)) : el(doc, 'p', { class: 'small muted' }, tt('mapMenu.notMet')),
+      met && !war ? item('deal', tt('mapMenu.deal'), () => { dipUi.selected = f; dipUi.deal = { give: [], get: [] }; openDiplomacy(f); }) : null,
+      met && !war ? item('declare-war', tt('game.declareWar', { faction: civName(f) }), () => {
+        if (run({ type: 'declareWar', faction: human, target: f })) { toast(tt('mapMenu.warDeclared', { faction: civName(f) })); if (u && enemyAt(tile)) aimAt(tile); }
+      }, ' danger') : null,
+      war && u && combatKind(ruleset, u) !== 'none' && enemyAt(tile) ? item('attack', tt('mapMenu.attack'), () => attackAt(tile), ' danger') : null,
+      u && !enemyAt(tile) ? item('move', tt('mapMenu.move'), () => moveTo(tile)) : null,
+      item('cancel', tt('mapMenu.cancel'), () => {}));
+    root.append(mapMenu);
+    const host = $('#game-map').getBoundingClientRect();
+    const w = mapMenu.offsetWidth;
+    const h = mapMenu.offsetHeight;
+    mapMenu.style.left = `${Math.round(Math.min(host.left + sx + 6, host.right - w - 8))}px`;
+    mapMenu.style.top = `${Math.round(Math.min(host.top + sy + 6, host.bottom - h - 8))}px`;
+    mapMenu.querySelector('button')?.focus({ preventScroll: true });
   }
 
   attachMapInput(mapView, {
     onTap,
     onHover,
-    onContext: (sx, sy) => { const tile = mapView.tileAt(sx, sy); if (tile >= 0 && selectedUnit()) moveTo(tile); },
+    onContext,
     keyPan: (e) => !(e.key.toLowerCase() === 's' && selectedUnit()),
     keyTarget: root,
   });
@@ -1060,6 +1130,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       // Escape closes whatever is open, the top-most first: a sheet, the faction card, then the selection.
       Escape: () => {
         hideTooltip();
+        if (mapMenu) { closeMapMenu(); return true; }
         if (!panel.hidden) { panel.hidden = true; return true; }
         if (!overlay.hidden) { overlay.hidden = true; return true; }
         if (selected || openCity) select(null); else return false;
@@ -1079,6 +1150,11 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     $('#game-map').focus({ preventScroll: true });
   };
   doc.addEventListener('keydown', onDocKey);
+  // Right click is the game's own (moves, attacks, the rival menu): the browser's menu stays away
+  // from the game screen, except in text boxes.
+  root.addEventListener('contextmenu', (e) => { if (!e.target.closest?.('input, textarea')) e.preventDefault(); });
+  // A click anywhere else closes the rival menu.
+  doc.addEventListener('pointerdown', (e) => { if (mapMenu && !mapMenu.contains(e.target)) closeMapMenu(); }, true);
   $('[data-action="next"]').onclick = next;
   const panel = doc.querySelector('[data-field="panel"]');
   let lastTree = 'techs';

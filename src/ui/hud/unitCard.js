@@ -115,7 +115,7 @@ export function createUnitCard(g) {
           if (improvementProblem(world, g.ruleset, g.human, id, tile)) continue;
           const label = g.tt('game.action.improve', { name: g.ruleset.text[imp.nameKey] ?? id });
           improve.push(el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { improve: id }, title: g.ruleset.text[imp.descriptionKey] ?? '', disabled: u.moves <= 0,
-            onclick: () => { const r = g.run({ type: 'buildImprovement', faction: g.human, unit: u.id, improvement: id, tile }); if (r) g.selectNextIdle(); } }, label));
+            onclick: () => { const r = g.run({ type: 'buildImprovement', faction: g.human, unit: u.id, improvement: id, tile }); if (r) g.afterOrders(); } }, label));
           break;
         }
       }
@@ -124,10 +124,10 @@ export function createUnitCard(g) {
     const isTrader = (g.ruleset.units[u.type]?.tags ?? []).includes('trader');
     if ((g.ruleset.units[u.type]?.tags ?? []).includes('spy')) improve.push(el(g.doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { action: 'post-spy' }, onclick: () => g.openEmpire('spies') }, g.tt('spies.postFromCard')));
     if (isTrader) improve.push(renderTraderList(g.doc, { world: g.world0(), view: g.v, ruleset: g.ruleset, text: g.text, unit: u, name: g.civName,
-      onStart: (city) => { const r = g.run({ type: 'startTradeRoute', faction: g.human, unit: u.id, city }); if (r) g.selectNextIdle(); } }));
+      onStart: (city) => { const r = g.run({ type: 'startTradeRoute', faction: g.human, unit: u.id, city }); if (r) g.afterOrders(); } }));
     fill(actions, ...improve, ...[
       preach ? el(g.doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { act: 'spreadReligion' }, disabled: u.moves <= 0,
-        onclick: () => { const r = g.run({ type: 'spreadReligion', faction: g.human, unit: u.id }); if (r) g.selectNextIdle(); } }, g.tt('game.action.preach', { city: preach.name })) : null,
+        onclick: () => { const r = g.run({ type: 'spreadReligion', faction: g.human, unit: u.id }); if (r) g.afterOrders(); } }, g.tt('game.action.preach', { city: preach.name })) : null,
       g.isFounder(u) ? button('foundCity', g.tt('game.action.found'), !foundable, ' primary wide') : null,
       g.isCivilian(u) ? null : button('fortify', g.tt('game.action.fortify'), u.activity === 'fortify'),
       button('skip', g.tt('game.action.skip'), u.moves <= 0 || u.activity === 'skip'),

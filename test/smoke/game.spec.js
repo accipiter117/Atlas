@@ -74,8 +74,8 @@ test('select a warrior, plan and walk a path over turns, fog in three states, un
   expect(plan.arrivesOnTurn).toBeGreaterThanOrEqual(1);
   await page.screenshot({ path: `test-results/game-path-${info.project.name}.png` });
 
-  // Go: click (mouse) or second tap (touch). The warrior walks, animated, and keeps going next turn.
-  await tap(pt);
+  // Go: right-click (mouse) or second tap (touch). The warrior walks, animated, and keeps going next turn.
+  if (touch) await tap(pt); else await page.mouse.click(pt.x, pt.y, { button: 'right' });
   const moved = await page.evaluate((id) => window.__atlasGame.state.units[id], warrior.id);
   expect(moved.tile).not.toBe(warrior.tile);
   expect(moved.goto).toBe(target);
@@ -149,7 +149,7 @@ test('reduced motion: units jump instead of walking', async ({ browser }, info) 
   const warrior = await page.evaluate(() => window.__atlasGame.view.units.find((u) => u.type === 'warrior' && u.faction === 'f0'));
   const target = await targetFor(page, warrior.id);
   const pt = await pointOf(page, target);
-  await page.mouse.click(pt.x, pt.y);
+  await page.mouse.click(pt.x, pt.y, { button: 'right' });
   expect(await page.evaluate(() => window.__atlasGame.mapView.isAnimating())).toBe(false);
   await context.close();
 });

@@ -67,7 +67,7 @@ test('odds before attacking, a battle report, and a promotion', async ({ page },
   expect(await page.evaluate(() => window.__atlasGame.state.rng)).toBe(rngBefore);
 
   // Attack: click (mouse) or tap again (touch). A report appears and the raider is hurt.
-  if (touch) await page.touchscreen.tap(pt.x, pt.y); else await page.mouse.click(pt.x, pt.y);
+  if (touch) await page.touchscreen.tap(pt.x, pt.y); else await page.mouse.click(pt.x, pt.y, { button: 'right' });
   await expect(page.locator('[data-toast]')).toContainText('attacked');
   const after = await page.evaluate((id) => window.__atlasGame.state.units[id]?.hp ?? 0, setup.raider);
   expect(after).toBeLessThan(100);

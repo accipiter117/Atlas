@@ -1,5 +1,15 @@
 # Changelog
 
+## Mouse controls and declaring war (from Matthew's playtest)
+
+Selecting, moving and diplomacy now work the way a laptop strategy game should.
+
+What you can try: left-click one of your units to select it and left-click empty ground (or press Escape) to let go of it. Right-click where it should go, or right-click an enemy you are at war with to attack. Left-click a rival's unit with your soldier selected and its card (with Declare war, if you are at peace) stays in the panel while you move the mouse to it. Right-click any rival's unit or city for a menu: Talk to them (opens Diplomacy on them), Propose a deal, Declare war, Attack or Move here. The browser's own right-click menu no longer appears over the game. Diplomacy is also always one key away (D) or the scroll icon in the top bar, with deals, denouncing, war and peace for everyone you have met; on wide screens the top-bar buttons now show their names. Settings has "Select the next unit after giving orders" (on by default); turn it off to stay in control of what is selected.
+
+- Fixed: the Declare war button disappeared as soon as the mouse moved towards it, because pointing at any other hex cleared it. A click now pins it.
+- Touch is unchanged: tap to see a route or odds, tap again to go or attack.
+- Tests: a browser test of letting go with a left click, declaring war from the panel after moving the mouse, and the right-click menu's Talk and Declare war; the movement and combat tests now right-click.
+
 ## Graphics overhaul G8: the full-screen screens
 
 The city screen, the trees, Empire, Victory, the journal, Diplomacy and the battle screens match the new look, and the odds and amenities read in plain English.
