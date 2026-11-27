@@ -6,7 +6,7 @@
 // It only reads the view (v.space) and sends ordinary commands through g.run, like the rest
 // of the screen. Everything the game screen shares comes in through `g` (see game.js).
 
-import { spaceOdds, armsPrice } from '../../sim/index.js';
+import { spaceOdds, armsPrice, STANCES } from '../../sim/index.js';
 import { createStarMap } from '../../render/starmap.js';
 import { el } from './shared.js';
 import { icon } from './icons.js';
@@ -38,6 +38,7 @@ export function createStarMapScreen(g) {
     if (w.orbit) parts.push(w.orbit.contested ? tt('starmap.orbitContested') : w.orbit.mine ? tt('starmap.orbitYours') : w.orbit.factions.length ? tt('starmap.orbitEnemy') : tt('starmap.orbitEmpty'));
     if (w.blockaded) parts.push(tt('starmap.blockaded'));
     if (w.storm) parts.push(tt('starmap.storm'));
+    if (g.v.war?.delegation?.[w.id]) parts.push(tt('starmap.delegated'));
     return parts.join(' · ');
   }
 
@@ -89,6 +90,23 @@ export function createStarMapScreen(g) {
     const mine = war.glory[g.human] ?? 0;
     const ranked = Object.values(war.glory).sort((a, b) => b - a);
     host.textContent = `${tt('starmap.support', { us: sideName(war.side), usValue: war.support[war.side], them: sideName(1 - war.side), themValue: war.support[1 - war.side] })} · ${tt('starmap.glory', { glory: mine, rank: ranked.indexOf(mine) + 1, of: ranked.length })}`;
+  }
+
+  /** K5: hand this theatre to your generals in a stance, or take it back. One click each. */
+  function delegationPanel(w) {
+    const now = g.v.war.delegation?.[w.id] ?? null;
+    const pick = (stance) => el(g.doc, 'button', {
+      type: 'button', class: `btn small${stance === now ? ' primary' : ''}`, 'aria-pressed': String(stance === now), dataset: { action: `delegate-${stance ?? 'off'}` },
+      title: stance ? tt(`delegate.${stance}Note`) : '',
+      onclick: () => { if (g.run({ type: 'setDelegation', faction: g.human, theatre: w.id, stance })) render(); },
+    }, tt(stance ? `delegate.${stance}` : 'delegate.off'));
+    const report = (g.theatreReport ?? []).find((x) => x.world === w.id);
+    return [
+      el(g.doc, 'h4', {}, tt('delegate.title')),
+      el(g.doc, 'p', { class: 'small muted' }, now ? tt('delegate.status', { stance: tt(`delegate.${now}`) }) : tt('delegate.hint')),
+      el(g.doc, 'div', { class: 'stance-picks', dataset: { field: 'delegation' } }, pick(null), ...STANCES.map(pick)),
+      report ? el(g.doc, 'p', { class: 'small', dataset: { field: 'theatre-report' } }, report.text) : null,
+    ].filter(Boolean);
   }
 
   function councilPanel(w) {
@@ -167,13 +185,13 @@ export function createStarMapScreen(g) {
       el(g.doc, 'button', { type: 'button', class: 'btn small wide', dataset: { action: 'show-world' }, onclick: () => { close(); g.switchWorld(w.id); } }, tt('starmap.showWorld', { world: worldName(w.id) })),
     ];
     if (mine.length) parts.push(el(g.doc, 'h4', {}, tt('starmap.yourFleets')), el(g.doc, 'div', { class: 'fleet-list' }, ...mine.map((f) => fleetButton(f))));
-    if (theirs.length) parts.push(el(g.doc, 'h4', {}, tt('starmap.otherFleets')), el(g.doc, 'ul', { class: 'fleet-ships' }, ...theirs.map((f) => el(g.doc, 'li', {}, el(g.doc, 'span', { class: 'swatch', style: `background:${g.colours[f.faction] ?? '#888'}` }), tt('starmap.fleetOf', { who: g.civName(f.faction), n: f.ships.length })))));
+    if (theirs.length) parts.push(el(g.doc, 'h4', {}, tt('starmap.otherFleets')), el(g.doc, 'ul', { class: 'fleet-ships' }, ...theirs.map((f) => el(g.doc, 'li', { class: 'other-fleet' }, el(g.doc, 'span', { class: 'swatch', style: `background:${g.colours[f.faction] ?? '#888'}` }), tt('starmap.fleetOf', { who: g.civName(f.faction), n: f.ships.length })))));
     const inbound = space().fleets.filter((f) => f.transit?.to === w.id);
     for (const f of inbound) parts.push(el(g.doc, 'p', { class: 'small warn' }, tt('starmap.inbound', { who: f.faction === g.human ? tt('hex.yours') : g.civName(f.faction), turns: f.transit.left })));
     const f = myFleet();
     if (f) parts.push(fleetPanel(f));
     // K4b: the war council and arms deals.
-    if (g.v.war) parts.push(...councilPanel(w), ...armsPanel(w));
+    if (g.v.war) parts.push(...delegationPanel(w), ...councilPanel(w), ...armsPanel(w));
     side.replaceChildren(...parts);
   }
 

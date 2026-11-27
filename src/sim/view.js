@@ -52,6 +52,8 @@ export function view(state, factionId, ruleset = null, opts = {}) {
       council: state.council?.[side] ? { ...state.council[side] } : null, myProposal: state.council?.proposals?.[factionId] ?? null,
       nextCouncil: Math.ceil((state.turn + 1) / (ruleset.tuning?.warSupport?.councilEvery ?? 10)) * (ruleset.tuning?.warSupport?.councilEvery ?? 10),
       armsSales: state.arms?.sales ?? 0,
+      // K5: the theatres you have handed to the computer, and the stance for each.
+      delegation: { ...(state.delegation?.[factionId] ?? {}) },
     };
   }
   if (!state.map) return out;

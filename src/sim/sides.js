@@ -224,6 +224,31 @@ export const councilVote = {
   },
 };
 
+/**
+ * Delegate a theatre (K5; docs/KILLZONE.md 7.2): the computer plays your units on that world at
+ * the end of each of your turns, in one of three STANCES (Hold the line, Advance, All-out
+ * assault; what each means to the AI is in the mod's ai/weights.json theatre.stances). stance null takes the theatre back. It changes no rules:
+ * the delegated orders are ordinary commands in the log, so a game still replays exactly.
+ */
+export const STANCES = ['hold', 'advance', 'allout'];
+
+export const setDelegation = {
+  validate(state, cmd, ruleset) {
+    if (!state.warSupport || !state.worldOrder) return err('noDelegation', 'Only a war across several worlds has theatres to delegate');
+    if (cmd.faction !== currentFactionId(state)) return err('notYourTurn', 'It is not your turn');
+    if (!state.worldOrder.includes(cmd.theatre)) return err('unknownWorld', 'There is no such world');
+    if (cmd.stance !== null && !STANCES.includes(cmd.stance)) return err('unknownStance', 'There is no such stance');
+    return null;
+  },
+  apply(state, cmd, events) {
+    state.delegation ??= {};
+    const mine = { ...(state.delegation[cmd.faction] ?? {}) };
+    if (cmd.stance === null) delete mine[cmd.theatre]; else mine[cmd.theatre] = cmd.stance;
+    state.delegation[cmd.faction] = mine;
+    events.push({ type: 'delegationSet', faction: cmd.faction, theatre: cmd.theatre, stance: cmd.stance });
+  },
+};
+
 /** The price of an arms deal: the unit's cost times the markup, rising with each sale. */
 export function armsPrice(state, ruleset, unitId) {
   const t = tun(ruleset);

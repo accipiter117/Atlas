@@ -934,6 +934,10 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .fleet-ships .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
 .fleet-move { display: grid; gap: 2px; }
 .fleet-move .btn, .fleet-actions .btn { min-height: 44px; }
+/* K5: theatre command, four stances two by two. */
+.stance-picks { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.stance-picks .btn { min-height: 44px; }
+.fleet-ships li.other-fleet { display: flex; align-items: center; }
 .starmap-side .warn { color: var(--danger); }
 .embark { display: grid; gap: 4px; padding: 6px; border: 1px dashed var(--brass); border-radius: 6px; }
 .screen.game.space-target #game-map { cursor: crosshair; }

@@ -190,6 +190,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     hexDistance: (wv, a, b) => tileDistance(wv.map, a, b),
     setSpaceTarget: (t) => setSpaceTarget(t),
     get switchWorld() { return switchWorld; },
+    get theatreReport() { return lastReport; },
     get worldName() { return worldName; },
     get next() { return next; },
     get noProduction() { return noProduction; },
@@ -460,7 +461,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const itemName = (item) => (item.kind === 'unit' ? ruleset.text[ruleset.units[item.id]?.nameKey] : ruleset.text[ruleset.buildings?.[item.id]?.nameKey]) ?? item.id;
   const myUnits = () => v.units.filter((u) => u.faction === human);
   const myCities = () => v.cities.filter((c) => c.faction === human);
-  const idle = () => myUnits().filter((u) => u.moves > 0 && u.activity === 'none' && u.goto === null);
+  // Units in a theatre you delegated (K5) wait for your generals, not for you.
+  const delegatedHere = () => Boolean(viewWorld && v.war?.delegation?.[viewWorld]);
+  const idle = () => (delegatedHere() ? [] : myUnits().filter((u) => u.moves > 0 && u.activity === 'none' && u.goto === null));
   const selectedUnit = () => v.units.find((u) => u.id === selected && u.faction === human) ?? null;
   const theCity = () => v.cities.find((c) => c.id === openCity && c.faction === human) ?? null;
   const isCivilian = (u) => ruleset.unitClasses[ruleset.units[u.type].class]?.civilian === true;
@@ -739,10 +742,29 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     }
   }
 
+  /** Play your delegated theatres (K5) and return one report line for each. */
+  function playDelegated(all) {
+    if (!state.delegation?.[human] || !Object.keys(state.delegation[human]).length) return [];
+    const d = seats.delegate(state, human);
+    state = d.state;
+    log.push(...d.commands);
+    all.push(...d.events);
+    lastReport = d.report.map((x) => {
+      const line = tt('delegate.report', { world: worldName(x.world), stance: tt(`delegate.${x.stance}`), orders: x.orders, won: x.won, lost: x.lost, killed: x.killed, fallen: x.fallen, works: x.works });
+      return { world: x.world, text: x.why ? `${line} ${tt('delegate.why', { why: tt(x.why.reasonKey, x.why.params) })}` : line };
+    });
+    return lastReport.map((x) => x.text);
+  }
+  // The last turn's theatre reports, also shown on the star map (K5).
+  let lastReport = [];
+
   /** End your turn, let the computer seats play, and come back at your next turn. */
   async function endTurn() {
     if (busy || currentFactionId(state) !== human || gameOver()) return;
     const all = [];
+    // K5: the theatres you delegated play first, with the computer in your stance; their orders
+    // go in the log like yours, and a short report says what happened in each.
+    const report = playDelegated(all);
     const r = exec({ type: 'endTurn', faction: human });
     if (!r.ok) { toast(refusal(r.error)); return; }
     all.push(...r.events);
@@ -753,6 +775,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     sound?.('endTurn');
     recordScores();
     const ms = showEvents(all, { rival: true });
+    for (const line of report) toast(line);
     playback.ribbon(state.turn);
     autosaveNow();
     checkEnd();
