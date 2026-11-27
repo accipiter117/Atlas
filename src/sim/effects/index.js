@@ -38,6 +38,7 @@ import tradeRouteYield from './tradeRouteYield.js';
 import popChange from './popChange.js';
 import { siteEffects } from '../frontline.js';
 import { religionEffects, majorityOf } from '../religion.js';
+import { warSupportEffects } from '../sides.js';
 
 export const HANDLERS = Object.freeze(Object.fromEntries(
   [yieldBonus, yieldPercent, cityYieldPercent, tileYield, costPercent, upkeepPercent, growthPercent,
@@ -96,6 +97,8 @@ export function effectsFor(state, ruleset, factionId) {
     }
     for (const e of city.timed ?? []) out.push({ ...e, scope: 'thisCity', source: { kind: 'timed', id: e.effect, city: city.id } });
   }
+  // K4b: the side's war support (industry when high; dearer units and slower growth when low).
+  if (state.warSupport) out.push(...warSupportEffects(state, ruleset, factionId));
   return out;
 }
 

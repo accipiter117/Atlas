@@ -6,7 +6,7 @@
 // It only reads the view (v.space) and sends ordinary commands through g.run, like the rest
 // of the screen. Everything the game screen shares comes in through `g` (see game.js).
 
-import { spaceOdds } from '../../sim/index.js';
+import { spaceOdds, armsPrice } from '../../sim/index.js';
 import { createStarMap } from '../../render/starmap.js';
 import { el } from './shared.js';
 import { icon } from './icons.js';
@@ -20,6 +20,8 @@ export function createStarMapScreen(g) {
   const tt = g.tt;
   const worldName = (id) => g.worldName(id);
   const sideName = (side) => {
+    // A ruleset may name its sides (side.0.name); else the side's first faction.
+    if (g.ruleset.text[`side.${side}.name`]) return g.ruleset.text[`side.${side}.name`];
     const f = g.v.factions.find((x) => g.sideOf(x.id) === side);
     return f ? g.civName(f.id) : tt('starmap.side', { n: side + 1 });
   };
@@ -47,6 +49,7 @@ export function createStarMapScreen(g) {
       el(g.doc, 'div', { class: 'tree-head' },
         el(g.doc, 'h2', {}, tt('starmap.title')),
         el(g.doc, 'span', { class: 'muted small' }, tt('starmap.hint')),
+        el(g.doc, 'span', { class: 'war-status small', dataset: { field: 'war-status' } }),
         el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-starmap' }, onclick: close }, tt('help.close'))),
       el(g.doc, 'div', { class: 'starmap' },
         el(g.doc, 'div', { class: 'starmap-sky', dataset: { field: 'starmap-sky' } },
@@ -78,8 +81,46 @@ export function createStarMapScreen(g) {
 
   const isOpen = () => !g.panel.hidden && g.panel.classList.contains('starmap-open');
 
+  /** War support for both sides, and your glory and rank on your side (K4b). */
+  function renderWar() {
+    const host = g.panel.querySelector('[data-field="war-status"]');
+    const war = g.v.war;
+    if (!host || !war) return;
+    const mine = war.glory[g.human] ?? 0;
+    const ranked = Object.values(war.glory).sort((a, b) => b - a);
+    host.textContent = `${tt('starmap.support', { us: sideName(war.side), usValue: war.support[war.side], them: sideName(1 - war.side), themValue: war.support[1 - war.side] })} · ${tt('starmap.glory', { glory: mine, rank: ranked.indexOf(mine) + 1, of: ranked.length })}`;
+  }
+
+  function councilPanel(w) {
+    const war = g.v.war;
+    const out = [el(g.doc, 'p', { class: 'small', dataset: { field: 'council' } }, war.council ? tt('starmap.council', { world: worldName(war.council.world), turn: war.nextCouncil }) : tt('starmap.councilNone', { turn: war.nextCouncil }))];
+    if (war.myProposal === w.id) out.push(el(g.doc, 'p', { class: 'small muted' }, tt('starmap.proposed', { world: worldName(w.id) })));
+    else out.push(order(tt('starmap.propose', { world: worldName(w.id) }), { type: 'councilVote', faction: g.human, world: w.id }, { action: 'propose' }));
+    return out;
+  }
+
+  /** Arms for sale from an ally that sells them (Stahl Arms), to your bases on this world. */
+  function armsPanel(w) {
+    const wv = g.viewOf(w.id);
+    const base = wv.cities.find((c) => c.faction === g.human);
+    if (!base) return [];
+    const out = [];
+    for (const seller of g.v.factions.filter((f) => f.alive && f.id !== g.human && g.sideOf(f.id) === g.v.war.side && (g.ruleset.factions[f.civ]?.sellsArms ?? []).length)) {
+      const tags = g.ruleset.factions[seller.civ].sellsArms;
+      const goods = Object.values(g.ruleset.units).filter((u) => !u.unique && (u.tags ?? []).some((x) => tags.includes(x)) && (u.requires?.side === undefined || u.requires.side === g.v.war.side) && u.domain !== 'space');
+      if (!goods.length) continue;
+      out.push(el(g.doc, 'h4', {}, tt('starmap.arms', { seller: g.civName(seller.id) })));
+      out.push(el(g.doc, 'div', { class: 'fleet-actions', dataset: { field: 'arms' } }, ...goods.map((u) => {
+        const label = tt('starmap.buy', { unit: g.ruleset.text[u.nameKey] ?? u.id, price: armsPrice({ arms: { sales: g.v.war.armsSales } }, g.ruleset, u.id) });
+        return order(label, { type: 'buyArms', faction: g.human, seller: seller.id, unit: u.id, city: base.id, world: w.id }, { action: `buy-${u.id}` });
+      })));
+    }
+    return out;
+  }
+
   function render() {
     if (!map || !space()) return;
+    renderWar();
     map.draw(space(), { selectedFleet, selectedWorld, me: g.human });
     renderCards();
     renderSide();
@@ -131,6 +172,8 @@ export function createStarMapScreen(g) {
     for (const f of inbound) parts.push(el(g.doc, 'p', { class: 'small warn' }, tt('starmap.inbound', { who: f.faction === g.human ? tt('hex.yours') : g.civName(f.faction), turns: f.transit.left })));
     const f = myFleet();
     if (f) parts.push(fleetPanel(f));
+    // K4b: the war council and arms deals.
+    if (g.v.war) parts.push(...councilPanel(w), ...armsPanel(w));
     side.replaceChildren(...parts);
   }
 

@@ -1,6 +1,8 @@
 {
   "contentType": "scenarios",
   "entries": [
-    {"id": "balanced_war", "nameKey": "scenario.balanced_war.name", "descriptionKey": "scenario.balanced_war.text", "default": true, "presets": {}}
+    {"id": "balanced_war", "nameKey": "scenario.balanced_war.name", "descriptionKey": "scenario.balanced_war.text", "default": true, "presets": {}},
+    {"id": "invasion_of_vekta", "nameKey": "scenario.invasion_of_vekta.name", "descriptionKey": "scenario.invasion_of_vekta.text", "presets": {"vekta": "kw_vekta_invaded", "halcyon": "kw_halcyon_held"}},
+    {"id": "road_to_helghan", "nameKey": "scenario.road_to_helghan.name", "descriptionKey": "scenario.road_to_helghan.text", "presets": {"midway": "kw_midway_isa", "morrow": "kw_morrow_isa"}}
   ]
 }

@@ -45,6 +45,16 @@ FACTIONS = [
      'Land on Vekta and take an ISA capital.'),
 ]
 
+# What earns each faction glory beyond battles and conquest (docs/KILLZONE.md section 4), as data.
+AMBITION = {
+    'isa': [{'when': 'battleWon', 'amount': 1}],
+    'home_guard': [{'when': 'holdWorld', 'world': 'vekta', 'perTurn': 1}, {'when': 'captureWorld', 'world': 'vekta', 'amount': 15}],
+    'isa_fleet': [{'when': 'captureWorld', 'world': 'ardent', 'amount': 20}, {'when': 'holdOrbit', 'world': 'helghan', 'perTurn': 2}],
+    'helghast': [{'when': 'holdCapital', 'perTurn': 1}, {'when': 'captureWorld', 'amount': 5}],
+    'stahl': [{'when': 'resourceWorked', 'resource': 'petrusite', 'perTurn': 1}, {'when': 'holdWorld', 'world': 'kerberos', 'perTurn': 2}],
+    'helghast_navy': [{'when': 'landOn', 'world': 'vekta', 'amount': 10}, {'when': 'captureCapital', 'amount': 20}],
+}
+
 CITY_NAMES = {
     'home_guard': ['Kessler Ridge', 'Fort Tarsus', 'Highlands Post', 'Rook Valley', 'Brennan Fields', 'Old Port', 'Cedar Line', 'Mercy Hill', 'Lantern Bay', 'Greywater'],
     'isa_fleet': ['Cobalt Bay', 'Tether Point', 'Skyhook', 'Beacon Station', 'Drydock Nine', 'Signal Rock', 'Farwatch', 'Anchor Yard', 'Long Reach', 'Halo Pier'],
@@ -218,10 +228,13 @@ def k4(base, sprites_isa, names):
         trait = {'id': f'{fid}_trait', 'nameKey': f'trait.{fid}_trait.name', 'descriptionKey': f'trait.{fid}_trait.text', 'effects': effects}
         names[f'trait.{fid}_trait.name'] = tname
         names[f'trait.{fid}_trait.text'] = ttext
+        extra = {'ambition': AMBITION[fid]}
+        if fid == 'stahl':
+            extra['sellsArms'] = ['vehicle', 'antiArmour']
         if fid in ('isa', 'helghast'):
-            fac.append({'op': 'change', 'id': fid, 'set': {'trait': trait, 'uniqueUnits': [], 'adjectiveKey': f'faction.{fid}.adj', 'nameKey': f'faction.{fid}.name', 'descriptionKey': f'faction.{fid}.text'}})
+            fac.append({'op': 'change', 'id': fid, 'set': {'trait': trait, 'uniqueUnits': [], 'adjectiveKey': f'faction.{fid}.adj', 'nameKey': f'faction.{fid}.name', 'descriptionKey': f'faction.{fid}.text', **extra}})
             continue
-        fac.append({'id': fid, 'nameKey': f'faction.{fid}.name', 'adjectiveKey': f'faction.{fid}.adj', 'descriptionKey': f'faction.{fid}.text',
+        fac.append({**extra, 'id': fid, 'nameKey': f'faction.{fid}.name', 'adjectiveKey': f'faction.{fid}.adj', 'descriptionKey': f'faction.{fid}.text',
                     'colours': {'primary': col, 'secondary': sec}, 'leaders': [leader], 'startBias': {'terrain': ['plains']}, 'trait': trait,
                     'uniqueUnits': [], 'cityNames': f'k_{fid}', 'frontSide': side, 'tags': ['killzone']})
         names[f'leader.{leader}.name'] = lname
@@ -368,10 +381,23 @@ def k4(base, sprites_isa, names):
 
     # Religion is off in this war (propaganda takes faith's place); so are the ancient improvements.
     files['beliefs.json'] = ('beliefs', [wipe()])
+    # Victory (docs/KILLZONE.md 6.4): the side victories replace conquest and score.
+    vic = [{'op': 'change', 'id': 'conquest', 'set': {'enabled': False}}, {'op': 'change', 'id': 'score', 'set': {'enabled': False}}]
+    for kind, name, text, params in [
+        ('capitals', 'Capture the capitals', 'Hold every enemy faction\'s capital on their home world.', {}),
+        ('support', 'Break their will', 'Drive the enemy side\'s war support to nothing.', {}),
+        ('territory', 'Hold the system', 'Hold 6 of the 8 worlds for 10 turns in a row.', {'worlds': 6, 'turns': 10}),
+        ('time', 'Last side standing', 'When the campaign\'s time runs out, the side with more war support wins.', {}),
+    ]:
+        vid = f'war_{kind}'
+        vic.append({'id': vid, 'nameKey': f'victory.{vid}.name', 'descriptionKey': f'victory.{vid}.text', 'module': 'sides', 'enabled': True, 'params': {'kind': kind, **params}})
+        names[f'victory.{vid}.name'] = name
+        names[f'victory.{vid}.text'] = text
+    files['victories.json'] = ('victories', vic)
     return files, art
 
 
-ERA_NAMES = {'era.ancient.name': 'Opening campaign', 'era.classical.name': 'Escalation', 'era.medieval.name': 'Total war'}
+ERA_NAMES = {'side.0.name': 'The ISA', 'side.1.name': 'The Helghast', 'era.ancient.name': 'Opening campaign', 'era.classical.name': 'Escalation', 'era.medieval.name': 'Total war'}
 YIELD_NAMES = {
     'yield.food': 'rations', 'yield.production': 'industry', 'yield.gold': 'credits', 'yield.science': 'research', 'yield.culture': 'command', 'yield.faith': 'propaganda',
     'game.bar.gold': 'Credits {stock} ({rate})', 'game.bar.science': 'Research {rate}: {item}', 'game.bar.culture': 'Command {rate}',

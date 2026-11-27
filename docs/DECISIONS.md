@@ -354,6 +354,12 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **K4a: an ally's base takes your army groups** like your own, since a side shares its landing grounds.
 - **K4a: the maps stay generated from fixed seeds** (the plan allowed a generator recipe), now with each faction's bases and garrisons, petrusite and fuel. Bigger, hand-drawn home worlds can come with K7's art.
 - **K4a: the computer over-builds engineers** (it values them as builders). That is AI tuning for K5.
+- **K4b: propaganda turns into war support by itself,** every 25 a point, up to 3 a round for a side, so there is no extra button to press each turn; religion is off in this war, so propaganda has no other use yet.
+- **K4b: the council favours whoever is behind.** Each faction proposes its ambition's world (or one it backs on the star map) and votes for it; the most votes win and a tie goes to the faction with least glory. Proposals that name no world (Strategic Command's ambition is battles) simply back someone else's.
+- **K4b: the winner is the side's glory leader,** recorded as the game's winner; the rest of the side share the victory. The victory panel's rows show each path's progress.
+- **K4b: when the campaign's time runs out,** the side with more war support wins (then more worlds held), replacing the score victory, which, like conquest, is off in this war.
+- **K4b: arms deals are for credits only** for now, at twice the unit's cost and 10% more with each sale. Paying in petrusite, and Stahl's price rise when refused it, wait for a real economy of resources.
+- **K4b: separate peace and the petrusite warhead are left out.** Separate peace is optional and off by default in the plan; the warhead was an open question there (keep, option or drop). Both can come back as setup options.
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## After the overhaul

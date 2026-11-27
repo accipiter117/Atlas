@@ -13,7 +13,7 @@ const TYPES = {
   resolveBattle: 'RB', autoResolveBattle: 'AB', captureChoice: 'CC', promote: 'PR',
   setResearch: 'SR', queueResearch: 'QR', declareWar: 'DW', setGovernment: 'SG', setPolicy: 'SY',
   choosePantheon: 'CP', foundReligion: 'FR', buyWithFaith: 'BF', spreadReligion: 'SRL', startTradeRoute: 'TR', assignSpy: 'AS', startMission: 'SM', chooseEvent: 'CE',
-  moveFleet: 'MF', loadArmy: 'LA', landArmy: 'LD', orbitalStrike: 'OS', supplyDrop: 'SD', setBlockade: 'BK',
+  moveFleet: 'MF', loadArmy: 'LA', landArmy: 'LD', orbitalStrike: 'OS', supplyDrop: 'SD', setBlockade: 'BK', councilVote: 'CV', buyArms: 'BA',
 };
 const FIELDS = {
   type: 'T', faction: 'F', unit: 'U', to: 'D', city: 'C', item: 'I', tile: 'L', target: 'G',

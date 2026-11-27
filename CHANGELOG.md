@@ -1,5 +1,15 @@
 # Changelog
 
+## Killzone Extrasolar War K4b: war support, glory, victory and scenarios
+
+The war can now be won, and the allies on each side compete for the credit.
+
+What you can try (Killzone: Extrasolar War): the star map's header shows both sides' war support (out of 100, starting at 60) and your glory and rank on your side. War support rises and falls with the war: a world taken or lost (5), the enemy landing on your home world (10), a faction's capital falling (15), every battle (1), a blockade of your home world (1 a round), and propaganda (every 25 becomes a point, up to 3 a round for the side). Above 70 your bases make 10% more industry; below 30 units cost 20% more and bases grow slower. Glory comes from battles, bases and worlds taken and each faction's ambition (Strategic Command: battles; Home Guard: holding Vekta; Fleet: taking Ardent and holding Helghan's orbit; Army: holding Pyrrhus and taking worlds; Stahl: petrusite and Kerberos; Navy: landing on Vekta and taking capitals). Every 10 turns each side's war council picks a world to fight for (back one with "Propose to the council" on the star map); deeds there earn a fifth more glory. Stahl's allies can buy vehicles and arc weapons from Stahl Arms for credits on the star map, at prices that rise with each sale. A side wins by holding every enemy capital, breaking the enemy's war support, holding 6 of the 8 worlds for 10 turns, or having more war support when the campaign's time runs out; the faction with most glory on the winning side takes the victory. New game offers three scenarios: Balanced war, The invasion of Vekta (the Helghast hold Halcyon and have landed on Vekta) and The road to Helghan (the ISA hold Midway and Morrow).
+
+- `src/sim/sides.js` (war support, glory, the council, arms deals) and `src/sim/victories/sides.js`; every number in tuning.warSupport, ambitions and arms on the factions, home worlds on the worlds.
+- Not yet: the computer does not push across worlds, so war support barely moves in computer-only games until K5; separate peace (an optional rule) and the petrusite warhead (an open question in the plan) are left out.
+- Tests: every source of war support, its effects, propaganda and blockades, the council and its bonus, arms deals, all four victories with glory choosing the winner, and the scenarios. Screenshots in `docs/shots/K4/`.
+
 ## Killzone Extrasolar War K4a: six factions and the war's own content
 
 Killzone: Extrasolar War is now its own war, not the ancient world in Killzone colours.

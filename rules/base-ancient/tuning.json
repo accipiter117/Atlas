@@ -234,6 +234,31 @@
     "ai": {
       "lateGameMode": "normal"
     },
+    "warSupport": {
+      "enabled": false,
+      "start": 60,
+      "territory": 5,
+      "homeLanding": 10,
+      "capitalLost": 15,
+      "battle": 1,
+      "blockade": 1,
+      "propagandaPer": 25,
+      "propagandaMax": 3,
+      "high": 70,
+      "low": 30,
+      "highIndustry": 10,
+      "lowCost": 20,
+      "lowGrowth": 25,
+      "gloryBattle": 1,
+      "gloryCity": 5,
+      "gloryCapital": 10,
+      "gloryWorld": 5,
+      "holdWorlds": 6,
+      "councilEvery": 10,
+      "councilBonus": 20,
+      "armsMarkup": 2,
+      "armsRise": 10
+    },
     "supply": {
       "enabled": false,
       "cityRange": 4,

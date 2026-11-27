@@ -41,6 +41,17 @@ export function view(state, factionId, ruleset = null, opts = {}) {
   if (multi) { out.world = activeWorld(state); out.worlds = state.worldOrder.slice(); }
   // K2: the star map, as this faction may know it.
   if (state.space && ruleset) out.space = spaceView(state, ruleset, factionId, sideOf);
+  // K4b: both sides' war support is public; glory and the council only for your own side.
+  if (state.warSupport && ruleset) {
+    const side = sideOf(state, ruleset, factionId);
+    const mates = state.factions.filter((f) => sideOf(state, ruleset, f.id) === side).map((f) => f.id);
+    out.war = {
+      side, support: { ...state.warSupport }, glory: Object.fromEntries(mates.map((id) => [id, state.glory?.[id] ?? 0])),
+      council: state.council?.[side] ? { ...state.council[side] } : null, myProposal: state.council?.proposals?.[factionId] ?? null,
+      nextCouncil: Math.ceil((state.turn + 1) / (ruleset.tuning?.warSupport?.councilEvery ?? 10)) * (ruleset.tuning?.warSupport?.councilEvery ?? 10),
+      armsSales: state.arms?.sales ?? 0,
+    };
+  }
   if (!state.map) return out;
   const map = state.map;
   const fog = state.fog?.[factionId] ?? new Array(map.width * map.height).fill(UNEXPLORED);

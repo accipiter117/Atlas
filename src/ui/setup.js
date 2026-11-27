@@ -112,6 +112,7 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
   if (cfg.turnLimit === 'none') setup.turnLimit = null;
   if (cfg.turnLimit === 'custom') setup.turnLimit = Math.max(10, Math.min(2000, Math.round(Number(cfg.customTurns) || 300)));
   if (cfg.startEra && cfg.startEra !== firstEra) setup.startEra = cfg.startEra;
+  if (cfg.scenario && ruleset.scenarios?.[cfg.scenario]) setup.scenario = cfg.scenario;
   return { setup, selection, options: setup.modOptions };
 }
 
@@ -202,7 +203,12 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
   // A front-line game (phase 19) is fought on a fixed map from the rules instead.
   const mapPresets = ruleset.tuning?.frontline?.enabled ? Object.values(ruleset.mapPresets ?? {}) : [];
   if (mapPresets.length && !ruleset.mapPresets[cfg.map.preset]) cfg.map.preset = mapPresets[0].id;
-  const map = mapPresets.length ? group(tt('setup.group.map'),
+  // K4b: a war across several worlds picks a scenario (who holds what at the start) instead of a map.
+  const scenarios = Object.values(ruleset.scenarios ?? {});
+  if (scenarios.length && !ruleset.scenarios[cfg.scenario]) cfg.scenario = (scenarios.find((x) => x.default) ?? scenarios[0]).id;
+  const map = scenarios.length ? group(tt('setup.group.map'),
+    row(tt('setup.scenario'), select('scenario', cfg.scenario, scenarios.map((x) => ({ value: x.id, label: say(x.nameKey, x.id) })), (v) => { cfg.scenario = v; changed(); const p = doc.querySelector('[data-field="scenario-text"]'); if (p) p.textContent = say(ruleset.scenarios[v]?.descriptionKey, ''); })),
+    el(doc, 'p', { class: 'small muted', dataset: { field: 'scenario-text' } }, say(ruleset.scenarios[cfg.scenario]?.descriptionKey, ''))) : mapPresets.length ? group(tt('setup.group.map'),
     row(tt('setup.mapPreset'), select('mapPreset', cfg.map.preset, mapPresets.map((p) => ({ value: p.id, label: say(p.nameKey, p.id) })), (v) => { cfg.map.preset = v; })),
     el(doc, 'p', { class: 'small muted', dataset: { field: 'preset-text' } }, say(ruleset.mapPresets[cfg.map.preset]?.descriptionKey, '')),
     el(doc, 'p', { class: 'small muted' }, tt('setup.frontNote'))) : group(tt('setup.group.map'),
@@ -308,7 +314,7 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     const uniques = f ? [...(f.uniqueUnits ?? []).map((id) => say(ruleset.units[id]?.nameKey, id)), ...(f.uniqueBuildings ?? []).map((id) => say(ruleset.buildings?.[id]?.nameKey, id))] : [];
     const src = f ? portrait(cfg.faction) : null;
     const sizeName = say(ruleset.mapSizes?.[cfg.map.size]?.nameKey, cfg.map.size ?? '');
-    const typeName = mapPresets.length ? say(ruleset.mapPresets[cfg.map.preset]?.nameKey, cfg.map.preset) : say(ruleset.mapTypes?.[cfg.map.type]?.nameKey, cfg.map.type);
+    const typeName = scenarios.length ? say(ruleset.scenarios[cfg.scenario]?.nameKey, cfg.scenario) : mapPresets.length ? say(ruleset.mapPresets[cfg.map.preset]?.nameKey, cfg.map.preset) : say(ruleset.mapTypes?.[cfg.map.type]?.nameKey, cfg.map.type);
     return el(doc, 'aside', { class: 'setup-summary', dataset: { field: 'setup-summary' }, style: f ? `--faction:${f.colours.primary}` : '' },
       el(doc, 'div', { class: 'summary-head' },
         src ? el(doc, 'img', { class: 'summary-face', src, alt: '' }) : el(doc, 'span', { class: 'summary-face random', 'aria-hidden': 'true' }, '?'),
@@ -319,7 +325,7 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
       uniques.length ? el(doc, 'p', { class: 'small' }, tt('setup.uniques', { list: uniques.join(', ') })) : null,
       el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'see-cards' }, onclick: () => onPickFaction(cfg) }, tt('setup.seeCards')),
       el(doc, 'ul', { class: 'summary-lines' },
-        el(doc, 'li', {}, tt('setup.sumMap', { size: sizeName, type: typeName })),
+        el(doc, 'li', {}, scenarios.length ? typeName : tt('setup.sumMap', { size: sizeName, type: typeName })),
         el(doc, 'li', {}, tt('setup.sumRivals', { n: cfg.ais })),
         el(doc, 'li', {}, tt('setup.sumPace', { speed: tt(`setup.speed.${cfg.speed}`), level: say(ruleset.difficulty?.[cfg.difficulty]?.nameKey, cfg.difficulty) })),
         el(doc, 'li', {}, tt('setup.sumVictories', { n: cfg.victories.length }))),

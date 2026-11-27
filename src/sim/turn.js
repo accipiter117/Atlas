@@ -25,6 +25,7 @@ import { forEachWorld, wholeGame } from './worlds.js';
 import { startSpaceTurn, spaceRound } from './space.js';
 import { supplyOn, supplyTurn, warTurn, captureRound } from './war.js';
 import { finishImprovement } from './unitCommands.js';
+import { sidesRound } from './sides.js';
 
 /** Does this ruleset use any of the K3 war rules (supply, war infrastructure, theatre rules)? */
 const WAR = new WeakMap();
@@ -77,6 +78,8 @@ function startRound(state, events, ruleset) {
       if (state.worlds) captureRound(state, ruleset, events);
     });
     eliminate(state, ruleset, events);
+    // K4b: war support and glory from the round, and the war council when due.
+    if (state.warSupport) sidesRound(state, ruleset, events);
     // Victory judges factions across every world (read only; the winner is written here).
     const whole = wholeGame(state);
     checkVictory(whole, ruleset, events);

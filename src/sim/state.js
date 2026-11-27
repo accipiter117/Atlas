@@ -21,6 +21,7 @@ import { emptyEvents } from './events.js';
 import { updateAllVisibility, EXPLORED } from './visibility.js';
 import { worldsOn, park, unpark, forEachWorld } from './worlds.js';
 import { captureRound } from './war.js';
+import { sidesOn, setUpSides } from './sides.js';
 import { spaceOn, setUpSpace } from './space.js';
 
 export const STATE_VERSION = 1;
@@ -129,6 +130,7 @@ export function createGame(ruleset, setup) {
     }
     unpark(state, start);
     if (spaceOn(ruleset)) setUpSpace(state, ruleset, sideOf);
+    if (sidesOn(ruleset)) setUpSides(state, ruleset);
     // K3: who holds each world at the start (recorded quietly).
     forEachWorld(state, () => captureRound(state, ruleset, []));
     if (scenario) state.scenario = scenario.id;

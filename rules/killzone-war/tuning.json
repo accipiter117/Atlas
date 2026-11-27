@@ -2,6 +2,7 @@
   "contentType": "tuning",
   "set": {
     "supply.enabled": true,
+    "warSupport.enabled": true,
     "setup.maxAis": 5,
     "raiders.units": [
       {

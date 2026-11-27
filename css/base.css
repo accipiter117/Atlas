@@ -938,3 +938,4 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .embark { display: grid; gap: 4px; padding: 6px; border: 1px dashed var(--brass); border-radius: 6px; }
 .screen.game.space-target #game-map { cursor: crosshair; }
 .game-bar .bar-btn[hidden] { display: none; }
+.starmap-open .war-status { margin-left: auto; margin-right: 12px; font-weight: 600; }

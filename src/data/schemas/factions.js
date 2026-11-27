@@ -16,6 +16,16 @@ export const factions = entryType('factions', {
   cityNames: ref('cityNames', { cascade: 'clear' }),
   // Phase 19: which side of a front-line war (0 or 1) the faction fights on.
   frontSide: int(0, 1),
+  // K4b: what earns this faction glory beyond battles and conquest (src/sim/sides.js).
+  ambition: list(obj({
+    when: req(oneOf(['battleWon', 'captureWorld', 'landOn', 'captureCapital', 'holdWorld', 'holdOrbit', 'holdCapital', 'resourceWorked'])),
+    world: ref('worlds'),
+    resource: ref('resources'),
+    amount: int(0, 100),
+    perTurn: int(0, 20),
+  })),
+  // K4b: unit tags it sells to its allies (an arms dealer).
+  sellsArms: list(str()),
 });
 
 const VICTORIES = ['conquest', 'science', 'culture', 'religious', 'score'];

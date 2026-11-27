@@ -21,6 +21,7 @@ import { assignSpy, startMission } from './espionage.js';
 import { chooseEvent } from './events.js';
 import { multiWorld, activeWorld, switchTo } from './worlds.js';
 import { moveFleet, loadArmy, landArmy, orbitalStrike, supplyDrop, setBlockade } from './space.js';
+import { councilVote, buyArms, noteWarEvents } from './sides.js';
 
 // Buying a building with faith finishes it like any other, so it borrows the city rules.
 const buyWithFaith = {
@@ -79,6 +80,9 @@ export const COMMANDS = Object.freeze({
   orbitalStrike,
   supplyDrop,
   setBlockade,
+  // War support and its politics (K4b).
+  councilVote,
+  buyArms,
 });
 
 const EMPTY = Object.freeze({});
@@ -154,6 +158,7 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   if (ruleset.techs) applyBoosts(next, ruleset, events);
   if (ruleset.civics) applyBoosts(next, ruleset, events, 'civics');
   if (ruleset.diplomacy) noteDiplomacyEvents(next, ruleset, events);
+  if (next.warSupport) noteWarEvents(next, ruleset, events);
   next.commandCount += 1;
   return { ok: true, state: next, events };
 }

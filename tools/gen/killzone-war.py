@@ -176,6 +176,17 @@ def main():
     mor = blob(24, 18, rng, ',', sea='o', edge='o', fill=0.7, scatter=[('h', 0.2), (':', 0.12), ('^', 0.04)])
     presets.append(preset('kw_morrow', mor, 'side1', place(mor, [(11, 9, {'pop': 2, 'civ': 'helghast'})], 1), place(mor, [(12, 9, {'type': 'assault_trooper', 'civ': 'helghast'})], 1)))
     # Bastion Station and Ardent Platform: decks.
+    # K4b scenarios: other starting ownership for some worlds.
+    vi = list(v)
+    presets.append({**preset('kw_vekta_invaded', vi, 'front',
+                             place(vi, [(12, 11, {'pop': 4, 'civ': 'isa'}), (22, 7, {'pop': 3, 'civ': 'home_guard'}), (20, 16, {'pop': 3, 'civ': 'isa_fleet'})], 0),
+                             place(vi, [(13, 11, {'type': 'rifle_squad', 'civ': 'isa'}), (21, 7, {'type': 'home_guard_militia', 'civ': 'home_guard'}), (19, 16, {'type': 'rifle_squad', 'civ': 'isa_fleet'}),
+                                        (12, 12, {'type': 'combat_engineers', 'civ': 'isa'}), (22, 8, {'type': 'rifle_squad', 'civ': 'home_guard'})], 0)
+                             + place(vi, [(30, 9, {'type': 'assault_trooper', 'civ': 'helghast_navy'}), (31, 11, {'type': 'assault_trooper', 'civ': 'helghast_navy'}), (30, 13, {'type': 'helghast_heavy', 'civ': 'helghast'}),
+                                          (31, 14, {'type': 'assault_trooper', 'civ': 'helghast'})], 1)), 'front': 26})
+    hal_h = list(hal)
+    presets.append(preset('kw_halcyon_held', hal_h, 'side1', place(hal_h, [(12, 9, {'pop': 2, 'civ': 'helghast_navy'})], 1), place(hal_h, [(13, 9, {'type': 'assault_trooper', 'civ': 'helghast_navy'})], 1)))
+
     def reactor(rows, c, r):
         cc, rr = nearest_land(rows, c, r)
         return [{'site': 'reactor', 'col': cc, 'row': rr}]
@@ -186,6 +197,10 @@ def main():
     # Midway Relay: neutral decks round a reactor. Kerberos Belt: neutral rocks with a refinery to claim.
     mid = decks(14, 10, rng)
     presets.append(preset('kw_midway', mid, 'neutral', [], [], reactor(mid, 7, 5)))
+    mid_i = decks(14, 10, random.Random(77))
+    presets.append(preset('kw_midway_isa', mid_i, 'side0', [], place(mid_i, [(6, 5, {'type': 'rifle_squad', 'civ': 'isa_fleet'})], 0), reactor(mid_i, 7, 5)))
+    mor_i = list(mor)
+    presets.append(preset('kw_morrow_isa', mor_i, 'side0', place(mor_i, [(11, 9, {'pop': 2, 'civ': 'isa'})], 0), place(mor_i, [(12, 9, {'type': 'rifle_squad', 'civ': 'isa'})], 0)))
     ker = rocks(18, 12, rng)
     for (c, r) in [(3, 3), (9, 2), (14, 4), (4, 8)]:
         put(ker, c, r, 'P')
@@ -212,6 +227,10 @@ def main():
             e['fleets'] = fleets
         if wid in THEATRE:
             e['theatre'] = THEATRE[wid]
+        if wid == 'vekta':
+            e['homeOf'] = 0
+        if wid == 'helghan':
+            e['homeOf'] = 1
         world_entries.append(e)
     lanes = [('vekta', 'bastion'), ('vekta', 'halcyon'), ('bastion', 'halcyon'), ('helghan', 'ardent'), ('helghan', 'morrow'), ('ardent', 'morrow'),
              ('bastion', 'midway'), ('ardent', 'midway'), ('halcyon', 'kerberos'), ('morrow', 'kerberos')]
@@ -271,7 +290,7 @@ def main():
         'unit.helghast_transport.name': 'Helghast transport', 'unit.helghast_transport.text': 'Carries two army groups between worlds but cannot fight.',
     }
     for p in presets:
-        wid = p['id'][3:]
+        wid = p['id'][3:].split('_')[0]
         names[f"mapPreset.{p['id']}.name"] = names[f'world.{wid}.name'] + ' (placeholder)'
         names[f"mapPreset.{p['id']}.text"] = 'This world\'s map: generated from a fixed seed by tools/gen/killzone-war.py.'
         names[f"mapPreset.{p['id']}.name"] = names[f'world.{wid}.name']
@@ -305,9 +324,17 @@ def main():
     write('improvements.json', 'improvements', improvement_entries)
     write('sites.json', 'sites', [{'id': 'reactor', 'nameKey': 'site.reactor.name', 'descriptionKey': 'site.reactor.text', 'icon': 'site.power_plant', 'effects': [{'effect': 'yieldBonus', 'yield': 'production', 'amount': 1}]}])
     with open(os.path.join(ROOT, 'tuning.json'), 'w') as f:
-        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'setup.maxAis': 5,
+        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'warSupport.enabled': True, 'setup.maxAis': 5,
                                                              'raiders.units': [{'fromTurn': 0, 'unit': 'scout_sniper'}]}}, indent=2) + '\n')
-    write('scenarios.json', 'scenarios', [{'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}}])
+    write('scenarios.json', 'scenarios', [
+        {'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}},
+        {'id': 'invasion_of_vekta', 'nameKey': 'scenario.invasion_of_vekta.name', 'descriptionKey': 'scenario.invasion_of_vekta.text', 'presets': {'vekta': 'kw_vekta_invaded', 'halcyon': 'kw_halcyon_held'}},
+        {'id': 'road_to_helghan', 'nameKey': 'scenario.road_to_helghan.name', 'descriptionKey': 'scenario.road_to_helghan.text', 'presets': {'midway': 'kw_midway_isa', 'morrow': 'kw_morrow_isa'}},
+    ])
+    names['scenario.invasion_of_vekta.name'] = 'The invasion of Vekta'
+    names['scenario.invasion_of_vekta.text'] = 'The Helghast hold Halcyon and have already landed on Vekta\'s eastern shore.'
+    names['scenario.road_to_helghan.name'] = 'The road to Helghan'
+    names['scenario.road_to_helghan.text'] = 'The ISA hold Midway Relay and the moon of Morrow: Helghan is next.'
     with open(os.path.join(ROOT, 'text', 'en-GB.json'), 'w') as f:
         f.write(json.dumps({'contentType': 'text', 'strings': names}, indent=2, ensure_ascii=False) + '\n')
     # The star map's planets are drawn in code; these are their colours, by art id, through the skin.
@@ -324,7 +351,7 @@ def main():
         'dependsOn': ['killzone'], 'loadAfter': [], 'incompatibleWith': [], 'options': [],
         # Order matters: the ancient trees go first (cascading what needs them), then the war's own content.
         'files': ['tuning.json', 'sites.json', 'techs.json', 'civics.json', 'governments.json', 'policies.json', 'improvements.json', 'resources.json',
-                  'buildings.json', 'wonders.json', 'unitClasses.json', 'units.json', 'beliefs.json', 'factions.json', 'leaders.json', 'cityNames.json',
+                  'buildings.json', 'wonders.json', 'unitClasses.json', 'units.json', 'beliefs.json', 'victories.json', 'factions.json', 'leaders.json', 'cityNames.json',
                   'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
         'credits': 'Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games.',
     }
