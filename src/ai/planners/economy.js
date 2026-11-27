@@ -57,6 +57,12 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
         if (scouts > 0 || known > 0.35) continue;
         value = 11 * categoryWeight(ruleset, view, memory, 'settle');
         reasonKey = 'ai.reason.scout';
+      } else if ((def.domain ?? ruleset.unitClasses[def.class]?.domain) === 'space') {
+        // K5: warships when the star map planner wants them (the enemy holds or threatens our home orbit).
+        const carrier = (def.space?.capacity ?? 0) > 0 && !def.strength;
+        if (carrier ? !memory.carriersWanted : !memory.shipsWanted || !def.strength) continue;
+        value = carrier ? weightsOf(ruleset, 'starmap').carrierValue ?? 9 : (weightsOf(ruleset, 'starmap').shipValue ?? 10) * (def.strength / 30);
+        reasonKey = carrier ? 'ai.reason.carrier' : 'ai.reason.warship';
       } else if (combat(item.id)) {
         const strength = Math.max(def.strength, def.rangedStrength ?? 0);
         const needDefence = defenders < (mil.defendersPerCity ?? 1);
@@ -64,11 +70,12 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
         const war = ctx.atWar ? 1 : 0;
         const army = mine.filter((u) => combat(u.type)).length;
         // No new army while gold is falling: upkeep would bankrupt the faction.
-        const wantArmy = war && army < myCities.length * (mil.armyPerCityAtWar ?? 2) && (view.lastNetGold ?? 0) >= 0;
+        // K5: a fleet faction that wants an army group to carry (memory.troopsWanted) trains for it too.
+        const wantArmy = (war && army < myCities.length * (mil.armyPerCityAtWar ?? 2) + (memory.troopsWanted ?? 0)) && (view.lastNetGold ?? 0) >= 0;
         if (!needDefence && !wantArmy && urgency === 1) continue;
         // Prefer the strongest unit for its cost; naval units only for a reason.
         const domain = def.domain ?? 'land';
-        if (domain === 'sea') continue;
+        if (domain === 'sea' || domain === 'space') continue;
         value = (needDefence ? 12 : 8) * (strength / 30) * urgency * categoryWeight(ruleset, view, memory, 'military');
         // Siege engines matter more in a war (military.siegeAtWar in data; 1 when absent).
         if (war && !needDefence && def.class === 'siege') value *= mil.siegeAtWar ?? 1;
@@ -84,7 +91,9 @@ export function rankProduction(world, view, ruleset, memory, city, ctx) {
       value += (def.amenities ?? 0) * amen + (def.effects?.length ?? 0) * 1.2 + (def.defence ? (ctx.threatAt(city.tile) ? 4 : 0.3) : 0);
       value += (def.influence ?? 0) * categoryWeight(ruleset, view, memory, 'influence');
       value -= (def.upkeep ?? 0) * 0.6;
-      if (def.project) {
+      // K5: orbital guns when the enemy holds or threatens our home orbit.
+      if (def.orbitalGuns && memory.shipsWanted) value += (weightsOf(ruleset, 'starmap').gunValue ?? 8) * (def.orbitalGuns / 15);
+      if (def.project && !def.effects?.length && !def.orbitalGuns) {
         // A science victory project: worth a lot to a science-minded AI, something to anyone.
         value = 3 * categoryWeight(ruleset, view, memory, 'project');
         reasonKey = 'ai.reason.project';

@@ -1,0 +1,8 @@
+{
+  "contentType": "aiWeights",
+  "entries": [
+    {"id": "starmap", "planner": "starmap", "weights": {"enemy": 3, "contested": 4, "neutral": 2.5, "own": 0, "ambition": 3, "council": 4, "distance": 1.2, "enemyFleet": 2, "homeThreat": 14, "minScore": 0, "landMinDistance": 3, "landDistance": 4, "keepHome": 0, "minGroup": 2, "dareRatio": 0.9, "homeDare": 1.5, "waitTurns": 6, "shipValue": 10, "gunValue": 8, "carrierValue": 9}},
+    {"id": "theatre", "planner": "theatre", "weights": {"works": {"trench": 3, "wire": 2, "mg_nest": 2.5, "bunker": 1.5, "anti_air_battery": 1, "supply_depot": 1.2}, "frontBand": 2, "outnumbered": 1.5, "lookRange": 2, "refugeRange": 3, "stances": {"hold": {"attackMinWinChance": 0.8, "attackMinDamageRatio": 2.5}, "advance": {}, "allout": {"attackMinWinChance": 0.45, "attackMinDamageRatio": 1.0, "attackMinHpAfter": 20}}}},
+    {"op": "change", "id": "economy", "set": {"weights.maxBuilders": 2}}
+  ]
+}

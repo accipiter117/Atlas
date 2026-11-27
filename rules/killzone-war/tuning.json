@@ -3,7 +3,12 @@
   "set": {
     "supply.enabled": true,
     "warSupport.enabled": true,
+    "warSupport.gloryBattle": 3,
+    "warSupport.gloryCity": 10,
+    "warSupport.gloryCapital": 25,
+    "warSupport.gloryWorld": 15,
     "setup.maxAis": 5,
+    "space.loadRange": 3,
     "raiders.units": [
       {
         "fromTurn": 0,

@@ -28,6 +28,7 @@ import { canStand, unitsAt } from './units.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { currentFactionId } from './queries.js';
+import { sideOf } from './frontline.js';
 import { antiAirWorksNear, strikeArmour, stormBlocksOrbit, stormNow, workAt } from './war.js';
 
 const tun = (ruleset) => ruleset.tuning?.space ?? {};
@@ -281,13 +282,15 @@ export const loadArmy = {
     const units = Array.isArray(cmd.units) ? cmd.units.map((id) => state.units?.[id]) : [];
     if (!units.length || units.some((u) => !u)) return err('unknownUnit', 'Choose units on this world');
     if (units.length > (tun(ruleset).groupSize ?? 4)) return err('groupTooBig', 'Too many units for one army group');
-    if (units.some((u) => u.faction !== cmd.faction)) return err('notYourUnit', 'Those units are not yours');
+    // K5: a side shares its transport: a fleet may carry its allies' troops as well as its own.
+    const friend = (f) => f === cmd.faction || (!atWar(state, cmd.faction, f) && sideOf(state, ruleset, f) === sideOf(state, ruleset, cmd.faction));
+    if (units.some((u) => !friend(u.faction))) return err('notYourUnit', 'Those units are not yours or your allies\'');
     if (units.some((u) => ruleset.units[u.type]?.domain === 'space')) return err('badUnit', 'Ships cannot be carried');
     if (fleet.cargo.length >= capacity(ruleset, fleet)) return err('noRoom', 'The fleet has no room for another army group');
     if (!holdsOrbit(state, ruleset, cmd.faction, fleet.at) && orbitOf(state, ruleset, fleet.at).factions.length) return err('noOrbit', 'You need the orbit to embark');
     // Units embark from one of your bases, or next to one.
     const range = tun(ruleset).loadRange ?? 1;
-    const bases = [...Object.values(state.cities ?? {}).filter((c) => c.faction === cmd.faction).map((c) => c.tile), ...bayTiles(state, ruleset, cmd.faction)];
+    const bases = [...Object.values(state.cities ?? {}).filter((c) => friend(c.faction)).map((c) => c.tile), ...bayTiles(state, ruleset, cmd.faction)];
     if (units.some((u) => !bases.some((t) => distance(state.map, t, u.tile) <= range))) return err('notAtBase', 'Units embark at or next to one of your bases');
     return null;
   },

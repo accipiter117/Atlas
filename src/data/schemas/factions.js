@@ -23,6 +23,8 @@ export const factions = entryType('factions', {
     resource: ref('resources'),
     amount: int(0, 100),
     perTurn: int(0, 20),
+    // Held ambitions pay every so many rounds (1 when left out).
+    every: int(1, 20),
   })),
   // K4b: unit tags it sells to its allies (an arms dealer).
   sellsArms: list(str()),

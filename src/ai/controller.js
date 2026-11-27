@@ -21,6 +21,7 @@ import { nextReligion } from './planners/religion.js';
 import { nextEspionage } from './planners/espionage.js';
 import { chooseEventChoice } from './planners/events.js';
 import { decideUnit, builderJobs } from './tactics.js';
+import { nextFleetOrder } from './planners/starmap.js';
 import { weightsOf, dist } from './evaluate.js';
 
 export function createAi(ruleset, factionId, memory = {}) {
@@ -157,31 +158,34 @@ export function createAi(ruleset, factionId, memory = {}) {
       if (valid(world, cmd)) return issue(view, world, { cmd, reasonKey: 'ai.reason.keep', params: {} });
     }
 
+    // K5: a theatre commander (a delegated world) only moves units: no research, cities, diplomacy or fleets.
+    const full = !memory.theatreOnly;
+
     // 1b. An event waits for a choice (phase 16): take the one worth most.
-    if (view.pendingEvent) {
+    if (full && view.pendingEvent) {
       const ranked = (chooseEventChoice(view, ruleset, memory) ?? []).filter((c) => valid(world, c.cmd));
       if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
     }
 
     // 2. Research.
-    if (!memory.done.research && !view.research?.current && !(view.research?.queue ?? []).length) {
+    if (full && !memory.done.research && !view.research?.current && !(view.research?.queue ?? []).length) {
       memory.done.research = true;
       const ranked = rankTechs(world, view, ruleset, memory).filter((c) => valid(world, c.cmd));
       if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
     }
 
     // 2b. Civics, government and policy cards (phase 11).
-    if (ruleset.civics && !memory.done.civic && !view.civicResearch?.current && !(view.civicResearch?.queue ?? []).length) {
+    if (full && ruleset.civics && !memory.done.civic && !view.civicResearch?.current && !(view.civicResearch?.queue ?? []).length) {
       memory.done.civic = true;
       const ranked = rankCivics(world, view, ruleset, memory).filter((c) => valid(world, c.cmd));
       if (ranked.length) return issue(view, world, ranked[0], ranked.slice(1));
     }
-    if (ruleset.governments && !memory.done.government) {
+    if (full && ruleset.governments && !memory.done.government) {
       memory.done.government = true;
       const g = considerGovernment(world, view, ruleset, memory);
       if (g && valid(world, g.cmd)) return issue(view, world, g, g.alternatives);
     }
-    if (ruleset.policies && (memory.done.policies ?? 0) < 12) {
+    if (full && ruleset.policies && (memory.done.policies ?? 0) < 12) {
       memory.done.policies = (memory.done.policies ?? 0) + 1;
       const p = nextPolicy(world, view, ruleset, memory);
       if (p && valid(world, p.cmd)) return issue(view, world, p);
@@ -189,7 +193,7 @@ export function createAi(ruleset, factionId, memory = {}) {
     }
 
     // 2c. Diplomacy: answer offers, seek peace when losing, make friends, denounce (phase 12).
-    if (ruleset.diplomacy && (memory.done.diplomacy ?? 0) < 6) {
+    if (full && ruleset.diplomacy && (memory.done.diplomacy ?? 0) < 6) {
       memory.done.diplomacy = (memory.done.diplomacy ?? 0) + 1;
       const d = nextDiplomacy(world, view, ruleset, memory);
       if (d && valid(world, d.cmd)) return issue(view, world, d);
@@ -197,7 +201,7 @@ export function createAi(ruleset, factionId, memory = {}) {
     }
 
     // 2d. Religion: pantheon, founding, missionaries (phase 13).
-    if (ruleset.beliefs && (memory.done.religion ?? 0) < 4) {
+    if (full && ruleset.beliefs && (memory.done.religion ?? 0) < 4) {
       memory.done.religion = (memory.done.religion ?? 0) + 1;
       const r = nextReligion(world, view, ruleset, memory);
       if (r && valid(world, r.cmd)) return issue(view, world, r);
@@ -205,7 +209,7 @@ export function createAi(ruleset, factionId, memory = {}) {
     }
 
     // 2e. Espionage: post spies, start missions (phase 15).
-    if (ruleset.espionage && (memory.done.espionage ?? 0) < 6) {
+    if (full && ruleset.espionage && (memory.done.espionage ?? 0) < 6) {
       memory.done.espionage = (memory.done.espionage ?? 0) + 1;
       const e = nextEspionage(world, view, ruleset, memory);
       if (e && valid(world, e.cmd)) return issue(view, world, e);
@@ -213,7 +217,7 @@ export function createAi(ruleset, factionId, memory = {}) {
     }
 
     // 3. War.
-    if (!memory.done.war) {
+    if (full && !memory.done.war) {
       memory.done.war = true;
       const war = considerWar(world, view, ruleset, memory);
       if (war && valid(world, war.cmd)) return issue(view, world, war);
@@ -223,7 +227,7 @@ export function createAi(ruleset, factionId, memory = {}) {
     const ctx = { ...memory.ctx, threatAt: threatMap(world, view, ruleset) };
 
     // 4. Cities with nothing to build.
-    for (const c of view.cities.filter((x) => x.faction === me && !x.queue.length)) {
+    for (const c of view.cities.filter((x) => full && x.faction === me && !x.queue.length)) {
       if (memory.done[`city:${c.id}`]) continue;
       memory.done[`city:${c.id}`] = true;
       const ranked = rankProduction(world, view, ruleset, memory, c, ctx).filter((r) => valid(world, r.cmd));
@@ -232,7 +236,7 @@ export function createAi(ruleset, factionId, memory = {}) {
 
     // 4b. Every few turns, a city switches to something clearly better (progress carries over).
     const reconsider = weightsOf(ruleset, 'economy').reconsiderEvery ?? 5;
-    if (view.turn % reconsider === 0) {
+    if (full && view.turn % reconsider === 0) {
       for (const c of view.cities.filter((x) => x.faction === me && x.queue.length)) {
         if (memory.done[`re:${c.id}`]) continue;
         memory.done[`re:${c.id}`] = true;
@@ -248,7 +252,7 @@ export function createAi(ruleset, factionId, memory = {}) {
 
     // 5. Spare gold buys settlers, builders and defenders (keeping a reserve).
     const reserve = weightsOf(ruleset, 'economy').goldReserve ?? 60;
-    for (const c of view.cities.filter((x) => x.faction === me && x.queue.length)) {
+    for (const c of view.cities.filter((x) => full && x.faction === me && x.queue.length)) {
       if (memory.done[`buy:${c.id}`]) continue;
       memory.done[`buy:${c.id}`] = true;
       const head = c.queue[0];
@@ -269,6 +273,12 @@ export function createAi(ruleset, factionId, memory = {}) {
       const pick = options.slice().sort()[0];
       const cmd = { type: 'promote', faction: me, unit: u.id, promotion: pick };
       if (valid(world, cmd)) return issue(view, world, { cmd, reasonKey: 'ai.reason.promote', params: { promotion: pick } });
+    }
+
+    // 6b. Fleets (K5): orders for this faction's fleets in orbit of the world on screen.
+    if (full && view.space) {
+      const order = nextFleetOrder(view, ruleset, memory, (a, b) => dist(view.map, a, b));
+      if (order) return issue(view, world, order);
     }
 
     // 7. Units.

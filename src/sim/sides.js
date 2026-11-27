@@ -136,6 +136,7 @@ export function sidesRound(state, ruleset, events) {
   for (const f of state.factions.filter((x) => x.alive)) {
     const side = sideOf(state, ruleset, f.id);
     for (const a of ruleset.factions?.[f.civ]?.ambition ?? []) {
+      if (state.turn % (a.every ?? 1) !== 0) continue;
       if (a.when === 'holdWorld' && state.holders?.[a.world] === side) glory(state, ruleset, f.id, a.perTurn ?? 1, a.world, events, 'ambition');
       if (a.when === 'holdOrbit' && orbitOf(state, ruleset, a.world).factions.some((x) => x === f.id)) glory(state, ruleset, f.id, a.perTurn ?? 1, a.world, events, 'ambition');
       if (a.when === 'holdCapital') {

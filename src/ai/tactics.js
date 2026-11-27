@@ -14,6 +14,7 @@
 import { missionaryMove } from './planners/religion.js';
 import { traderMove } from './planners/trade.js';
 import { attackProblem, combatKind, rangeOf, improvementProblem, builderTargets, foundingProblem, findPath, atWar, tileYields, UNEXPLORED, VISIBLE } from '../sim/index.js';
+import { neighbourCache } from '../sim/index.js';
 import { weightsOf, odds, dist } from './evaluate.js';
 import { surroundingsKnown } from './planners/expansion.js';
 
@@ -41,8 +42,9 @@ function approach(world, view, ruleset, unit, goal, range = 1) {
 const move = (view, unit, to, reasonKey, params, score = 1) => ({ cmd: { type: 'moveUnit', faction: view.me, unit: unit.id, to }, reasonKey, params, score });
 
 /** The best attack this unit can make now, if the odds are good enough. */
-export function bestAttack(world, view, ruleset, unit, path = null) {
-  const th = weightsOf(ruleset, 'thresholds');
+export function bestAttack(world, view, ruleset, unit, path = null, stance = null) {
+  // K5: a delegated theatre's stance moves the odds it will take (data: aiWeights theatre.stances).
+  const th = { ...weightsOf(ruleset, 'thresholds'), ...(stance ? weightsOf(ruleset, 'theatre').stances?.[stance] ?? {} : {}) };
   const seen = (t) => view.fog[t] === VISIBLE;
   const candidates = [];
   const targets = new Set();
@@ -113,8 +115,17 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
   }
 
   if (combatKind(ruleset, unit) === 'none') return null;
-  const attack = bestAttack(world, view, ruleset, unit, memory.path ?? null);
+  const attack = bestAttack(world, view, ruleset, unit, memory.path ?? null, memory.stance ?? null);
   if (attack) return attack;
+
+  // K5: outnumbered near the front, fall back to the nearest of our own fortifications.
+  const fallBack = fortifiedRefuge(view, ruleset, unit);
+  if (fallBack !== null) {
+    if (fallBack === unit.tile) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 2, reasonKey: 'ai.reason.dugIn', params: {} };
+    return move(view, unit, fallBack, 'ai.reason.fallBack', {}, 2);
+  }
+  // K5: holding the line means staying put.
+  if (memory.stance === 'hold' && unit.activity !== 'fortify') return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 1, reasonKey: 'ai.reason.hold', params: {} };
 
   // Badly hurt: go home and heal.
   if (unit.hp < (th.retreatHp ?? 35)) {
@@ -151,15 +162,57 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
         const wait = pathTo(world, view, ruleset, unit, spot)?.tiles?.find((t) => dist(view.map, t, ctx.warTarget) <= muster);
         if (wait !== undefined && wait !== unit.tile) return move(view, unit, wait, 'ai.reason.muster', {}, 1);
       }
+      // K5: never march out of supply (the view lists what we can supply).
+      if (spot !== null && view.supply && !view.supply.includes(spot)) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.supplyLine', params: {} };
       if (spot !== null) return move(view, unit, spot, 'ai.reason.march', {}, 1);
     }
   }
   return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.hold', params: {} };
 }
 
+/**
+ * K5: when this unit is outnumbered near the front (enemies within reach outnumber friends by the
+ * theatre weights' ratio), the nearest free hex of our own fortifications to fall back to; else null.
+ */
+function fortifiedRefuge(view, ruleset, unit) {
+  const tw = weightsOf(ruleset, 'theatre');
+  if (!view.map.works || !tw.outnumbered) return null;
+  const near = (u) => dist(view.map, u.tile, unit.tile) <= (tw.lookRange ?? 2);
+  const foes = view.units.filter((u) => u.faction !== view.me && near(u) && (ruleset.units[u.type]?.strength ?? 0) > 0).length;
+  const friends = view.units.filter((u) => u.faction === view.me && near(u) && (ruleset.units[u.type]?.strength ?? 0) > 0).length;
+  if (!foes || foes < friends * tw.outnumbered) return null;
+  let best = null;
+  for (const [t, w] of Object.entries(view.map.works)) {
+    const tile = Number(t);
+    const def = ruleset.improvements?.[view.map.improvementIds[view.map.improvement[tile]]];
+    if (w.faction !== view.me || !def?.defence) continue;
+    if (tile !== unit.tile && view.units.some((u) => u.tile === tile)) continue;
+    const d = dist(view.map, tile, unit.tile);
+    if (d > (tw.refugeRange ?? 3)) continue;
+    if (!best || d < best.d || (d === best.d && tile < best.tile)) best = { tile, d };
+  }
+  return best?.tile ?? null;
+}
+
 /** The best improvement job for a builder: a worked or owned hex where an improvement fits, with the biggest gain. */
 export function builderJobs(world, view, ruleset) {
   const jobs = [];
+  // K5: on a front, engineers dig in first: works near the front line, by the theatre weights' value.
+  const tw = weightsOf(ruleset, 'theatre');
+  if (view.frontline && tw.works) {
+    const control = view.frontline.control;
+    const side = ruleset.factions?.[view.factions.find((f) => f.id === view.me)?.civ]?.frontSide ?? 0;
+    const ours = (t) => (side === 0 ? control[t] > 0 : control[t] < 0);
+    const nbs = neighbourCache(view.map);
+    const nearFront = (t) => { const seen = new Set([t]); let ring = [t]; for (let k = 0; k < (tw.frontBand ?? 2); k += 1) { ring = ring.flatMap((x) => nbs[x]).filter((j) => j >= 0 && !seen.has(j) && seen.add(j)); if (ring.some((j) => control[j] !== 0 && !ours(j))) return true; } return false; };
+    for (let t = 0; t < view.map.terrain.length; t += 1) {
+      if (view.map.improvement?.[t] >= 0 || !ours(t) || view.cities.some((c) => c.tile === t) || !nearFront(t)) continue;
+      for (const [id, value] of Object.entries(tw.works)) {
+        if (!ruleset.improvements?.[id] || improvementProblem(world, ruleset, view.me, id, t)) continue;
+        jobs.push({ tile: t, from: t, improvement: id, gain: value });
+      }
+    }
+  }
   const map = view.map;
   const myCities = view.cities.filter((c) => c.faction === view.me);
   const worked = new Set(myCities.flatMap((c) => c.worked));

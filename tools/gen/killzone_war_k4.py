@@ -47,12 +47,12 @@ FACTIONS = [
 
 # What earns each faction glory beyond battles and conquest (docs/KILLZONE.md section 4), as data.
 AMBITION = {
-    'isa': [{'when': 'battleWon', 'amount': 1}],
-    'home_guard': [{'when': 'holdWorld', 'world': 'vekta', 'perTurn': 1}, {'when': 'captureWorld', 'world': 'vekta', 'amount': 15}],
-    'isa_fleet': [{'when': 'captureWorld', 'world': 'ardent', 'amount': 20}, {'when': 'holdOrbit', 'world': 'helghan', 'perTurn': 2}],
-    'helghast': [{'when': 'holdCapital', 'perTurn': 1}, {'when': 'captureWorld', 'amount': 5}],
-    'stahl': [{'when': 'resourceWorked', 'resource': 'petrusite', 'perTurn': 1}, {'when': 'holdWorld', 'world': 'kerberos', 'perTurn': 2}],
-    'helghast_navy': [{'when': 'landOn', 'world': 'vekta', 'amount': 10}, {'when': 'captureCapital', 'amount': 20}],
+    'isa': [{'when': 'battleWon', 'amount': 2}],
+    'home_guard': [{'when': 'holdWorld', 'world': 'vekta', 'perTurn': 1, 'every': 5}, {'when': 'captureWorld', 'world': 'vekta', 'amount': 20}],
+    'isa_fleet': [{'when': 'captureWorld', 'world': 'ardent', 'amount': 25}, {'when': 'holdOrbit', 'world': 'helghan', 'perTurn': 2}, {'when': 'landOn', 'world': 'helghan', 'amount': 15}],
+    'helghast': [{'when': 'holdCapital', 'perTurn': 1, 'every': 5}, {'when': 'captureWorld', 'amount': 10}],
+    'stahl': [{'when': 'resourceWorked', 'resource': 'petrusite', 'perTurn': 1, 'every': 4}, {'when': 'holdWorld', 'world': 'kerberos', 'perTurn': 2}],
+    'helghast_navy': [{'when': 'landOn', 'world': 'vekta', 'amount': 20}, {'when': 'captureCapital', 'amount': 25}],
 }
 
 CITY_NAMES = {
@@ -92,7 +92,7 @@ UNITS = [
 # Ships (the K2 ships get requirements; the projects' flagships are new).
 SHIP_REQUIRES = {
     'isa_cruiser': ('cruiser_yards', 'fuel'), 'helghast_cruiser': ('cruiser_yards', 'petrusite'),
-    'isa_destroyer': ('cruiser_yards', None), 'helghast_destroyer': ('cruiser_yards', None),
+    'isa_destroyer': (None, None), 'helghast_destroyer': (None, None),
     'isa_intruder': ('orbital_drop', None), 'helghast_dropship': ('orbital_drop', None),
     'isa_transport': (None, None), 'helghast_transport': (None, None),
 }
@@ -302,6 +302,8 @@ def k4(base, sprites_isa, names):
     # Buildings and projects replace the ancient lists.
     # The capital's own building stays (tuning.cities.capitalBuilding), as each faction's headquarters.
     bld = [wipe(keep=['palace'])]
+    # Headquarters also broadcast: +2 propaganda, so a side can win back support.
+    bld.append({'op': 'change', 'id': 'palace', 'set': {'yields': {'production': 2, 'gold': 4, 'science': 2, 'culture': 1, 'faith': 2}}})
     names['building.palace.name'] = 'Headquarters'
     names['building.palace.text'] = 'Your faction\'s command: industry, credits, research and command, and a wildcard card slot.'
     for (bid, tech, cost, upkeep, extra, name, text) in BUILDINGS:
@@ -394,6 +396,23 @@ def k4(base, sprites_isa, names):
         names[f'victory.{vid}.name'] = name
         names[f'victory.{vid}.text'] = text
     files['victories.json'] = ('victories', vic)
+    # K5: the AI's numbers for this war (star map, theatres, fewer engineers).
+    files['ai/weights.json'] = ('aiWeights', [
+        {'id': 'starmap', 'planner': 'starmap', 'weights': {'enemy': 3, 'contested': 4, 'neutral': 2.5, 'own': 0, 'ambition': 3, 'council': 4, 'distance': 1.2,
+                                                              'enemyFleet': 2, 'homeThreat': 14, 'minScore': 0, 'landMinDistance': 3, 'landDistance': 4, 'keepHome': 0, 'minGroup': 2, 'dareRatio': 0.9, 'homeDare': 1.5, 'waitTurns': 6, 'shipValue': 10, 'gunValue': 8, 'carrierValue': 9}},
+        {'id': 'theatre', 'planner': 'theatre', 'weights': {'works': {'trench': 3, 'wire': 2, 'mg_nest': 2.5, 'bunker': 1.5, 'anti_air_battery': 1, 'supply_depot': 1.2},
+                                                             'frontBand': 2, 'outnumbered': 1.5, 'lookRange': 2, 'refugeRange': 3,
+                                                             'stances': {'hold': {'attackMinWinChance': 0.8, 'attackMinDamageRatio': 2.5},
+                                                                         'advance': {},
+                                                                         'allout': {'attackMinWinChance': 0.45, 'attackMinDamageRatio': 1.0, 'attackMinHpAfter': 20}}}},
+        {'op': 'change', 'id': 'economy', 'set': {'weights.maxBuilders': 2}},
+    ])
+    for k, v in {'ai.reason.supplyDrop': 'Supplies dropped to troops cut off from supply.', 'ai.reason.strike': 'An orbital strike on the enemy beside our troops.',
+                 'ai.reason.land': 'An army group lands on the target world.', 'ai.reason.embark': 'Troops embark for the target world.',
+                 'ai.reason.sail': 'The fleet sails for {world}.', 'ai.reason.blockade': 'A blockade of an enemy world.',
+                 'ai.reason.dugIn': 'Outnumbered: holding our fortifications.', 'ai.reason.fallBack': 'Outnumbered: falling back to our fortifications.',
+                 'ai.reason.supplyLine': 'Holding here: further on is out of supply.', 'ai.reason.warship': 'Warships to take back our home\'s orbit.', 'ai.reason.carrier': 'Transports to carry an army to the target world.'}.items():
+        names[k] = v
     return files, art
 
 

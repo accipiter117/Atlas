@@ -27,7 +27,10 @@ function winningSide(state, ruleset, params, limit) {
     if (w[0] !== w[1]) return w[0] > w[1] ? 0 : 1;
     const held = (s) => Object.values(state.holders ?? {}).filter((h) => h === s).length;
     if (held(0) !== held(1)) return held(0) > held(1) ? 0 : 1;
-    return 0;
+    // Then the side with more glory between its factions; a dead heat goes to neither seat's advantage: the earlier seat's side.
+    const glory = (s) => Object.entries(state.glory ?? {}).filter(([f]) => sideOf(state, ruleset, f) === s).reduce((n, [, g]) => n + g, 0);
+    if (glory(0) !== glory(1)) return glory(0) > glory(1) ? 0 : 1;
+    return sideOf(state, ruleset, state.seatOrder[0]);
   }
   return null;
 }

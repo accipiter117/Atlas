@@ -2,6 +2,7 @@
   "contentType": "buildings",
   "entries": [
     {"op": "remove", "where": {"id": {"notIn": ["palace"]}}, "cascade": true},
+    {"op": "change", "id": "palace", "set": {"yields": {"production": 2, "gold": 4, "science": 2, "culture": 1, "faith": 2}}},
     {"id": "barracks", "nameKey": "building.barracks.name", "descriptionKey": "building.barracks.text", "cost": 55, "upkeep": 1, "icon": "building.barracks", "yields": {"production": 1}, "effects": [{"effect": "costPercent", "target": "infantry", "amount": -15}]},
     {"id": "vehicle_depot", "nameKey": "building.vehicle_depot.name", "descriptionKey": "building.vehicle_depot.text", "cost": 90, "upkeep": 1, "icon": "building.vehicle_depot", "effects": [{"effect": "costPercent", "target": "vehicle", "amount": -15}], "requires": {"tech": "crawler_drives"}},
     {"id": "armoury", "nameKey": "building.armoury.name", "descriptionKey": "building.armoury.text", "cost": 110, "upkeep": 2, "icon": "building.armoury", "yields": {"production": 1}, "effects": [{"effect": "healBonus", "amount": 5}], "requires": {"tech": "powered_armour"}},

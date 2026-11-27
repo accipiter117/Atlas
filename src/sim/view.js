@@ -9,7 +9,7 @@ import { VISIBLE, UNEXPLORED } from './visibility.js';
 import { opinionOf } from './diplomacy.js';
 import { multiWorld, lookAt, activeWorld } from './worlds.js';
 import { spaceView } from './space.js';
-import { hiddenFrom } from './war.js';
+import { hiddenFrom, suppliedTiles } from './war.js';
 import { sideOf } from './frontline.js';
 
 const HIDDEN = -1;
@@ -39,6 +39,8 @@ export function view(state, factionId, ruleset = null, opts = {}) {
     units: [],
   };
   if (multi) { out.world = activeWorld(state); out.worlds = state.worldOrder.slice(); }
+  // K5: the hexes this faction can supply here (null when supply does not apply), for its own planning.
+  if (ruleset && state.frontline) { const sup = suppliedTiles(state, ruleset, factionId); if (sup) out.supply = [...sup].sort((a, b) => a - b); }
   // K2: the star map, as this faction may know it.
   if (state.space && ruleset) out.space = spaceView(state, ruleset, factionId, sideOf);
   // K4b: both sides' war support is public; glory and the council only for your own side.
@@ -194,5 +196,8 @@ export function worldFromView(v) {
     setup: v.setup ?? {},
     pendingCapture: v.pendingCapture ?? null,
     raiders: { camps: Object.fromEntries((v.camps ?? []).map((t) => [t, {}])) },
+    // K5: which world this is and that the star map exists, so the rules can say what is buildable here.
+    ...(v.world ? { world: v.world } : {}),
+    ...(v.space ? { space: { fleets: {} } } : {}),
   };
 }

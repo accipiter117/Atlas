@@ -247,7 +247,7 @@ def main():
     for side, prefix, drop in [('isa', 'isa', 'isa_intruder'), ('helghast', 'helghast', 'helghast_dropship')]:
         ships += [
             {'id': f'{prefix}_cruiser', 'cls': 'capital_ship', 'strength': 60, 'cost': 320, 'space': {'capacity': 3, 'bombard': True, 'heavy': True, 'builtAt': ['homeworld', 'station']}},
-            {'id': f'{prefix}_destroyer', 'cls': 'escort', 'strength': 30, 'cost': 150, 'space': {'capacity': 0, 'builtAt': ['homeworld', 'station']}},
+            {'id': f'{prefix}_destroyer', 'cls': 'escort', 'strength': 30, 'cost': 90, 'space': {'capacity': 0, 'builtAt': ['homeworld', 'station']}},
             {'id': drop, 'cls': 'dropship', 'strength': 0, 'cost': 120, 'space': {'capacity': 1, 'lands': True, 'builtAt': ['homeworld', 'station']}},
             {'id': f'{prefix}_transport', 'cls': 'transport', 'strength': 0, 'cost': 100, 'space': {'capacity': 2, 'builtAt': ['homeworld', 'station']}},
         ]
@@ -311,6 +311,7 @@ def main():
     os.makedirs(os.path.join(ROOT, 'text'), exist_ok=True)
 
     def write(name, content_type, entries):
+        os.makedirs(os.path.dirname(os.path.join(ROOT, name)), exist_ok=True)
         with open(os.path.join(ROOT, name), 'w') as f:
             f.write('{\n  "contentType": "%s",\n  "entries": [\n%s\n  ]\n}\n' % (content_type, ',\n'.join('    ' + json.dumps(e) for e in entries)))
 
@@ -324,7 +325,7 @@ def main():
     write('improvements.json', 'improvements', improvement_entries)
     write('sites.json', 'sites', [{'id': 'reactor', 'nameKey': 'site.reactor.name', 'descriptionKey': 'site.reactor.text', 'icon': 'site.power_plant', 'effects': [{'effect': 'yieldBonus', 'yield': 'production', 'amount': 1}]}])
     with open(os.path.join(ROOT, 'tuning.json'), 'w') as f:
-        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'warSupport.enabled': True, 'setup.maxAis': 5,
+        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'warSupport.enabled': True, 'warSupport.gloryBattle': 3, 'warSupport.gloryCity': 10, 'warSupport.gloryCapital': 25, 'warSupport.gloryWorld': 15, 'setup.maxAis': 5, 'space.loadRange': 3,
                                                              'raiders.units': [{'fromTurn': 0, 'unit': 'scout_sniper'}]}}, indent=2) + '\n')
     write('scenarios.json', 'scenarios', [
         {'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}},
@@ -351,7 +352,7 @@ def main():
         'dependsOn': ['killzone'], 'loadAfter': [], 'incompatibleWith': [], 'options': [],
         # Order matters: the ancient trees go first (cascading what needs them), then the war's own content.
         'files': ['tuning.json', 'sites.json', 'techs.json', 'civics.json', 'governments.json', 'policies.json', 'improvements.json', 'resources.json',
-                  'buildings.json', 'wonders.json', 'unitClasses.json', 'units.json', 'beliefs.json', 'victories.json', 'factions.json', 'leaders.json', 'cityNames.json',
+                  'buildings.json', 'wonders.json', 'unitClasses.json', 'units.json', 'beliefs.json', 'victories.json', 'ai/weights.json', 'factions.json', 'leaders.json', 'cityNames.json',
                   'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
         'credits': 'Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games.',
     }

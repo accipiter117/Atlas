@@ -26,6 +26,7 @@
     "units.json",
     "beliefs.json",
     "victories.json",
+    "ai/weights.json",
     "factions.json",
     "leaders.json",
     "cityNames.json",
