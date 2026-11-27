@@ -78,6 +78,9 @@
         "sheet": "assets/sprites/witcher/wyvern.json"
       }
     },
+    "cityArt": {
+      "style": "timber"
+    },
     "sounds": {},
     "factionColours": true,
     "tokens": {

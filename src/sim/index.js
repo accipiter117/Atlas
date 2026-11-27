@@ -31,7 +31,7 @@ export { UNEXPLORED, EXPLORED, VISIBLE } from './visibility.js';
 export function fingerprint(state) {
   return hashValue(state);
 }
-export { buildSpec, buildCitySpec, attackProblem, cityStrength, cityHasWalls, combatKind, rangeOf, promotionsAvailable, defenderAt } from './combat.js';
+export { buildSpec, buildCitySpec, attackProblem, cityStrength, cityHasWalls, cityMaxHp, combatKind, rangeOf, promotionsAvailable, defenderAt } from './combat.js';
 export { promotionOptions } from './combatCommands.js';
 export { cityHpMax } from './cities.js';
 export { costOf, available, pathTo, eraOf, knows, researchOf } from './progression.js';

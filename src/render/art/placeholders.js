@@ -132,17 +132,3 @@ export function drawFeature(ctx, cx, cy, size, featureId, colour, tile) {
       dots(ctx, cx, cy, size, rand, 6, colour, 2, 1);
   }
 }
-
-/** A small gem marking a resource, coloured by class. */
-export function drawResource(ctx, cx, cy, colour) {
-  const x = cx + 4;
-  const y = cy + 4;
-  ctx.fillStyle = '#1b1b1b';
-  ctx.fillRect(x - 2, y - 3, 5, 7);
-  ctx.fillRect(x - 3, y - 2, 7, 5);
-  ctx.fillStyle = colour;
-  ctx.fillRect(x - 1, y - 2, 3, 5);
-  ctx.fillRect(x - 2, y - 1, 5, 3);
-  ctx.fillStyle = shade(colour, 0.25);
-  ctx.fillRect(x - 1, y - 1, 1, 1);
-}

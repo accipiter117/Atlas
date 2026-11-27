@@ -6,7 +6,7 @@
 // so the screen cannot show what your units and cities cannot see. Every
 // change goes through applyCommand.
 
-import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt } from '../sim/index.js';
+import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 
 import { el, knownWorld } from './hud/shared.js';
@@ -21,6 +21,7 @@ import { createDialogs } from './screens/dialogs.js';
 import { createOverlays } from './screens/overlays.js';
 import { factionCard } from './factionCards.js';
 import { createSeatRunner } from '../ai/index.js';
+import { unitIconName } from './hud/icons.js';
 
 import { religionName } from './religionTab.js';
 
@@ -486,6 +487,28 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     select(list[after >= 0 ? after : 0].id, { centre: true });
   }
 
+  /** What the map needs to draw each city (graphics overhaul G5): era, walls, health, and your builds. */
+  function cityExtras(world) {
+    const out = {};
+    const eras = new Map();
+    const eraOfFaction = (f) => {
+      // Another faction's era as far as you can tell (your view may not hold their research).
+      if (!eras.has(f)) { let e = null; try { e = f === 'raiders' ? null : eraOf(world, ruleset, f); } catch { e = null; } eras.set(f, e); }
+      return eras.get(f);
+    };
+    for (const c of v.cities) {
+      const extra = { era: eraOfFaction(c.faction), walls: cityHasWalls(ruleset, c), maxHp: cityMaxHp(ruleset, c), producing: c.faction === human ? c.queue?.length > 0 : c.pop >= 4 };
+      const item = c.faction === human ? c.queue?.[0] : null;
+      if (item) {
+        const prod = Math.max(1, yieldsOf(c).total.production);
+        const turns = Math.max(1, Math.ceil((itemCost(ruleset, item, world, c) - (c.progress ?? 0)) / prod));
+        extra.build = { icon: item.kind === 'unit' ? unitIconName(ruleset, item.id) : 'production', turns };
+      }
+      out[c.id] = extra;
+    }
+    return out;
+  }
+
   function refresh() {
     v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
@@ -499,6 +522,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     // Borders of factions you are at war with are dashed (graphics overhaul G3).
     const world = knownWorld(v);
     mapView.setWar(v.factions.filter((f) => f.id !== human && atWar(world, human, f.id)).map((f) => f.id));
+    mapView.setCityExtras(cityExtras(world));
     refreshMinimap();
     render();
   }

@@ -2,6 +2,7 @@
 // markers (start positions in the dev viewer, later selection and paths).
 
 import { HEX_SCREEN, cornerOffsets, edgeCorners, tileCentre, tracePath } from '../hexDraw.js';
+import { drawIcon } from '../art/icons.js';
 
 export function drawGrid(ctx, map, cam, view) {
   const corners = cornerOffsets(HEX_SCREEN * cam.zoom);
@@ -215,5 +216,46 @@ export function drawFront(ctx, map, cam, view, front, nbs) {
     ctx.strokeRect(x - size / 2, y - size / 2, size, size);
     ctx.fillStyle = '#111';
     ctx.fillText(front.letters?.[s.site] ?? '?', x, y + 1);
+  }
+}
+
+/**
+ * Resources (graphics overhaul G5, docs/OVERHAUL.md 4.5): a small round token with the
+ * resource's icon (assets/icons.svg, "res-<id>"), at the bottom right of its hex, at screen
+ * resolution so it stays crisp at any zoom. Without the icon, a gem in the class's colour.
+ */
+export function drawResources(ctx, map, cam, view, atlas, classColour) {
+  const rowH = HEX_SCREEN * 1.5;
+  const colW = HEX_SCREEN * Math.sqrt(3);
+  const r0 = Math.max(0, Math.floor(view.y / rowH) - 1);
+  const r1 = Math.min(map.height - 1, Math.ceil((view.y + view.h) / rowH) + 1);
+  const c0 = Math.max(0, Math.floor(view.x / colW) - 1);
+  const c1 = Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1);
+  const z = cam.zoom;
+  const r = Math.max(6, Math.round(10 * Math.min(1.4, z)));
+  for (let row = r0; row <= r1; row += 1) {
+    for (let c = c0; c <= c1; c += 1) {
+      const i = row * map.width + c;
+      if (map.resource[i] < 0 || map.terrain[i] < 0) continue;
+      const id = map.resourceIds[map.resource[i]];
+      const p = tileCentre(map, i);
+      const x = Math.round((p.x - cam.x) * z + 18 * z);
+      const y = Math.round((p.y - cam.y) * z + 16 * z);
+      ctx.fillStyle = 'rgba(20, 14, 8, 0.35)';
+      ctx.beginPath();
+      ctx.arc(x + 1.5, y + 2, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#efe3c6';
+      ctx.strokeStyle = classColour(id);
+      ctx.lineWidth = Math.max(1.5, 2 * z);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      if (!drawIcon(ctx, atlas, `res-${id}`, x, y, 16)) {
+        ctx.fillStyle = classColour(id);
+        ctx.fillRect(x - 3, y - 3, 6, 6);
+      }
+    }
   }
 }

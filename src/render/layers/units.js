@@ -88,7 +88,7 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
     }
   }
 
-  function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null }) {
+  function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null, cityTiles = null }) {
     const scale = cam.zoom;
     const sorted = units.slice().sort((a, b) => a.tile - b.tile);
     const count = new Map();
@@ -103,9 +103,11 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
       }
       const civilian = ruleset.unitClasses[ruleset.units[u.type]?.class]?.civilian;
       // Civilians stand a little behind (up and left), combat units in front.
-      const off = civilian ? -HEX_SCREEN * 0.22 : HEX_SCREEN * 0.12;
+      // In a city they stand to its sides, so the town itself stays in view (graphics overhaul G5).
+      const inCity = cityTiles?.has(u.tile) && !p.moving;
+      const off = inCity ? (civilian ? -HEX_SCREEN * 0.62 : HEX_SCREEN * 0.62) : civilian ? -HEX_SCREEN * 0.22 : HEX_SCREEN * 0.12;
       const x = (p.x + off * 0.6 - cam.x) * scale;
-      const y = (p.y + off * 0.4 + HEX_SCREEN * 0.38 - cam.y) * scale;
+      const y = (p.y + (inCity ? HEX_SCREEN * 0.1 : off * 0.4) + HEX_SCREEN * 0.38 - cam.y) * scale;
       const colour = colours[u.faction] ?? '#888';
       // Base disc.
       ctx.beginPath();

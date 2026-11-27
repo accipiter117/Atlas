@@ -16,13 +16,13 @@
 //      and dirt roads with stones and bridges.
 //   3. Props, row by row from the back: hills, mountains and trees, lit from
 //      the top left and taller than their hex, so they overlap the row behind.
-//   4. Improvements and resource gems.
+//   4. Improvements. (Resources are tokens drawn each frame at screen resolution: layers/overlays.js.)
 //
 // The strategic view (below 60% zoom) uses a second, simpler set of chunks:
 // the blended ground and rivers only.
 
 import { HEX_ART, ART_SCALE, SQRT3, cornerOffsets, edgeCorners } from '../hexDraw.js';
-import { placeholderColour, drawTerrainPattern, drawFeature, drawResource, shade } from '../art/placeholders.js';
+import { placeholderColour, drawTerrainPattern, drawFeature, shade } from '../art/placeholders.js';
 import { drawMountain, drawHillMounds, drawTrees, drawImprovementArt } from '../art/terrainProps.js';
 import { neighbourCache } from '../../sim/index.js';
 import { fxRandom } from '../fxRandom.js';
@@ -69,7 +69,6 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
   const terrainColour = map.terrainIds.map((id) => hexOf(rgbOf(doc, colourOf('terrain', id))));
   const terrainRgb = terrainColour.map((c) => rgbOf(doc, c));
   const featureColour = map.featureIds.map((id) => colourOf('feature', id));
-  const resourceColour = map.resourceIds.map((id) => colourOf('resource', ruleset.resources[id]?.class ?? id));
   const roles = map.terrainIds.map((id) => ruleset.terrain[id]?.mapgen?.role ?? (ruleset.terrain[id]?.water ? 'ocean' : 'land'));
   const water = map.terrainIds.map((id) => ruleset.terrain[id]?.water === true);
   const mountain = roles.map((r) => r === 'mountain');
@@ -290,7 +289,7 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
       if (map.terrain[i] < 0) continue;
       const p = at(i);
       if (map.improvement?.[i] >= 0) drawImprovementArt(ctx, p.x, p.y, map.improvementIds[map.improvement[i]], improvementColours);
-      if (map.resource[i] >= 0) drawResource(ctx, p.x, p.y, resourceColour[map.resource[i]]);
+
     }
     return { canvas, b };
   }

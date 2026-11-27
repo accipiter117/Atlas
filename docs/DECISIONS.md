@@ -292,6 +292,11 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G4: hair colours are recipe recolours.** The generator's hair comes in one base colour; a recipe layer can give an "hsl" recolour (hue, saturation, lightness), so armies are not all one hair colour.
 - **G4: Killzone draws each side's own trooper.** Its skin has `unit.<id>.isa` and `unit.<id>.helghast` art for every unit (riflemen, heavies, recon, jump troops, engineers and infiltrators by class, tanks for cavalry and siege), drawn by the trooper and tank code copied unchanged from Matthew's Killzone project into `tools/gen/unit-art/killzone/`. The map looks up a faction's own sheet first. Ships keep the base game's.
 - **G4: leaders' portraits have their faction's colour baked in.** A leader only ever leads one faction, so the portrait is a finished 128 pixel image rather than a mask.
+- **G5: cities are cached pictures, not chunk props.** A city changes size, walls and owner during play, so each look (size tier, style, walls, colour) is drawn once into a small canvas and copied each frame, rather than being baked into the terrain chunks.
+- **G5: a city's style comes from the skin's "cityArt"** (a default style and one per era: the base game goes from ancient mudbrick to medieval stone and tile; the Witcher is timber, thatch and slate; Killzone bunkers, pylons and floodlights). A rival's era is the one you can work out from your view; when your view does not hold their research it falls back to the style's default.
+- **G5: units in a city stand to its sides.** Combat units to the right, civilians to the left, so the town stays visible; name plates are drawn after units so they always read.
+- **G5: resources are tokens drawn each frame**, not baked into chunks, so their icons stay sharp at every zoom and the terrain chunks need no rebuild when the icon atlas finishes loading. A resource's icon is `res-<id>` in assets/icons.svg; anything without one falls back to a gem in its class colour.
+- **G5: production smoke is cosmetic.** Your cities smoke while they are building something; rivals' smoke once they reach population 4. Both stop with reduced motion.
 
 ## Later
 

@@ -9,10 +9,11 @@ import { loadIconAtlas, drawIcon } from './art/icons.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
-import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline, drawFront } from './layers/overlays.js';
+import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline, drawFront, drawResources } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
 import { placeholderColour, shade } from './art/placeholders.js';
 import { fxRandom } from './fxRandom.js';
+import { drawCityArt, cityTier, styleFor } from './art/cityArt.js';
 import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/cities.js';
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
@@ -58,6 +59,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     pathFrom: null,
     terrain: createTerrainLayer(doc, map, ruleset, registry),
     atWar: new Set(),
+    cityExtras: {},
     ambient: true,
     strategic: false,
     frames: 0,
@@ -117,18 +119,20 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     if (view.front) drawFront(ctx, view.map, cam, visible, view.front, neighbourCache(view.map));
     const cityById = new Map(view.cities.map((c) => [c.id, c]));
     drawBorders(ctx, view.map, cam, view.owner, (cityId) => cityById.get(cityId)?.faction ?? null, (f) => colours[f] ?? '#888', neighbourCache(view.map), view.atWar, visible);
+    if (!strategic) drawResources(ctx, view.map, cam, visible, atlas, (id) => placeholderColour(registry, 'resource', ruleset.resources[id]?.class ?? id));
     drawCityWork(ctx, view.map, cam, view.cityOverlay);
     if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
     if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.5)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
     drawCamps(ctx, view.map, cam, view.camps);
-    const cities = () => drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens, strategic);
-    // Close up, units stand in front of their city; in the strategic view the city names go on top.
-    if (!strategic) cities();
+    const cities = (pass) => drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens, strategic,
+      { art: cityArt, extras: view.cityExtras, atlas, now: t0, smoke: ambient(), pass });
+    // The towns go under the units; their name plates go on top so they always read.
+    cities('art');
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
     loadAtlas();
-    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0, strategic, atlas });
-    if (strategic) cities();
+    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0, strategic, atlas, cityTiles: new Set(view.cities.map((c) => c.tile)) });
+    cities('plate');
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (yieldsAt) drawYieldOverlay(cam, visible);
     if (walking) dirty = true;
@@ -177,6 +181,23 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       }
     }
   }
+
+  // City looks (graphics overhaul G5), drawn once per size, style, walls and colour.
+  const cityLooks = new Map();
+  const cityArt = {
+    get(c) {
+      const extra = view.cityExtras[c.id] ?? {};
+      const tier = cityTier(c.pop);
+      const style = styleFor(ruleset.skin?.cityArt, extra.era);
+      const colour = colours[c.faction] ?? '#888888';
+      const key = `${c.id}|${tier}|${style}|${extra.walls ? 1 : 0}|${colour}`;
+      if (!cityLooks.has(key)) {
+        if (cityLooks.size > 600) cityLooks.clear();
+        cityLooks.set(key, drawCityArt(doc, { tier, style, walls: Boolean(extra.walls), colour, seed: c.tile }));
+      }
+      return cityLooks.get(key);
+    },
+  };
 
   /** Water sparkle and drifting clouds: cosmetic, only in the game, never with reduced motion. */
   const ambient = () => Boolean(view.fog) && view.ambient && !reducedMotion();
@@ -286,6 +307,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     tileToScreen(t) { return screenOf(view.cam, t); },
     /** The yield overlay: fn(tile) -> yields, or null to turn it off. */
     setYieldOverlay(fn) { yieldsAt = fn; if (fn) loadAtlas(); dirty = true; },
+    /** Per city: { era, walls, maxHp, producing, build: { icon, turns } } (graphics overhaul G5). */
+    setCityExtras(extras) { view.cityExtras = extras ?? {}; dirty = true; },
     /** Factions you are at war with: their borders are drawn dashed. */
     setWar(factions) { view.atWar = new Set(factions); dirty = true; },
     /** Water sparkle and cloud drift on or off (they also stop with reduced motion). */

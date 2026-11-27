@@ -222,7 +222,7 @@ skin = OD([('contentType', 'skin'), ('values', OD([
     ('id', 'witcher'),
     ('palette', OD([('ink', '#1b1d22'), ('paper', '#e7e2d4'), ('accent', '#7a1f1f'), ('water', '#2a4f66'), ('land', '#7d8a5a')])),
     ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])),
-    ('art', kept_art), ('sounds', {}),
+    ('art', kept_art), ('cityArt', OD([('style', 'timber')])), ('sounds', {}),
     ('factionColours', True),
     # Graphics overhaul tokens (docs/OVERHAUL.md section 2): cold slate and iron instead of walnut and brass.
     ('tokens', OD([('walnut', 'rgba(36, 40, 43, 0.94)'), ('walnut-solid', '#24282b'), ('brass', '#8d969b'), ('brass-inner', '#454c52'), ('panel-ink', '#e4e7e9'), ('gold', '#b8c4cc')])),

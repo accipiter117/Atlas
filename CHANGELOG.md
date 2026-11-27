@@ -1,5 +1,16 @@
 # Changelog
 
+## Graphics overhaul G5: cities, resources and improvements
+
+Cities now visibly grow and look like their culture, resources are icons you can tell apart, and the name plates say what each of your cities is building.
+
+What you can try: found a city and watch it grow: a village of two houses (population 1 to 3), a town (4 to 6), a city with a temple or tower (7 to 10) and a great city (11 and over). Build walls and a stone ring with towers appears round it. In the base game cities start as mudbrick and stone with flat roofs and temples, and switch to stone and red tiles once their owner reaches the medieval era; Witcher cities are timber-framed with thatch and slate, Killzone ones are concrete bunkers with comms pylons and floodlights. Each flies its faction's banner, and smoke rises from your chimneys while a city is building (unless motion is reduced). The name plate shows population, a star for a capital, the name, the icon of what it is building and the turns left, and a health bar when the city is damaged. Units in a city stand to its sides so you can see the town. Resources are now round tokens with their icon (wheat, cattle, fish, stone, wine, silk, incense, horses, iron, deer) in the corner of their hex.
+
+- `src/render/art/cityArt.js`: cities drawn in code at pixel-art size, four tiers, four styles, walls, banner, lit from the top left; each look cached. Styles come from each skin's `cityArt`.
+- `src/render/layers/cities.js`: the town under the units, the plate on top; smoke on the cosmetic clock; strategic view keeps the dot and slim plate.
+- `src/render/layers/overlays.js`: resource tokens at screen resolution (the old gems are gone from the terrain chunks).
+- Tests: tiers and styles in Node; a browser test that your city's plate carries its build and turns and that walls reach the map.
+
 ## Graphics overhaul G4: a sprite for every unit
 
 Every unit in the base game, the Witcher and Killzone now has its own sprite in its faction's colours, and every leader has a portrait.

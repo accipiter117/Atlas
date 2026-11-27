@@ -195,6 +195,9 @@
         "sheet": "assets/sprites/killzone/woad_raider.isa.json"
       }
     },
+    "cityArt": {
+      "style": "bunker"
+    },
     "sounds": {},
     "factionColours": true,
     "tokens": {
