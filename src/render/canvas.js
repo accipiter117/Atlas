@@ -9,7 +9,7 @@ import { loadIconAtlas, drawIcon } from './art/icons.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
-import { drawGrid, drawMarkers, drawFog, drawPath, drawTileOutline, drawFront, drawResources } from './layers/overlays.js';
+import { drawGrid, drawMarkers, drawPath, drawTileOutline, drawFront, drawResources } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
 import { placeholderColour, shade } from './art/placeholders.js';
 import { fxRandom } from './fxRandom.js';
@@ -81,6 +81,36 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
   let parchment = null;
   // Below this zoom the map switches to the strategic view (section 4.1).
   const STRATEGIC = 0.6;
+  // How much parchment may show past the edge of the world: two hexes (G9).
+  const EDGE = HEX_SCREEN * 3;
+  // However little you have explored, you can always zoom out this far (into the strategic view).
+  const REACH = 0.55;
+  let home = null;
+  // The part of the world the camera keeps in view: what you have explored (G9), else all of it.
+  let known = null;
+  const bounds = () => known ?? world;
+  function measureKnown() {
+    const f = view.fog;
+    if (!f) { known = null; return; }
+    let r0 = Infinity; let r1 = -1; let c0 = Infinity; let c1 = -1;
+    const W = view.map.width;
+    for (let i = 0; i < f.length; i += 1) {
+      if (f[i] === 0) continue;
+      const r = Math.floor(i / W);
+      const c = i - r * W;
+      if (r < r0) r0 = r;
+      if (r > r1) r1 = r;
+      if (c < c0) c0 = c;
+      if (c > c1) c1 = c;
+    }
+    if (r1 < 0) { known = null; return; }
+    const colW = SQRT3 * HEX_SCREEN;
+    const x = c0 * colW;
+    const y = r0 * HEX_SCREEN * 1.5;
+    known = { x, y, width: Math.min(world.width - x, (c1 - c0 + 1.5) * colW), height: Math.min(world.height - y, (r1 - r0) * HEX_SCREEN * 1.5 + HEX_SCREEN * 2) };
+  }
+  measureKnown();
+  let guard = null;
   const screenOf = (cam, t) => { const p = tileCentre(view.map, t); return worldToScreen(cam, p.x, p.y); };
   const YIELD_ORDER = ['food', 'production', 'gold', 'science', 'culture', 'faith'];
 
@@ -94,7 +124,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     // Keep the same spot in the middle when the map area changes size (a phone's
     // bottom sheet opening or closing, or the phone turning on its side).
     if (size.w && size.h && view.cam) {
-      view.cam = clampToWorld({ ...view.cam, x: view.cam.x + (size.w - w) / 2 / view.cam.zoom, y: view.cam.y + (size.h - h) / 2 / view.cam.zoom }, world, w, h);
+      view.cam = clampToWorld({ ...view.cam, x: view.cam.x + (size.w - w) / 2 / view.cam.zoom, y: view.cam.y + (size.h - h) / 2 / view.cam.zoom }, bounds(), w, h, EDGE, REACH);
     }
     size = { w, h };
     canvas.width = Math.round(w * dpr);
@@ -119,7 +149,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     view.strategic = strategic;
     view.terrain.draw(ctx, cam, visible, strategic);
     if (ambient()) view.terrain.drawSparkle(ctx, cam, visible, view.fog, t0);
-    drawFog(ctx, view.map, cam, visible, view.fog);
+    // The fog of war, dithered at its edges like the terrain (G9; it was hex polygons).
+    view.terrain.drawFog(ctx, cam, visible, view.fog);
     if (view.front) drawFront(ctx, view.map, cam, visible, view.front, neighbourCache(view.map));
     const cityById = new Map(view.cities.map((c) => [c.id, c]));
     drawBorders(ctx, view.map, cam, view.owner, (cityId) => cityById.get(cityId)?.faction ?? null, (f) => colours[f] ?? '#888', neighbourCache(view.map), view.atWar, visible);
@@ -132,10 +163,21 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const cities = (pass) => drawCities(ctx, view.map, cam, view.cities, (f) => colours[f] ?? '#888', view.selectedCity, view.religionLens, strategic,
       { art: cityArt, extras: view.cityExtras, atlas, now: t0, smoke: ambient(), pass });
     // The towns go under the units; their name plates go on top so they always read.
+    // A town with two or more units in it is drawn over them instead (G9), so its buildings
+    // still show; the stack count and the plate say who is there.
+    loadAtlas();
+    const cityTiles = new Set(view.cities.map((c) => c.tile));
+    const crowded = new Set();
+    if (!strategic) {
+      const n = new Map();
+      for (const u of view.units) if (cityTiles.has(u.tile)) n.set(u.tile, (n.get(u.tile) ?? 0) + 1);
+      for (const [t, k] of n) if (k > 1) crowded.add(t);
+    }
+    const unitOpts = { selected: view.selected, now: t0, strategic, atlas, cityTiles, hover: view.hover, under: crowded };
+    let walking = crowded.size ? unitsLayer.draw(ctx, cam, view.units, { ...unitOpts, pass: true }) : false;
     cities('art');
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
-    loadAtlas();
-    const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0, strategic, atlas, cityTiles: new Set(view.cities.map((c) => c.tile)) });
+    walking = unitsLayer.draw(ctx, cam, view.units, { ...unitOpts, pass: crowded.size ? false : null }) || walking;
     cities('plate');
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (yieldsAt) drawYieldOverlay(cam, visible);
@@ -289,15 +331,33 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     destroyed: false,
     get camera() { return view.cam; },
     setCamera(cam) {
-      view.cam = clampToWorld(cam, world, size.w, size.h);
+      const was = view.cam?.zoom ?? 1;
+      let next = clampToWorld(cam, bounds(), size.w, size.h, EDGE, REACH);
+      // Zooming out into the strategic view centres on your empire (G9), so the overview
+      // starts from home rather than wherever the pointer happened to be.
+      if (home && was >= STRATEGIC && next.zoom < STRATEGIC) {
+        next = clampToWorld({ ...next, x: home.x - size.w / 2 / next.zoom, y: home.y - size.h / 2 / next.zoom }, bounds(), size.w, size.h, EDGE, REACH);
+      }
+      view.cam = next;
       dirty = true;
+    },
+    /** The middle of your empire (world pixels), or null: where the strategic view centres. */
+    setHome(tiles) {
+      if (!tiles?.length) { home = null; return; }
+      let x = 0;
+      let y = 0;
+      for (const t of tiles) { const p = tileCentre(view.map, t); x += p.x; y += p.y; }
+      home = { x: x / tiles.length, y: y / tiles.length };
     },
     /** Centre on a world point: the middle of the area the panels leave clear. */
     centreOnWorld(wx, wy) {
       const cx = insets.left + Math.max(0, size.w - insets.left - insets.right) / 2;
       const cy = insets.top + Math.max(0, size.h - insets.top - insets.bottom) / 2;
       api.setCamera({ ...view.cam, x: wx - cx / view.cam.zoom, y: wy - cy / view.cam.zoom });
+      api.keepPlatesClear();
     },
+    /** The panel (canvas CSS pixels) that city name plates must stay out from under after a jump, or null. */
+    setPlateGuard(rect) { guard = rect; },
     /** Which parts of the canvas floating panels cover: { top, right, bottom, left } in CSS pixels. */
     setInsets(next) { insets = { top: 0, right: 0, bottom: 0, left: 0, ...next }; },
     get insets() { return { ...insets }; },
@@ -305,6 +365,44 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     isClear(t, margin = 48) {
       const p = screenOf(view.cam, t);
       return p.x >= insets.left + margin && p.x <= size.w - insets.right - margin && p.y >= insets.top + margin && p.y <= size.h - insets.bottom - margin;
+    },
+    /**
+     * Graphics overhaul G9: if a city's name plate would sit under a panel (rect in canvas CSS
+     * pixels), pan the map up just enough to clear it, as long as the hex `keep` stays clear.
+     * The plate's size here is an estimate (the widest plate a city name makes).
+     */
+    keepPlatesClear(rect = guard, keep = undefined) {
+      if (!rect) return false;
+      if (keep === undefined) keep = view.units.find((u) => u.id === view.selected)?.tile ?? null;
+      if (view.cam.zoom < STRATEGIC) return false;
+      // Plates (estimated: the widest a city name makes) that a camera leaves under the panel.
+      const covered = (cam) => {
+        const z = cam.zoom;
+        const out = [];
+        for (const c of view.cities) {
+          if (view.fog && view.fog[c.tile] === 0) continue;
+          const p = screenOf(cam, c.tile);
+          const top = p.y - HEX_SCREEN * z * 0.98 - 12;
+          if (p.x + 90 < rect.left || p.x - 90 > rect.right || top + 24 < rect.top || top > rect.bottom || top > size.h) continue;
+          out.push(top);
+        }
+        return out;
+      };
+      const tops = covered(view.cam);
+      if (!tops.length) return false;
+      const before = view.cam;
+      const z = before.zoom;
+      // Either pan up until every covered plate sits above the panel, or down until it slides
+      // off the bottom of the map; the smaller move that leaves no plate covered wins.
+      const up = Math.max(...tops.map((t) => t + 24 - rect.top + 8));
+      const down = Math.max(...tops.map((t) => size.h - t + 4));
+      for (const dy of (up <= down ? [up, -down] : [-down, up])) {
+        api.setCamera({ ...before, y: before.y + dy / z });
+        if (!covered(view.cam).length && (keep === null || api.isClear(keep, 24))) return true;
+      }
+      view.cam = before;
+      dirty = true;
+      return false;
     },
     /** Bring a hex into the clear area if a panel (or the edge) hides it. */
     ensureVisible(t) { if (!api.isClear(t)) api.centreOnTile(t); },
@@ -347,7 +445,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
         if (changed.length) view.terrain.update(newMap, changed);
       }
       if (newMap) view.map = newMap;
-      if (newFog) view.fog = newFog;
+      if (newFog) { view.fog = newFog; measureKnown(); }
       if (newUnits) view.units = newUnits;
       if (newCities) view.cities = newCities;
       if (newCamps) view.camps = newCamps;

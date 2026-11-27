@@ -64,8 +64,9 @@ test('G7: the new settings change the game', async ({ page }, info) => {
   expect(await page.evaluate(() => window.__atlasGame.mapView.stats.showGrid)).toBe(true);
   expect(await page.evaluate(() => window.__atlasGame.colours[window.__atlasGame.human])).toBe('#0072b2');
 
-  // Edge scrolling: resting the mouse at the left edge moves the map.
-  const x0 = await page.evaluate(() => window.__atlasGame.mapView.camera.x);
+  // Edge scrolling: resting the mouse at the left edge moves the map. (Close in and at the
+  // right of what you have explored, since the camera keeps to the explored part: G9.)
+  const x0 = await page.evaluate(() => { const v = window.__atlasGame.mapView; v.setCamera({ ...v.camera, zoom: 2, x: 1e6 }); return v.camera.x; });
   await page.mouse.move(700, 400);
   await page.mouse.move(3, 400);
   await expect.poll(() => page.evaluate(() => window.__atlasGame.mapView.camera.x), { timeout: 3000 }).toBeLessThan(x0 - 20);

@@ -1,0 +1,30 @@
+{
+  "contentType": "civics",
+  "entries": [
+    {"op": "change", "id": "code_of_laws", "set": {"nameKey": "kz.civic.code_of_laws.name"}},
+    {"op": "change", "id": "craftsmanship", "set": {"nameKey": "kz.civic.craftsmanship.name"}},
+    {"op": "change", "id": "foreign_trade", "set": {"nameKey": "kz.civic.foreign_trade.name"}},
+    {"op": "change", "id": "military_tradition", "set": {"nameKey": "kz.civic.military_tradition.name"}},
+    {"op": "change", "id": "state_workforce", "set": {"nameKey": "kz.civic.state_workforce.name"}},
+    {"op": "change", "id": "early_empire", "set": {"nameKey": "kz.civic.early_empire.name"}},
+    {"op": "change", "id": "mysticism", "set": {"nameKey": "kz.civic.mysticism.name"}},
+    {"op": "change", "id": "political_philosophy", "set": {"nameKey": "kz.civic.political_philosophy.name"}},
+    {"op": "change", "id": "games_recreation", "set": {"nameKey": "kz.civic.games_recreation.name"}},
+    {"op": "change", "id": "theatre", "set": {"nameKey": "kz.civic.theatre.name"}},
+    {"op": "change", "id": "military_training", "set": {"nameKey": "kz.civic.military_training.name"}},
+    {"op": "change", "id": "defensive_tactics", "set": {"nameKey": "kz.civic.defensive_tactics.name"}},
+    {"op": "change", "id": "recorded_history", "set": {"nameKey": "kz.civic.recorded_history.name"}},
+    {"op": "change", "id": "naval_tradition", "set": {"nameKey": "kz.civic.naval_tradition.name"}},
+    {"op": "change", "id": "feudalism", "set": {"nameKey": "kz.civic.feudalism.name"}},
+    {"op": "change", "id": "civil_service", "set": {"nameKey": "kz.civic.civil_service.name"}},
+    {"op": "change", "id": "divine_right", "set": {"nameKey": "kz.civic.divine_right.name"}},
+    {"op": "change", "id": "mercenaries", "set": {"nameKey": "kz.civic.mercenaries.name"}},
+    {"op": "change", "id": "medieval_faires", "set": {"nameKey": "kz.civic.medieval_faires.name"}},
+    {"op": "change", "id": "guilds", "set": {"nameKey": "kz.civic.guilds.name"}},
+    {"op": "change", "id": "exploration", "set": {"nameKey": "kz.civic.exploration.name"}},
+    {"op": "change", "id": "humanism", "set": {"nameKey": "kz.civic.humanism.name"}},
+    {"op": "change", "id": "diplomatic_service", "set": {"nameKey": "kz.civic.diplomatic_service.name"}},
+    {"op": "change", "id": "reformed_church", "set": {"nameKey": "kz.civic.reformed_church.name"}},
+    {"op": "change", "id": "mercantilism", "set": {"nameKey": "kz.civic.mercantilism.name"}}
+  ]
+}

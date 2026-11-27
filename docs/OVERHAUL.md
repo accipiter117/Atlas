@@ -423,6 +423,18 @@ Then polish the whole game: play a Quick Small game through Playwright from setu
 Commit the after set to docs/shots/G8/ and write docs/shots/README.md listing what changed from G1 to G8. Then follow the Definition of done in CLAUDE.md.
 ```
 
+### G9: Polish after review
+
+**Goal.** Fix what Matthew's review of the G8 screenshots found: the zoomed-out view, clutter on the map, the size of the selection panel, Killzone's ancient research names, and hex-shaped fog edges.
+
+**Check on your laptop.**
+
+- [ ] Zoomed right out, the map centres on your empire with no more than two hexes of parchment past what you have explored (a small empire early on may show more, so you can still reach the strategic view), and each banner shows its unit's class.
+- [ ] At 100% on a turn-120 game, units have no pennants, status badges appear only on hover or on the selected unit, and crowded towns keep their buildings and names visible.
+- [ ] The selection panel is about 200px tall at 1366x768 and never hides a city's name after the camera jumps to a unit.
+- [ ] A Killzone game shows no ancient tech or civic names.
+- [ ] Fog of war has no hex-shaped edges, at sea above all.
+
 ## 7. Other findings and CLAUDE.md additions
 
 A few non-visual issues turned up during the review. They are small enough to fold into the overhaul phases, and are listed so they don't get lost.

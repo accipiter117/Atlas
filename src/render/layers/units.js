@@ -90,36 +90,49 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
     ctx.fillText(letter, x, y - h * 0.55);
   }
 
-  /** Draw units; returns true while any are still walking (so the view keeps redrawing). */
-  /** The strategic view: a small flag in the faction's colour with the unit's class icon. */
+  /**
+   * The strategic view: a flag in the faction's colour with the unit's own class icon on a
+   * light field, drawn at the icon's native 16px so it stays crisp and each kind reads apart
+   * (G9: at 12px on the faction colour every icon looked like the same pennant).
+   */
   function drawBanner(ctx, x, y, colour, u, atlas, selected) {
+    const bx = Math.round(x) - 11;
+    const by = Math.round(y) - 30;
     ctx.fillStyle = '#1b140d';
-    ctx.fillRect(Math.round(x) - 1, Math.round(y) - 22, 2, 22);
-    ctx.fillRect(Math.round(x) - 9, Math.round(y) - 23, 19, 16);
+    ctx.fillRect(Math.round(x) - 1, by + 20, 2, 10);
+    ctx.fillRect(bx - 1, by - 1, 24, 22);
     ctx.fillStyle = colour;
-    ctx.fillRect(Math.round(x) - 8, Math.round(y) - 22, 17, 14);
-    if (!drawIcon(ctx, atlas, unitIconName(ruleset, u.type), Math.round(x) + 0.5, Math.round(y) - 15, 12)) {
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(Math.round(x) - 2, Math.round(y) - 17, 4, 4);
+    ctx.fillRect(bx, by, 22, 20);
+    ctx.fillStyle = '#f1e6cf';
+    ctx.fillRect(bx + 2, by + 1, 18, 18);
+    if (!drawIcon(ctx, atlas, unitIconName(ruleset, u.type), bx + 11, by + 10, 16)) {
+      ctx.fillStyle = colour;
+      ctx.fillRect(bx + 8, by + 7, 6, 6);
     }
     if (selected) {
       ctx.strokeStyle = '#ffe36b';
       ctx.lineWidth = 2;
-      ctx.strokeRect(Math.round(x) - 10, Math.round(y) - 24, 21, 18);
+      ctx.strokeRect(bx - 2, by - 2, 26, 24);
     }
   }
 
-  function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null, cityTiles = null }) {
+  /**
+   * Draw the units. hover: the hex under the pointer (its units show their status badges, as
+   * does the selected one). under: hexes whose units are drawn in a first pass (true) or skipped
+   * (false), so crowded towns can be drawn over their garrison (graphics overhaul G9).
+   */
+  function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null, cityTiles = null, hover = null, under = null, pass = null }) {
     const scale = cam.zoom;
     const sorted = units.slice().sort((a, b) => a.tile - b.tile);
     const count = new Map();
     const last = new Map();
     for (const u of sorted) { count.set(u.tile, (count.get(u.tile) ?? 0) + 1); last.set(u.tile, u); }
     for (const u of sorted) {
+      if (under && pass !== null && under.has(u.tile) !== pass) continue;
       const p = placeOf(u, now);
       if (strategic) {
         const civilian = ruleset.unitClasses[ruleset.units[u.type]?.class]?.civilian;
-        drawBanner(ctx, (p.x - cam.x) * scale + (civilian ? -7 : 7), (p.y - cam.y) * scale + 6, colours[u.faction] ?? '#888', u, atlas, u.id === selected);
+        drawBanner(ctx, (p.x - cam.x) * scale + (civilian ? -9 : 9), (p.y - cam.y) * scale + 10, colours[u.faction] ?? '#888', u, atlas, u.id === selected);
         continue;
       }
       const civilian = ruleset.unitClasses[ruleset.units[u.type]?.class]?.civilian;
@@ -142,8 +155,9 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
         ctx.strokeStyle = '#ffe36b';
         ctx.stroke();
       }
+      // No class pennant any more (G9): the base disc already carries the faction's colour,
+      // and the figure itself says what kind of unit it is.
       const sheet = sheetFor(u.type, u.faction);
-      if (!civilian) drawPennant(ctx, x - 17 * scale, y, scale, colour, u, atlas);
       if (sheet?.ready) {
         const f = sheet.frameFor(p.moving ? 'walk' : 'idle', p.facing, now, colour);
         const s = (sheet.desc.mapScale ?? SPRITE_PX / sheet.desc.frame.w) * scale;
@@ -159,9 +173,11 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
         ctx.fillStyle = u.hp > 50 ? '#5cc35c' : u.hp > 25 ? '#e0b43c' : '#d9503f';
         ctx.fillRect(x - w / 2, y + 8 * scale, (w * u.hp) / 100, 4 * scale);
       }
-      // Status: fortified or asleep, as a small icon at the top right.
-      const status = u.activity === 'fortify' ? 'fortified' : u.activity === 'sleep' ? 'asleep' : null;
-      if (status && !p.moving) badge(ctx, x + 14 * scale, y - 40 * scale, scale, status, atlas);
+      // Status: fortified, asleep or healing (resting while hurt), as a small icon at the top
+      // right; only on the selected unit or the hex under the pointer, to keep the map clear (G9).
+      const resting = u.activity === 'fortify' || u.activity === 'sleep';
+      const status = resting && u.hp < 100 ? 'healing' : u.activity === 'fortify' ? 'fortified' : u.activity === 'sleep' ? 'asleep' : null;
+      if (status && !p.moving && (u.id === selected || u.tile === hover)) badge(ctx, x + 14 * scale, y - 40 * scale, scale, status, atlas);
       // More than one unit here: how many, on the front one.
       const here = count.get(u.tile);
       if (here > 1 && u === last.get(u.tile)) {
@@ -178,24 +194,6 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
       }
     }
     return anims.size > 0 || lunges.size > 0;
-  }
-
-  /** A class pennant on a little pole behind the unit, in its faction's colour. */
-  function drawPennant(ctx, x, y, scale, colour, u, atlas) {
-    const h = 34 * scale;
-    ctx.fillStyle = '#2a1d12';
-    ctx.fillRect(Math.round(x), Math.round(y - h), Math.max(1, Math.round(1.5 * scale)), Math.round(h));
-    ctx.fillStyle = colour;
-    ctx.beginPath();
-    ctx.moveTo(x + 1.5 * scale, y - h);
-    ctx.lineTo(x + 15 * scale, y - h + 5 * scale);
-    ctx.lineTo(x + 1.5 * scale, y - h + 10 * scale);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#1b140d';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    if (scale >= 0.8) drawIcon(ctx, atlas, unitIconName(ruleset, u.type), x + 6.5 * scale, y - h + 5 * scale, Math.round(8 * scale));
   }
 
   function badge(ctx, x, y, scale, name, atlas) {

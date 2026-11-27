@@ -50,33 +50,6 @@ export function drawMarkers(ctx, map, cam, tiles, colour = '#ffffff') {
   });
 }
 
-/** Grey wash over explored tiles that are not visible right now. */
-export function drawFog(ctx, map, cam, view, fog) {
-  if (!fog) return;
-  const corners = cornerOffsets(HEX_SCREEN * cam.zoom + 0.6);
-  const rowH = HEX_SCREEN * 1.5;
-  const colW = HEX_SCREEN * Math.sqrt(3);
-  const r0 = Math.max(0, Math.floor(view.y / rowH) - 1);
-  const r1 = Math.min(map.height - 1, Math.ceil((view.y + view.h) / rowH) + 1);
-  const c0 = Math.max(0, Math.floor(view.x / colW) - 1);
-  const c1 = Math.min(map.width - 1, Math.ceil((view.x + view.w) / colW) + 1);
-  ctx.fillStyle = 'rgba(28, 30, 36, 0.52)';
-  ctx.beginPath();
-  for (let r = r0; r <= r1; r += 1) {
-    for (let c = c0; c <= c1; c += 1) {
-      const i = r * map.width + c;
-      if (fog[i] !== 1) continue;
-      const p = tileCentre(map, i);
-      const x = (p.x - cam.x) * cam.zoom;
-      const y = (p.y - cam.y) * cam.zoom;
-      ctx.moveTo(x + corners[0].x, y + corners[0].y);
-      for (let k = 1; k < 6; k += 1) ctx.lineTo(x + corners[k].x, y + corners[k].y);
-      ctx.closePath();
-    }
-  }
-  ctx.fill();
-}
-
 /** Outline one tile (hover, selection target). */
 export function drawTileOutline(ctx, map, cam, tile, colour, width = 2) {
   const corners = cornerOffsets(HEX_SCREEN * cam.zoom * 0.94);

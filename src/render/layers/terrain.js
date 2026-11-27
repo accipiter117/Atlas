@@ -33,6 +33,8 @@ const PROP_TOP = 10;
 const BLEND = 3;       // art pixels either side of an edge where two land terrains mix
 const WATER_BLEND = 4; // the same between deep and shallow water
 const FRAY = 3;        // how far explored land frays into the unexplored
+const FOG_BLEND = 4;   // art pixels either side of an edge where the fog of war dithers out (G9)
+const FOG_RGBA = [28, 30, 36, 133]; // the fog wash over land you have seen but cannot see now
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 const D = SQRT3 * HEX_ART; // distance between neighbouring hex centres, in art pixels
 const INNER2 = (D / 2 - Math.max(BLEND, WATER_BLEND, FRAY, 4)) ** 2; // closer than this to the centre, no edge is near
@@ -344,6 +346,109 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
     }
   }
 
+  // ---- The fog of war (graphics overhaul G9) ----
+  // Drawn like the ground: per art pixel, in chunks, dithering across the edge between fogged
+  // and visible hexes with the same world-anchored pattern, so no hex outline shows (at sea
+  // above all). A chunk is rebuilt only when the fog over it changes.
+  const fogCache = new Map();
+
+  function fogSignature(fog, cx, cy) {
+    let h = 2166136261;
+    for (let r = Math.max(0, cy * CHUNK - 1); r < Math.min(map.height, (cy + 1) * CHUNK + 1); r += 1) {
+      for (let c = Math.max(0, cx * CHUNK - 1); c < Math.min(map.width, (cx + 1) * CHUNK + 1); c += 1) {
+        h = Math.imul(h ^ fog[r * map.width + c], 16777619);
+      }
+    }
+    return h;
+  }
+
+  function buildFog(fog, cx, cy) {
+    const b = bounds(cx, cy);
+    const canvas = doc.createElement('canvas');
+    canvas.width = b.w;
+    canvas.height = b.h;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(b.w, b.h);
+    const data = img.data;
+    const W = map.width;
+    const H = map.height;
+    let any = false;
+    for (let py = 0; py < b.h; py += 1) {
+      const Y = b.y + py;
+      for (let px = 0; px < b.w; px += 1) {
+        const X = b.x + px;
+        const ax = X + 0.5 - D / 2;
+        const ay = Y + 0.5 - HEX_ART;
+        const fq = ((SQRT3 / 3) * ax - ay / 3) / HEX_ART;
+        const fr = ((2 / 3) * ay) / HEX_ART;
+        const fs = -fq - fr;
+        let q = Math.round(fq);
+        let r = Math.round(fr);
+        const rs = Math.round(fs);
+        const eq = Math.abs(q - fq);
+        const er = Math.abs(r - fr);
+        const es = Math.abs(rs - fs);
+        if (eq > er && eq > es) q = -r - rs;
+        else if (er > es) r = -q - rs;
+        const c = q + Math.floor(r / 2);
+        if (r < 0 || r >= H || c < 0 || c >= W) continue;
+        const i = r * W + c;
+        if (fog[i] === 0 || map.terrain[i] < 0) continue;
+        const own = fog[i] === 1;
+        const dx = X + 0.5 - centres[i * 2];
+        const dy = Y + 0.5 - centres[i * 2 + 1];
+        let fogged = own;
+        if (dx * dx + dy * dy >= INNER2) {
+          let s = Infinity;
+          let dir = 0;
+          for (let d = 0; d < 6; d += 1) {
+            const sd = D / 2 - (dx * delta[d].x + dy * delta[d].y) / D;
+            if (sd < s) { s = sd; dir = d; }
+          }
+          const j = nbs[i][dir];
+          const B = BAYER[(Y & 3) * 4 + (X & 3)];
+          if (j < 0 || fog[j] === 0 || map.terrain[j] < 0) {
+            // The ground frays here into the parchment: leave the same pixels clear.
+            if (s < FRAY && B > s / FRAY) continue;
+          } else if ((fog[j] === 1) !== own && s < FOG_BLEND && B < 0.5 * (1 - s / FOG_BLEND)) {
+            fogged = !own;
+          }
+        }
+        if (!fogged) continue;
+        const k = (py * b.w + px) * 4;
+        data[k] = FOG_RGBA[0];
+        data[k + 1] = FOG_RGBA[1];
+        data[k + 2] = FOG_RGBA[2];
+        data[k + 3] = FOG_RGBA[3];
+        any = true;
+      }
+    }
+    if (any) ctx.putImageData(img, 0, 0);
+    return { canvas: any ? canvas : null, b };
+  }
+
+  /** Draw the fog of war over the chunks in view (fog: 0 unexplored, 1 seen before, 2 visible). */
+  function drawFog(ctx, cam, view, fog) {
+    if (!fog) return;
+    const scale = ART_SCALE * cam.zoom;
+    const smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    for (let cy = 0; cy < chunksY; cy += 1) {
+      for (let cx = 0; cx < chunksX; cx += 1) {
+        const b = bounds(cx, cy);
+        const wx = b.x * ART_SCALE;
+        const wy = b.y * ART_SCALE;
+        if (wx > view.x + view.w || wy > view.y + view.h || wx + b.w * ART_SCALE < view.x || wy + b.h * ART_SCALE < view.y) continue;
+        const key = cy * chunksX + cx;
+        const sig = fogSignature(fog, cx, cy);
+        let ch = fogCache.get(key);
+        if (!ch || ch.sig !== sig || ch.map !== map) { ch = { ...buildFog(fog, cx, cy), sig, map }; fogCache.set(key, ch); }
+        if (ch.canvas) ctx.drawImage(ch.canvas, Math.round((wx - cam.x) * cam.zoom), Math.round((wy - cam.y) * cam.zoom), Math.ceil(b.w * scale), Math.ceil(b.h * scale));
+      }
+    }
+    ctx.imageSmoothingEnabled = smooth;
+  }
+
   /** Swap in newer map data (more of it explored) and redraw only the chunks those tiles touch. */
   function update(newMap, changed) {
     map = newMap;
@@ -383,5 +488,5 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
     return false;
   }
 
-  return { draw, drawSparkle, update, prebuild, chunkCount: chunksX * chunksY, builtCount: () => cache.size, shade };
+  return { draw, drawSparkle, drawFog, update, prebuild, chunkCount: chunksX * chunksY, builtCount: () => cache.size, shade };
 }

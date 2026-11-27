@@ -29,13 +29,14 @@ test('G3: terrain, parchment, strategic view and motion', async ({ page }, info)
   });
   expect(sums[0]).toBe(sums[1]);
 
-  // Far from your start, the map is parchment (warm and light), not a black void.
+  // Past what you have explored, the map is parchment (warm and light), not a black void.
+  // (The camera keeps to the explored part, G9, so zoomed out the corner of the view is beyond it.)
   const corner = await page.evaluate(() => {
     const v = window.__atlasGame.mapView;
-    v.setCamera({ x: -2000, y: -2000, zoom: 1 });
+    v.setCamera({ x: -2000, y: -2000, zoom: 0.3 });
     v.drawNow();
     const c = v.canvas;
-    const [r, g, b] = c.getContext('2d').getImageData(Math.floor(c.width / 2), Math.floor(c.height / 2), 1, 1).data;
+    const [r, g, b] = c.getContext('2d').getImageData(4, Math.floor(c.height / 2), 1, 1).data;
     return { r, g, b };
   });
   expect(corner.r).toBeGreaterThan(150);

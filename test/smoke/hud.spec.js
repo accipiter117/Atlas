@@ -74,10 +74,22 @@ test('G2: the floating HUD over a full-screen map', async ({ page }, info) => {
   await expect(items).toHaveCount(n - 1);
   await expect(page.locator('[data-field="attention-title"]')).toHaveText(`Needs attention (${n - 1})`);
 
-  // The minimap: clicking moves the camera; its frame follows.
+  // The minimap: clicking moves the camera; its frame follows. (Close in and at one corner of
+  // what you have explored, since the camera keeps to the explored part: G9. Then click the
+  // minimap on your first unit.)
+  const target = await page.evaluate(() => {
+    const g = window.__atlasGame;
+    const v = g.mapView;
+    v.setCamera({ ...v.camera, zoom: 2, x: -1e6, y: -1e6 });
+    const u = g.view.units.find((x) => x.faction === g.human);
+    const p = v.tileToScreen(u.tile);
+    const w = { x: p.x / v.camera.zoom + v.camera.x, y: p.y / v.camera.zoom + v.camera.y };
+    return { fx: w.x / v.world.width, fy: w.y / v.world.height, ww: v.world.width, wh: v.world.height };
+  });
   const cam0 = await page.evaluate(() => ({ ...window.__atlasGame.mapView.camera }));
   const mm = parts.minimap;
-  await page.mouse.click(mm.x + mm.width * 0.2, mm.y + mm.height * 0.8);
+  const k = Math.min(mm.width / target.ww, mm.height / target.wh);
+  await page.mouse.click(mm.x + (mm.width - target.ww * k) / 2 + target.fx * target.ww * k, mm.y + (mm.height - target.wh * k) / 2 + target.fy * target.wh * k);
   const cam1 = await page.evaluate(() => ({ ...window.__atlasGame.mapView.camera }));
   expect(cam1.x !== cam0.x || cam1.y !== cam0.y).toBe(true);
 

@@ -15,6 +15,8 @@
     "factions.json",
     "leaders.json",
     "units.json",
+    "techs.json",
+    "civics.json",
     "cityNames.json",
     "sites.json",
     "mapPresets.json",

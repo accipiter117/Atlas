@@ -44,6 +44,8 @@ export function createMapHud(g) {
     const cityOpen = g.root.classList.contains('city-open');
     const tops = [bar, cityOpen ? null : progress].filter(Boolean).map((r) => r.bottom - host.top);
     const bottoms = [cityOpen ? null : panel, endturn, mini].filter(Boolean).map((r) => host.bottom - r.top);
+    // G9: city name plates stay out from under the selection panel when the camera jumps.
+    g.mapView.setPlateGuard?.(!cityOpen && panel ? { left: panel.left - host.left, right: panel.right - host.left, top: panel.top - host.top, bottom: panel.bottom - host.top } : null);
     g.mapView.setInsets({
       top: Math.max(0, ...tops),
       bottom: Math.max(0, ...bottoms),

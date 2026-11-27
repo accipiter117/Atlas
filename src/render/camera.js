@@ -34,13 +34,26 @@ export function zoomAt(cam, factor, sx, sy) {
   return { zoom, x: before.x - sx / zoom, y: before.y - sy / zoom };
 }
 
-/** Keep at least some of the map on screen. */
-export function clampToWorld(cam, world, viewW, viewH, margin = 120) {
-  const minX = -viewW / cam.zoom + margin;
-  const minY = -viewH / cam.zoom + margin;
-  const maxX = world.width - margin;
-  const maxY = world.height - margin;
-  return { ...cam, x: Math.min(maxX, Math.max(minX, cam.x)), y: Math.min(maxY, Math.max(minY, cam.y)) };
+/**
+ * Keep the world filling the view (graphics overhaul G9): at most `margin` world pixels of
+ * parchment past any edge. `area` is { width, height } from the origin, or { x, y, width,
+ * height } for a part of the world (the explored part, in a game). The camera may not zoom out
+ * further than the point where `area` plus that margin fills the view, except that it may always
+ * zoom out as far as `reach` (so a small explored area never locks you in close); panning keeps
+ * to `area`, centred on it on an axis where the view is wider.
+ */
+export function clampToWorld(cam, area, viewW, viewH, margin = 120, reach = MAX_ZOOM) {
+  if (!viewW || !viewH) return { ...cam };
+  const zoom = Math.max(cam.zoom, Math.min(reach, fillZoom(area, viewW, viewH, margin)));
+  const axis = (pos, span, size) => (span >= size + 2 * margin ? (size - span) / 2 : Math.min(size + margin - span, Math.max(-margin, pos)));
+  const ox = area.x ?? 0;
+  const oy = area.y ?? 0;
+  return { ...cam, zoom, x: ox + axis(cam.x - ox, viewW / zoom, area.width), y: oy + axis(cam.y - oy, viewH / zoom, area.height) };
+}
+
+/** The furthest out the camera can zoom on this world and view (see clampToWorld). */
+export function fillZoom(world, viewW, viewH, margin = 120) {
+  return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.max(viewW / (world.width + 2 * margin), viewH / (world.height + 2 * margin))));
 }
 
 /** Centre the camera on a world point. */

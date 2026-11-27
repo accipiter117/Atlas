@@ -881,3 +881,21 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
   .bar-buttons .icon-btn { display: inline-flex; width: auto; gap: 6px; padding: 0 10px; }
   .bar-buttons .icon-btn .label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; font: 600 14px/1 var(--font-body); }
 }
+
+/* ---------- Graphics overhaul G9: polish after review ---------- */
+/* The selection panel at about 200px: portrait, name and class, health, one row of stats, then a compact grid. */
+.screen.game:not(.city-open) .unit-panel { min-height: 0; padding: 8px 10px; gap: 6px; }
+.unit-head { grid-template-columns: 52px minmax(0, 1fr); gap: 8px; align-items: start; }
+.unit-head .portrait { width: 52px; height: 52px; }
+.unit-head .portrait .portrait-art { width: 48px; height: 48px; }
+.unit-head .portrait .icon { width: 28px; height: 28px; }
+.unit-title { display: grid; gap: 3px; min-width: 0; }
+.unit-name { margin: 0; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.unit-name h2 { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unit-name .muted { font-size: 13px; white-space: nowrap; }
+.unit-title .hp-bar { margin: 0; height: 8px; }
+.unit-title .stats { margin: 0; gap: 2px 10px; font-size: 13px; }
+.unit-title .stats .status { font-weight: 600; color: var(--ink); }
+.screen.game:not(.city-open) .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.screen.game:not(.city-open) .actions .btn.small { font-size: 13px; padding: 2px 6px; }
+.screen.game:not(.city-open) .actions .wide { grid-column: 1 / -1; }

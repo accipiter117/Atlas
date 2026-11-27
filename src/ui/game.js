@@ -290,6 +290,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const api = { get state() { return state; }, get view() { return v; }, get busy() { return busy; }, mapView, human, ruleset, get journals() { return journals; }, usesWorker: Boolean(worker),
     /** Open one of your cities' panels (the screenshot harness and tests). */
     openCity: (id) => openCityDrawer(id, { centre: true }),
+    /** Select one of your units and centre on it (tests). */
+    selectUnit: (id) => select(id, { centre: true }),
     /** What the hover tooltip says about a hex (tests). */
     hexTooltip: (tile) => hexContent(tile),
     /** The game's fingerprint now (tests: animations never change the game). */
@@ -478,6 +480,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const u = selectedUnit();
     if (u && centre) mapView.centreOnTile(u.tile);
     else if (u) mapView.ensureVisible(u.tile);
+    // G9: the selection panel never covers a city's name plate (the guard is set in updateInsets).
+    if (u) mapView.keepPlatesClear();
   }
 
   function openCityDrawer(id, { centre = false, keepTab = false } = {}) {
@@ -528,6 +532,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function refresh() {
     v = view(state, human, ruleset);
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
+    mapView.setHome(myCities().length ? myCities().map((c) => c.tile) : myUnits().map((u) => u.tile));
     if (religionLens) mapView.setReligionLens(lensData());
     if (v.frontline) mapView.setFront(frontData());
     if (v.pendingBattle) showBattleCard();

@@ -115,7 +115,7 @@ async function capture(browser, game, code, [w, h]) {
   });
   await page.waitForTimeout(300);
   await shot('03-map');
-  await page.evaluate(() => { const mv = window.__atlasGame.mapView; mv.setCamera({ ...mv.camera, zoom: 0.5 }); });
+  await page.evaluate(() => { const mv = window.__atlasGame.mapView; mv.setCamera({ ...mv.camera, zoom: 0.3 }); });
   await page.waitForTimeout(300);
   await shot('04-map-zoomed-out');
   await page.evaluate(() => { const mv = window.__atlasGame.mapView; mv.setCamera({ ...mv.camera, zoom: 1 }); });

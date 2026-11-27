@@ -1,5 +1,15 @@
 # Changelog
 
+## Graphics overhaul G9: polish after review
+
+The map reads more cleanly at every zoom, and Killzone has its own research.
+
+What you can try: zoom right out and the map centres on your empire and stops where your explored land fills the screen (you can always reach the strategic view, even on turn one); each unit's banner there shows its own class (a sword, a bow, a spear, a horse, a pick and so on). At 100% the units have lost their pennants, and the fortified, asleep and healing badges appear only on the selected unit or the hex under the mouse. A town with two or more units in it is drawn over them, so its buildings and name stay readable. The selection panel is about 190px tall: portrait, name and health, all the stats and the status on one row, and the actions in a two-row grid with their keys; when the camera jumps to a unit, it nudges itself so no city name sits under the panel. Fog of war now dithers into the visible land and sea instead of showing hex outlines. In Killzone, the tech and civic trees have names from the setting (Hydroponics, Marksman Optics, Arc Weaponry, Martial Law, Ministry of War and so on).
+
+- `src/render/camera.js` (the new world clamp), `src/render/canvas.js` (explored bounds, centring on your empire, the plate guard, crowded towns), `src/render/layers/units.js` (banners, badges, no pennant), `src/render/layers/terrain.js` (the fog of war in chunks), `src/ui/hud/unitCard.js` and `css/base.css` (the compact panel), `rules/killzone/techs.json`, `rules/killzone/civics.json` and its text.
+- `docs/shots/G9/` holds the after set; `docs/shots/G8/` was captured again from the current build; both have a page that shows every screenshot on GitHub.
+- Tests: the camera clamp (fills the view, at most two hexes of parchment, keeps to the explored part, never locks a small one in close), the Killzone trees (same shape, no base name anywhere), and a browser test on the turn-120 game that the panel stays under 215px and never covers a city name after a jump. Three older browser tests were updated for the clamp (the map viewer's furthest zoom, the parchment check and edge scrolling).
+
 ## Mouse controls and declaring war (from Matthew's playtest)
 
 Selecting, moving and diplomacy now work the way a laptop strategy game should.

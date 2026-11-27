@@ -77,25 +77,29 @@ export function createUnitCard(g) {
     face.height = 64;
     face.className = 'portrait-art';
     const drawn = sheet?.drawPortrait(face.getContext('2d'), 64, g.colours[u.faction]);
+    const worker = (def.tags ?? []).includes('worker');
     // Not loaded yet: draw the card again once it is.
     if (sheet && !drawn) sheet.image?.decode?.().then(() => { if (g.selected === u.id) g.render(); }).catch(() => {});
     const portrait = el(g.doc, 'div', { class: 'portrait', 'aria-hidden': 'true' }, drawn ? face : icon(g.doc, unitIconName(g.ruleset, u.type), { size: 32 }));
     portrait.style.setProperty('--faction-soft', g.ruleset.factions?.[me?.civ]?.colours.primary ?? '');
     const stat = (name, label, value) => el(g.doc, 'li', { title: label }, icon(g.doc, name, { size: 16, label }), el(g.doc, 'span', {}, value));
+    // Compact (graphics overhaul G9): about 200px at 1366x768. The portrait, then the name and class
+    // on one line with the health bar under them, then every stat and the status on one row.
     fill(card,
       el(g.doc, 'div', { class: 'unit-head' }, portrait,
-        el(g.doc, 'div', {},
-          el(g.doc, 'h2', {}, g.unitName(u)),
-          el(g.doc, 'p', { class: 'muted' }, g.isCivilian(u) ? g.tt('game.unit.civilian') : (g.ruleset.text[g.ruleset.unitClasses[def.class]?.nameKey] ?? def.class)),
+        el(g.doc, 'div', { class: 'unit-title' },
+          el(g.doc, 'p', { class: 'unit-name' }, el(g.doc, 'h2', {}, g.unitName(u)),
+            el(g.doc, 'span', { class: 'muted' }, g.isCivilian(u) ? g.tt('game.unit.civilian') : (g.ruleset.text[g.ruleset.unitClasses[def.class]?.nameKey] ?? def.class))),
           el(g.doc, 'div', { class: `hp-bar${hpClass}`, role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(u.hp), 'aria-label': g.tt('game.unit.health', { hp: u.hp }) },
-            el(g.doc, 'span', { style: `width:${Math.max(0, Math.min(100, u.hp))}%` })))),
-      el(g.doc, 'ul', { class: 'stats' },
-        g.isCivilian(u) ? null : stat('strength', g.tt('stat.strength'), String(strength)),
-        def.rangedStrength ? stat('ranged', g.tt('stat.ranged'), `${def.rangedStrength} (${def.range ?? 1})`) : null,
-        stat('moves', g.tt('stat.moves'), el(g.doc, 'span', { dataset: { field: 'moves' } }, `${u.moves}/${def.moves}`)),
-        stat('hp', g.tt('stat.hp'), String(u.hp)),
-        combatKind(g.ruleset, u) === 'none' ? null : stat('xp', g.tt('stat.xp'), `${u.xp ?? 0}/${nextAt ?? '-'}`)),
-      el(g.doc, 'p', { class: 'status' }, status),
+            el(g.doc, 'span', { style: `width:${Math.max(0, Math.min(100, u.hp))}%` })),
+          el(g.doc, 'ul', { class: 'stats' },
+            g.isCivilian(u) ? null : stat('strength', g.tt('stat.strength'), String(strength)),
+            def.rangedStrength ? stat('ranged', g.tt('stat.ranged'), `${def.rangedStrength} (${def.range ?? 1})`) : null,
+            stat('moves', g.tt('stat.moves'), el(g.doc, 'span', { dataset: { field: 'moves' } }, `${u.moves}/${def.moves}`)),
+            stat('hp', g.tt('stat.hp'), String(u.hp)),
+            combatKind(g.ruleset, u) === 'none' ? null : stat('xp', g.tt('stat.xp'), `${u.xp ?? 0}/${nextAt ?? '-'}`),
+            worker ? el(g.doc, 'li', { dataset: { field: 'charges' }, title: g.tt('game.unit.charges', { n: u.charges ?? 0 }) }, g.tt('game.unit.charges', { n: u.charges ?? 0 })) : null,
+            el(g.doc, 'li', { class: 'status' }, status)))),
       (u.promotions ?? []).length ? el(g.doc, 'p', { class: 'muted small' }, g.tt('game.unit.promotions', { list: u.promotions.map((p) => g.ruleset.text[g.ruleset.promotions[p]?.nameKey] ?? p).join(', ') })) : null,
       promotionPanel(u),
       oddsPanel(),
@@ -107,8 +111,7 @@ export function createUnitCard(g) {
     const foundable = g.isFounder(u) && u.moves > 0 && !foundingProblem(knownWorld(g.v), g.ruleset, g.human, u.tile);
     // Builders: one button per improvement that fits a hex they can reach now.
     const improve = [];
-    if ((def.tags ?? []).includes('worker')) {
-      card.append(el(g.doc, 'p', { dataset: { field: 'charges' } }, g.tt('game.unit.charges', { n: u.charges ?? 0 })));
+    if (worker) {
       const world = knownWorld(g.v);
       for (const [id, imp] of Object.entries(g.ruleset.improvements ?? {})) {
         for (const tile of builderTargets(world, g.ruleset, id, u.tile)) {
@@ -128,13 +131,14 @@ export function createUnitCard(g) {
     fill(actions, ...improve, ...[
       preach ? el(g.doc, 'button', { type: 'button', class: 'btn small primary wide', dataset: { act: 'spreadReligion' }, disabled: u.moves <= 0,
         onclick: () => { const r = g.run({ type: 'spreadReligion', faction: g.human, unit: u.id }); if (r) g.afterOrders(); } }, g.tt('game.action.preach', { city: preach.name })) : null,
-      g.isFounder(u) ? button('foundCity', g.tt('game.action.found'), !foundable, ' primary wide') : null,
+      g.isFounder(u) ? button('foundCity', g.tt('game.action.found'), !foundable, ' primary') : null,
       g.isCivilian(u) ? null : button('fortify', g.tt('game.action.fortify'), u.activity === 'fortify'),
       button('skip', g.tt('game.action.skip'), u.moves <= 0 || u.activity === 'skip'),
       u.activity === 'sleep' ? button('wake', g.tt('game.action.wake')) : button('sleep', g.tt('game.action.sleep')),
       button('disband', g.confirmDisband ? g.tt('game.action.confirmDisband') : g.tt('game.action.disband')),
     ].filter(Boolean));
-    g.$('[data-field="hint"]').textContent = g.lastTouch ? g.tt('game.hint.moveTouch') : g.tt('game.hint.move');
+    // The how-to hint lives in Help and the empty panel; on a phone (taps differ) it stays here.
+    g.$('[data-field="hint"]').textContent = g.lastTouch ? g.tt('game.hint.moveTouch') : '';
   }
 
   return { oddsPanel, promotionPanel, renderUnitCard };
