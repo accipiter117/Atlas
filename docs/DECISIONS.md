@@ -262,6 +262,10 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **The phone preset**: a first game on a narrow screen starts from the Quick preset (a Small map); the setup screen recommends Small or Standard and marks Large and Huge as slow on phones (`tuning.setup.phonePreset`, `phoneSlowSizes`).
 - **No rendering changes were needed for speed**: measured frame times on a Standard map at phone size were well within budget.
 
+## Phase 22
+
+- **Skipped for now** at Matthew's request: Atlas is being developed for solo play against the computer. Online play (Supabase) can be picked up later as written in docs/PLAN.md; nothing in the code depends on it.
+
 ## Later
 
 - Nothing yet.
