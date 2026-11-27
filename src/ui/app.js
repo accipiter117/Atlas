@@ -216,7 +216,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     if (check.missing.length) { say(tt('save.missingMods', { list: check.missing.join(', ') })); return false; }
     const selection = (save.setup?.mods ?? ['base-ancient']).map((m) => String(m).split('@')[0]);
     if (check.changed.length) say(tt('save.modsChanged', { list: check.changed.map((c) => tt('save.modChange', c)).join(', '), turn: save.snapshot.turn }));
-    await startGame({ resume: { state: save.snapshot.state, log: save.log, journal: save.recorder?.journal ?? null }, selection, options: save.setup?.modOptions ?? {} });
+    await startGame({ resume: { state: save.snapshot.state, log: save.log, journal: save.recorder?.journal ?? null, meta: save.meta ?? null }, selection, options: save.setup?.modOptions ?? {} });
     return true;
   }
 

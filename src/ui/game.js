@@ -6,7 +6,7 @@
 // so the screen cannot show what your units and cities cannot see. Every
 // change goes through applyCommand.
 
-import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp } from '../sim/index.js';
+import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp, scoreOf } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 
 import { el, knownWorld } from './hud/shared.js';
@@ -219,6 +219,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get showEvents() { return showEvents; },
     get sound() { return sound; },
     get openHelp() { return openHelp; },
+    get scoreHistory() { return scoreHistory; },
     get snapshot() { return snapshot; },
     get startMemories() { return startMemories; },
     get startWorker() { return startWorker; },
@@ -636,8 +637,16 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const civ = v.factions.find((f) => f.id === human)?.civ;
     const leader = ruleset.factions?.[civ]?.leaders?.[0];
     try {
-      return { faction: civName(human), leader: ruleset.text[ruleset.leaders?.[leader]?.nameKey] ?? '', portrait: sheets?.[`leader.${leader}`]?.src ?? null, colour: colours[human], thumb: mapThumb(v, ruleset, human) };
+      return { faction: civName(human), leader: ruleset.text[ruleset.leaders?.[leader]?.nameKey] ?? '', portrait: sheets?.[`leader.${leader}`]?.src ?? null, colour: colours[human], thumb: mapThumb(v, ruleset, human), history: scoreHistory };
     } catch { return null; }
+  }
+
+  // Scores over time for the Victory chart (graphics overhaul G8): each faction's score at the start of
+  // every one of your turns, as [turn, score per faction in seat order]. Kept with the save; never part of the game.
+  const scoreHistory = Array.isArray(resume?.meta?.history) ? resume.meta.history.slice() : [];
+  function recordScores() {
+    if (scoreHistory.length && scoreHistory.at(-1)[0] === state.turn) return;
+    try { scoreHistory.push([state.turn, ...state.factions.map((f) => Math.round(scoreOf(state, ruleset, f.id)))]); } catch { /* a chart is a nicety */ }
   }
   function saveLabel() {
     const civ = v.factions.find((f) => f.id === human)?.civ;
@@ -697,6 +706,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     $('[data-action="next"]').disabled = false;
     refresh();
     sound?.('endTurn');
+    recordScores();
     const ms = showEvents(all, { rival: true });
     playback.ribbon(state.turn);
     autosaveNow();
@@ -1118,6 +1128,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   opening.then((events) => {
     $('[data-action="next"]').disabled = false;
     refresh();
+    recordScores();
     showEvents(events, { rival: true });
     selectNextIdle();
     checkEnd();

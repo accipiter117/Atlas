@@ -105,7 +105,7 @@ export function mountBattle(spec, host) {
   }
 
   function render() {
-    drawBattle(g, b, { colours: host.colours, selected, ground, hpPerMan });
+    drawBattle(g, b, { colours: host.colours, selected, ground, hpPerMan, sprite: host.sprite ?? null, now: win.performance.now() });
     renderCard();
     // Buttons hide with display, since the button style outranks the hidden attribute.
     begin.style.display = started ? 'none' : '';

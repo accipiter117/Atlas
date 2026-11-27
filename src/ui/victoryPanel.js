@@ -27,7 +27,37 @@ function pathRows(doc, tt, v, name, human, colours) {
     el(doc, 'span', { class: 'v-value' }, r.alive ? (r.target ? tt('victory.of', { value: r.value, target: r.target }) : String(r.value)) : tt('victory.out')))));
 }
 
-export function renderVictory(doc, host, { state, ruleset, text, human, name, colours, onClose }) {
+/**
+ * Score over time (graphics overhaul G8): one line per faction from the history the game
+ * screen keeps ([turn, score per faction in seat order]), an SVG drawn to fit its box.
+ */
+function scoreChart(doc, tt, state, history, name, colours, human) {
+  if (!history || history.length < 2) return el(doc, 'p', { class: 'small muted', dataset: { field: 'score-chart' } }, tt('victory.chartSoon'));
+  const W = 640;
+  const H = 150;
+  const pad = { l: 34, r: 8, t: 8, b: 20 };
+  const turns = history.map((h) => h[0]);
+  const t0 = Math.min(...turns);
+  const t1 = Math.max(...turns);
+  const top = Math.max(10, ...history.flatMap((h) => h.slice(1)));
+  const x = (t) => pad.l + ((t - t0) / Math.max(1, t1 - t0)) * (W - pad.l - pad.r);
+  const y = (v) => H - pad.b - (v / top) * (H - pad.t - pad.b);
+  const lines = state.factions.map((f, i) => {
+    const pts = history.filter((h) => Number.isFinite(h[i + 1])).map((h) => `${x(h[0]).toFixed(1)},${y(h[i + 1]).toFixed(1)}`).join(' ');
+    return `<polyline points="${pts}" fill="none" stroke="${colours[f.id] ?? '#888'}" stroke-width="${f.id === human ? 3 : 1.8}" stroke-linejoin="round"/>`;
+  }).join('');
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${tt('victory.chartLabel')}" preserveAspectRatio="none">`
+    + `<line x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}" class="axis"/><line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}" class="axis"/>`
+    + `<text x="${pad.l - 4}" y="${pad.t + 8}" text-anchor="end" class="tick">${top}</text><text x="${pad.l - 4}" y="${H - pad.b}" text-anchor="end" class="tick">0</text>`
+    + `<text x="${pad.l}" y="${H - 4}" class="tick">${tt('victory.turnN', { n: t0 })}</text><text x="${W - pad.r}" y="${H - 4}" text-anchor="end" class="tick">${tt('victory.turnN', { n: t1 })}</text>`
+    + `${lines}</svg>`;
+  const box = el(doc, 'div', { class: 'score-chart', dataset: { field: 'score-chart' } });
+  box.innerHTML = svg;
+  const legend = el(doc, 'ul', { class: 'chart-legend' }, ...state.factions.map((f) => el(doc, 'li', {}, el(doc, 'span', { class: 'swatch', style: `background:${colours[f.id] ?? '#888'}` }), name(f.id))));
+  return el(doc, 'section', { class: 'victory-chart' }, el(doc, 'h3', {}, tt('victory.chartTitle')), box, legend);
+}
+
+export function renderVictory(doc, host, { state, ruleset, text, human, name, colours, history = null, onClose }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key) => text[key] ?? ruleset.text?.[key] ?? key;
   const limit = turnLimit(state, ruleset);
@@ -36,6 +66,7 @@ export function renderVictory(doc, host, { state, ruleset, text, human, name, co
     el(doc, 'div', { class: 'tree-head' }, el(doc, 'h2', {}, tt('victory.title')),
       el(doc, 'p', { class: 'tree-now' }, limit ? tt('victory.turnsLeft', { n: Math.max(0, limit - state.turn), limit }) : tt('victory.noLimit')),
       el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-victory' }, onclick: onClose }, tt('tree.close'))),
+    scoreChart(doc, tt, state, history, name, colours, human),
     el(doc, 'div', { class: 'victory-grid' }, ...paths.map((v) => el(doc, 'section', { class: 'victory-path', dataset: { victory: v.id } },
       el(doc, 'h3', {}, say(v.nameKey)),
       el(doc, 'p', { class: 'small muted' }, tt(`victory.how.${v.id}`, { min: ruleset.victories?.[v.id]?.params?.minInfluence ?? '' })),

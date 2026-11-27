@@ -923,6 +923,11 @@
     "city.queueRemove": "Take {item} out of the queue",
     "city.available": "Could build here",
     "city.noneAvailable": "Nothing new to build here yet.",
-    "city.citizensNote": "Your citizens work the best tiles for the focus you choose. Tap a tile on the map to lock a citizen there."
+    "city.citizensNote": "Your citizens work the best tiles for the focus you choose. Tap a tile on the map to lock a citizen there.",
+    "victory.chartTitle": "Score over time",
+    "victory.chartLabel": "Each faction's score, turn by turn",
+    "victory.chartSoon": "The score chart starts after your next turn.",
+    "victory.turnN": "Turn {n}",
+    "battleCard.vs": "against"
   }
 }

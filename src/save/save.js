@@ -132,7 +132,8 @@ function summary(save, extra) {
     mods: save.setup?.mods ?? [],
     savedAt: save.createdAt,
     over: Boolean(state.winner),
-    ...(save.meta ? { meta: save.meta } : {}),
+    // The card's details only: the score history stays in the save itself, not the list of saves.
+    ...(save.meta ? { meta: Object.fromEntries(Object.entries(save.meta).filter(([k]) => k !== 'history')) } : {}),
     ...extra,
   };
 }

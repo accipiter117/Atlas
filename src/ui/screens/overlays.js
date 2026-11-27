@@ -90,7 +90,7 @@ export function createOverlays(g) {
   const nameOf = (id) => (id === g.human ? g.tt('victory.you', { faction: g.civName(id) }) : g.civName(id));
 
   function openVictory() {
-    renderVictory(g.doc, g.panel.querySelector('[data-field="panel-body"]'), { state: g.state, ruleset: g.ruleset, text: g.text, human: g.human, name: nameOf, colours: g.colours, onClose: () => { g.panel.hidden = true; } });
+    renderVictory(g.doc, g.panel.querySelector('[data-field="panel-body"]'), { state: g.state, ruleset: g.ruleset, text: g.text, human: g.human, name: nameOf, colours: g.colours, history: g.scoreHistory, onClose: () => { g.panel.hidden = true; } });
     g.panel.hidden = false;
   }
 

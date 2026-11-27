@@ -6,6 +6,7 @@ import { estimateOdds, verdictKey } from '../odds.js';
 import { getModule } from '../../battles/index.js';
 
 import { el, fill } from '../hud/shared.js';
+import { icon, unitIconName } from '../hud/icons.js';
 
 export function createDialogs(g) {
   function showCaptureDialog() {
@@ -50,8 +51,29 @@ export function createDialogs(g) {
     const body = overlay.querySelector('[data-field="overlay-body"]');
     const a = p.spec.attacker.units[0];
     const target = p.spec.defender.city ? p.spec.defender.city.name : g.unitName({ type: p.spec.defender.units[0]?.type });
+    // Graphics overhaul G8: both sides face to face with their portraits, the verdict in words, and the modifiers.
+    const face = (type, faction, isCity) => {
+      const box = el(g.doc, 'div', { class: 'portrait battle-face', style: `--faction-soft:${g.colours[faction] ?? ''}` });
+      const sheet = !isCity ? g.mapView.sheetFor(type, faction) : null;
+      const c = g.doc.createElement('canvas');
+      c.width = 64;
+      c.height = 64;
+      c.className = 'portrait-art';
+      if (sheet?.drawPortrait(c.getContext('2d'), 64, g.colours[faction])) box.append(c);
+      else box.append(icon(g.doc, isCity ? 'city' : unitIconName(g.ruleset, type), { size: 32 }));
+      return box;
+    };
+    const d0 = p.spec.defender.units[0];
+    const mods = (side) => (p.spec.modifiers?.[side] ?? []).map((m) => el(g.doc, 'li', {}, `${m.amount > 0 ? '+' : ''}${m.amount} ${g.tt(`odds.mod.${String(m.source).split(':')[0]}`)}`));
     fill(body,
       el(g.doc, 'h2', { dataset: { field: 'battle-title' } }, g.tt('battleCard.title', { unit: g.unitName({ type: a.type }), target, faction: sideName(p.spec.defender.faction) })),
+      el(g.doc, 'div', { class: 'battle-faceoff' },
+        el(g.doc, 'div', { class: 'side' }, face(a.type, p.spec.attacker.faction, false), el(g.doc, 'strong', {}, g.unitName({ type: a.type })), el(g.doc, 'span', { class: 'small muted' }, sideName(p.spec.attacker.faction)),
+          el(g.doc, 'ul', { class: 'mods small' }, ...mods('attacker'))),
+        el(g.doc, 'span', { class: 'vs', 'aria-hidden': 'true' }, g.tt('battleCard.vs')),
+        el(g.doc, 'div', { class: 'side' }, face(d0?.type, p.spec.defender.faction, Boolean(p.spec.defender.city)), el(g.doc, 'strong', {}, target), el(g.doc, 'span', { class: 'small muted' }, sideName(p.spec.defender.faction)),
+          el(g.doc, 'ul', { class: 'mods small' }, ...mods('defender')))),
+      el(g.doc, 'p', { class: 'battle-verdict' }, g.tt(verdictKey(o))),
       el(g.doc, 'p', { dataset: { field: 'battle-odds' } }, g.tt('battleCard.odds', { win: Math.round(o.win * 100), lose: Math.round(o.lose * 100), taken: Math.round(o.attackerLoss), dealt: Math.round(o.defenderLoss) })),
       el(g.doc, 'p', { class: 'small muted' }, g.tt('battleCard.note')),
       el(g.doc, 'div', { class: 'capture-choices' },
@@ -76,6 +98,8 @@ export function createDialogs(g) {
       colours: { attacker: g.colours[p.spec.attacker.faction], defender: g.colours[p.spec.defender.faction] },
       names: { attacker: sideName(p.spec.attacker.faction), defender: sideName(p.spec.defender.faction) },
       unitName: (type) => g.unitName({ type }),
+      // Graphics overhaul G8: each side's units drawn with their own sprite sheets (optional for a module).
+      sprite: (type, side) => g.mapView.sheetFor(type, side === 'attacker' ? p.spec.attacker.faction : p.spec.defender.faction),
       oddsText: g.tt('tactical.odds', { verdict: g.tt(verdictKey(o)), win: Math.round(o.win * 100), lose: Math.round(o.lose * 100) }),
       playerSide: 'attacker',
       finish: (result) => {
