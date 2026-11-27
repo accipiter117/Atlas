@@ -13,7 +13,71 @@
       "display": "Cinzel",
       "body": "Inter"
     },
-    "art": {},
+    "art": {
+      "leader.bran": {
+        "sheet": "assets/sprites/witcher/leader.bran.json"
+      },
+      "leader.demavend": {
+        "sheet": "assets/sprites/witcher/leader.demavend.json"
+      },
+      "leader.emhyr": {
+        "sheet": "assets/sprites/witcher/leader.emhyr.json"
+      },
+      "leader.esterad": {
+        "sheet": "assets/sprites/witcher/leader.esterad.json"
+      },
+      "leader.foltest": {
+        "sheet": "assets/sprites/witcher/leader.foltest.json"
+      },
+      "leader.francesca": {
+        "sheet": "assets/sprites/witcher/leader.francesca.json"
+      },
+      "leader.henselt": {
+        "sheet": "assets/sprites/witcher/leader.henselt.json"
+      },
+      "leader.radovid": {
+        "sheet": "assets/sprites/witcher/leader.radovid.json"
+      },
+      "unit.aedirnian_militia": {
+        "sheet": "assets/sprites/witcher/aedirnian_militia.json"
+      },
+      "unit.blue_stripes": {
+        "sheet": "assets/sprites/witcher/blue_stripes.json"
+      },
+      "unit.drakkar": {
+        "sheet": "assets/sprites/witcher/drakkar.json"
+      },
+      "unit.drowner": {
+        "sheet": "assets/sprites/witcher/drowner.json"
+      },
+      "unit.ghoul": {
+        "sheet": "assets/sprites/witcher/ghoul.json"
+      },
+      "unit.impera_guard": {
+        "sheet": "assets/sprites/witcher/impera_guard.json"
+      },
+      "unit.kaedweni_halberdier": {
+        "sheet": "assets/sprites/witcher/kaedweni_halberdier.json"
+      },
+      "unit.kovirian_cuirassier": {
+        "sheet": "assets/sprites/witcher/kovirian_cuirassier.json"
+      },
+      "unit.nekker": {
+        "sheet": "assets/sprites/witcher/nekker.json"
+      },
+      "unit.redanian_crossbowman": {
+        "sheet": "assets/sprites/witcher/redanian_crossbowman.json"
+      },
+      "unit.squirrel_archer": {
+        "sheet": "assets/sprites/witcher/squirrel_archer.json"
+      },
+      "unit.witcher": {
+        "sheet": "assets/sprites/witcher/witcher.json"
+      },
+      "unit.wyvern": {
+        "sheet": "assets/sprites/witcher/wyvern.json"
+      }
+    },
     "sounds": {},
     "factionColours": true,
     "tokens": {

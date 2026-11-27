@@ -73,6 +73,14 @@ export async function checkData(root) {
     let desc;
     try { desc = JSON.parse(await readFile(join(root, path), 'utf8')); } catch { sheetProblems.push(`${mod}: art ${id} points to ${path}, which is missing or not JSON`); continue; }
     if (!desc.credits) sheetProblems.push(`${path} has no credits`);
+    // Every LPC layer must name its authors and the licence used (graphics overhaul G4).
+    for (const layer of desc.layers ?? []) {
+      for (const c of layer.credits ?? []) {
+        if (!c.authors?.length) sheetProblems.push(`${path}: layer ${layer.def} (${c.file}) has no author`);
+        if (!c.licence) sheetProblems.push(`${path}: layer ${layer.def} (${c.file}) has no licence chosen`);
+      }
+      if (!layer.credits?.length) sheetProblems.push(`${path}: layer ${layer.def} has no credits`);
+    }
     try { await readFile(join(root, desc.src)); } catch { sheetProblems.push(`${path} points to image ${desc.src}, which is missing`); }
     credits.push(`- **${id}** (\`${path}\`): ${desc.credits ?? 'MISSING CREDITS'}`);
   }

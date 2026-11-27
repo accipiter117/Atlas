@@ -274,7 +274,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const { showCaptureDialog, frontData, sideName, showBattleCard, openBattle, showEventDialog } = createDialogs(g);
   const { openTrees, openDiplomacy, openEmpire, openJournal, nameOf, openVictory, exportInto, openMenu, showEnd } = createOverlays(g);
 
-  const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
+  const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, civs: Object.fromEntries(v.factions.map((f) => [f.id, f.civ])), sheets });
   const { refreshMinimap, updateInsets, toggleYields, toggleGrid, hexHover, hexLeave, hexContent, openHelp } = createMapHud(g);
   doc.defaultView.addEventListener('resize', () => updateInsets());
   // What tests and the dev tools can see; published on window once the opening seats have played.

@@ -126,8 +126,13 @@ tuning = OD([('contentType', 'tuning'), ('set', OD([
                    'militia': ['rifle', 'heavy', 'rifle', 'engineer'], 'default': ['rifle', 'heavy', 'engineer', 'rifle']})])),
 ]))])
 open(K + 'tuning.json', 'w').write(json.dumps(tuning, indent=2, ensure_ascii=False) + '\n')
+# Unit art entries are written by tools/gen/lpc-units.mjs (graphics overhaul G4): keep them.
+try:
+    kept_art = json.load(open(K + 'skin/skin.json'), object_pairs_hook=OD)['values'].get('art', {})
+except (OSError, ValueError, KeyError):
+    kept_art = {}
 skin = OD([('contentType', 'skin'), ('values', OD([('id', 'killzone'), ('palette', OD([('ink', '#16181c'), ('paper', '#d9dcdf'), ('accent', '#b8321f'), ('water', '#2a3f4f'), ('land', '#6d6f5e')])),
-    ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])), ('art', {}), ('sounds', {}), ('factionColours', True),
+    ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])), ('art', kept_art), ('sounds', {}), ('factionColours', True),
     # Graphics overhaul tokens: gunmetal panels, ISA blue edges, Helghast orange-red for alarms.
     ('tokens', OD([('walnut', 'rgba(29, 34, 38, 0.95)'), ('walnut-solid', '#1d2226'), ('brass', '#5b7fa6'), ('brass-inner', '#2c3a48'), ('panel-ink', '#dfe6ec'), ('gold', '#e05a2a'), ('danger', '#e05a2a')])),
     # Graphics overhaul G3: Helghan's scorched greys and rust (code-drawn terrain colours, docs/OVERHAUL.md 4.1).

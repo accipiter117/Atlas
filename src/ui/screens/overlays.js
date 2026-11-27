@@ -34,6 +34,8 @@ export function createOverlays(g) {
     renderDiplomacy(g.doc, g.panel.querySelector('[data-field="panel-body"]'), {
       world: knownWorld(g.v), view: g.v, ruleset: g.ruleset, text: g.text, ui: g.dipUi, name: g.civName,
       leaderName: (id) => g.ruleset.text[g.ruleset.leaders?.[g.ruleset.factions?.[civOf(id)]?.leaders?.[0]]?.nameKey] ?? '',
+      // Graphics overhaul G4: the leader's portrait, if the skin has one.
+      portrait: (id) => g.sheets[`leader.${g.ruleset.factions?.[civOf(id)]?.leaders?.[0]}`]?.src ?? null,
       act: {
         select: (id) => { g.dipUi.selected = id; g.dipUi.deal = null; openDiplomacy(id); },
         editDeal: (deal) => { g.dipUi.deal = deal; openDiplomacy(); },

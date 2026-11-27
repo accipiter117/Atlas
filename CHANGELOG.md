@@ -1,5 +1,16 @@
 # Changelog
 
+## Graphics overhaul G4: a sprite for every unit
+
+Every unit in the base game, the Witcher and Killzone now has its own sprite in its faction's colours, and every leader has a portrait.
+
+What you can try: start any game and look at the map. Settlers carry packs, builders wear overalls and carry a hoe, warriors have spears, archers bows and quivers, legionaries Roman armour and helmets, knights ride armoured horses, chariots and catapults roll on turning wheels, and ships have oars or sails in your colours. In the Witcher, Temerian, Redanian and Nilfgaardian soldiers wear their kingdom's colours, the witcher has his long sword and white hair, and drowners, nekkers, ghouls and wyverns are proper monsters. In Killzone every unit is an ISA or Helghast trooper (riflemen, heavies, snipers, jump troops, engineers) or a tank. Each unit has a small pennant in its faction's colour with its class icon, a shield badge when fortified, a sleep badge when asleep, a number when several share a hex, and its health bar only when hurt. Select a unit for its portrait in the selection panel; open Diplomacy for each leader's portrait. All 101 unit sheets are on one contact sheet in `docs/shots/G4/contact-sheet.png`.
+
+- `tools/gen/lpc-units.mjs`: fetches the Universal LPC Spritesheet Character Generator at a pinned commit into a git-ignored cache (only the folders it needs), reads `rules/<mod>/art/units.recipes.json`, composites each unit's layers in headless Chromium into the classic LPC layout, draws the "tint" layers in a mask colour, and writes `assets/sprites/<skin>/<unit>.png` with a descriptor carrying full per-layer credits. It fails if a layer has no author or licence, and points each skin's art at the sheets.
+- Code-drawn units in the same style (`tools/gen/unit-art/compose.js`): horses carrying an LPC rider, chariots, siege engines, ships and the Witcher's monsters. Killzone's troopers and tanks come from Matthew's own Killzone code, copied unchanged.
+- In the game: faction colour by recolouring the mask per frame (`src/render/art/spriteSheet.js`), a faction's own sheet first (Killzone), pennants, status badges and stack counts on the map, portraits in the selection panel and Diplomacy. `tools/check-data.mjs` fails on any sprite layer without an author or licence and lists every sheet in CREDITS.md.
+- Tests: every unit and leader in every ruleset has credited art and no two units share a picture; a browser test that sprites take each faction's colour and that unit and leader portraits show.
+
 ## Graphics overhaul G3: terrain, borders and the strategic view
 
 The map has soft edges, coastlines, light and tall terrain now, and what you have not explored is an old campaign map rather than a black void.

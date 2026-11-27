@@ -55,7 +55,7 @@ export function dealSentence(tt, ruleset, name, me, deal) {
  * state: { selected, deal: { give, get } | null } kept by the caller.
  * act: { propose(target, give, get), answer(dealId, accept), denounce(target), declareWar(target), select(id), editDeal(deal), close() }
  */
-export function renderDiplomacy(doc, host, { world, view, ruleset, text, name, leaderName, ui, act }) {
+export function renderDiplomacy(doc, host, { world, view, ruleset, text, name, leaderName, portrait = () => null, ui, act }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key) => ruleset.text[key] ?? text[key] ?? '';
   const me = view.me;
@@ -83,10 +83,14 @@ export function renderDiplomacy(doc, host, { world, view, ruleset, text, name, l
         el(doc, 'button', { type: 'button', class: 'btn small primary', dataset: { accept: deal.id }, onclick: () => act.answer(deal.id, true) }, tt('dip.accept')),
         el(doc, 'button', { type: 'button', class: 'btn small', dataset: { decline: deal.id }, onclick: () => act.answer(deal.id, false) }, tt('dip.decline')))))) : null;
 
+  /** A leader's portrait in a brass frame, or nothing while the skin has none. */
+  const face = (id, cls) => { const src = portrait(id); return src ? el(doc, 'img', { class: cls, src, alt: '', width: '96', height: '96' }) : null; };
+
   // The leaders list.
   const list = el(doc, 'ul', { class: 'dip-leaders' }, ...met.map((f) => {
     const op = view.opinions[f.id].theirs.total;
     return el(doc, 'li', {}, el(doc, 'button', { type: 'button', class: `dip-leader${ui.selected === f.id ? ' selected' : ''}`, dataset: { leader: f.id }, onclick: () => act.select(f.id) },
+      face(f.id, 'dip-face small-face'),
       el(doc, 'strong', {}, name(f.id)),
       el(doc, 'span', { class: 'small' }, statusText(f.id)),
       el(doc, 'span', { class: `dip-op ${op > 0 ? 'good' : op < 0 ? 'bad' : ''}` }, signed(op))));
@@ -146,6 +150,7 @@ export function renderDiplomacy(doc, host, { world, view, ruleset, text, name, l
     }
     const pendingMine = (view.diplomacy?.deals ?? []).find((x) => x.from === me && x.to === sel.id);
     detail = el(doc, 'section', { class: 'dip-detail', dataset: { field: 'leader' } },
+      face(sel.id, 'dip-face'),
       el(doc, 'h3', {}, tt('dip.leaderTitle', { faction: name(sel.id), leader: leaderName(sel.id) })),
       el(doc, 'p', { class: 'dip-status' }, statusText(sel.id)),
       el(doc, 'p', {}, tt('dip.opinion', { n: signed(theirs.total) })),

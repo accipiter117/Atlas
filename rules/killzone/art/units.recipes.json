@@ -1,0 +1,140 @@
+{
+  "contentType": "unitArtRecipes",
+  "note": "Read by tools/gen/lpc-units.mjs (graphics overhaul G4), never by the game. Troopers and tanks are drawn by Matthew's Killzone code (tools/gen/unit-art/killzone/).",
+  "skin": "killzone",
+  "sides": {
+    "isa": "isa",
+    "helghast": "hgh"
+  },
+  "killzone": {
+    "settler": {
+      "role": "engineer"
+    },
+    "builder": {
+      "role": "engineer"
+    },
+    "warrior": {
+      "role": "rifle"
+    },
+    "scout": {
+      "role": "jump"
+    },
+    "slinger": {
+      "role": "recon"
+    },
+    "spearman": {
+      "role": "heavy"
+    },
+    "archer": {
+      "role": "recon"
+    },
+    "horseman": {
+      "tank": true
+    },
+    "chariot": {
+      "tank": true
+    },
+    "swordsman": {
+      "role": "rifle"
+    },
+    "catapult": {
+      "tank": true
+    },
+    "legionary": {
+      "role": "rifle"
+    },
+    "hoplite": {
+      "role": "heavy"
+    },
+    "maryannu": {
+      "tank": true
+    },
+    "immortal": {
+      "role": "recon"
+    },
+    "gaesatae": {
+      "role": "rifle"
+    },
+    "woad_raider": {
+      "role": "jump"
+    },
+    "crossbowman": {
+      "role": "recon"
+    },
+    "pikeman": {
+      "role": "heavy"
+    },
+    "man_at_arms": {
+      "role": "assault"
+    },
+    "knight": {
+      "tank": true
+    },
+    "trebuchet": {
+      "tank": true
+    },
+    "musketman": {
+      "role": "assault"
+    },
+    "bombard": {
+      "tank": true
+    },
+    "missionary": {
+      "role": "engineer"
+    },
+    "trader": {
+      "role": "engineer"
+    },
+    "spy": {
+      "role": "infiltrator"
+    },
+    "isa_sniper": {
+      "role": "recon"
+    },
+    "helghast_heavy": {
+      "role": "heavy"
+    }
+  },
+  "leaders": {
+    "templar": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/armour/torso_armour_plate",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            25,
+            0.25,
+            0.55
+          ]
+        }
+      ]
+    },
+    "visari": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "torso/shirts/longsleeve/torso_clothes_longsleeve",
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    }
+  }
+}

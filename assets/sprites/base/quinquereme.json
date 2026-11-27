@@ -1,0 +1,26 @@
+{
+  "id": "unit.quinquereme",
+  "src": "assets/sprites/base/quinquereme.png",
+  "frame": {
+    "w": 64,
+    "h": 64
+  },
+  "anchor": {
+    "x": 32,
+    "y": 58
+  },
+  "layout": "lpc",
+  "attackAnim": "thrust",
+  "fps": 8,
+  "tint": true,
+  "portrait": {
+    "row": 11,
+    "col": 0,
+    "x": 16,
+    "y": 16,
+    "w": 32,
+    "h": 32
+  },
+  "credits": "Original pixel art drawn in code by tools/gen/unit-art/compose.js for Atlas (MIT licence).",
+  "layers": []
+}

@@ -18,7 +18,9 @@ export function facingBetween(map, a, b) {
   return HEX_FACING[((d % 6) + 6) % 6];
 }
 
-export function createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion }) {
+export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, reducedMotion }) {
+  /** A faction's own sheet for a unit (Killzone's ISA and Helghast troopers), else the shared one. */
+  const sheetFor = (type, faction) => sheets[`unit.${type}.${civs[faction]}`] ?? sheets[`unit.${type}`] ?? null;
   const anims = new Map(); // unit id -> { path, start, msPerTile }
   const facing = new Map(); // unit id -> last facing, kept between redraws
   const nbsDir = (a, b) => facingBetween(map, a, b);
@@ -89,6 +91,9 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion 
   function draw(ctx, cam, units, { selected, now, strategic = false, atlas = null }) {
     const scale = cam.zoom;
     const sorted = units.slice().sort((a, b) => a.tile - b.tile);
+    const count = new Map();
+    const last = new Map();
+    for (const u of sorted) { count.set(u.tile, (count.get(u.tile) ?? 0) + 1); last.set(u.tile, u); }
     for (const u of sorted) {
       const p = placeOf(u, now);
       if (strategic) {
@@ -114,11 +119,12 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion 
         ctx.strokeStyle = '#ffe36b';
         ctx.stroke();
       }
-      const sheet = sheets[`unit.${u.type}`];
+      const sheet = sheetFor(u.type, u.faction);
+      if (!civilian) drawPennant(ctx, x - 17 * scale, y, scale, colour, u, atlas);
       if (sheet?.ready) {
-        const f = sheet.frame(p.moving ? 'walk' : 'idle', p.facing, now);
-        const s = (SPRITE_PX / sheet.desc.frame.w) * scale;
-        ctx.drawImage(sheet.image, f.sx, f.sy, f.sw, f.sh, x - sheet.desc.anchor.x * s, y - sheet.desc.anchor.y * s, f.sw * s, f.sh * s);
+        const f = sheet.frameFor(p.moving ? 'walk' : 'idle', p.facing, now, colour);
+        const s = (sheet.desc.mapScale ?? SPRITE_PX / sheet.desc.frame.w) * scale;
+        ctx.drawImage(f.img, f.sx, f.sy, f.sw, f.sh, x - sheet.desc.anchor.x * s, y - sheet.desc.anchor.y * s, f.sw * s, f.sh * s);
       } else {
         const letter = (ruleset.text[ruleset.units[u.type]?.nameKey] ?? u.type).slice(0, 1).toUpperCase();
         drawPlaceholder(ctx, x, y - 2 * scale, SPRITE_PX * scale, colour, letter);
@@ -130,9 +136,53 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion 
         ctx.fillStyle = u.hp > 50 ? '#5cc35c' : u.hp > 25 ? '#e0b43c' : '#d9503f';
         ctx.fillRect(x - w / 2, y + 8 * scale, (w * u.hp) / 100, 4 * scale);
       }
+      // Status: fortified or asleep, as a small icon at the top right.
+      const status = u.activity === 'fortify' ? 'fortified' : u.activity === 'sleep' ? 'asleep' : null;
+      if (status && !p.moving) badge(ctx, x + 14 * scale, y - 40 * scale, scale, status, atlas);
+      // More than one unit here: how many, on the front one.
+      const here = count.get(u.tile);
+      if (here > 1 && u === last.get(u.tile)) {
+        const r = Math.max(6, 7 * scale);
+        ctx.fillStyle = '#1b140d';
+        ctx.beginPath();
+        ctx.arc(x + 16 * scale, y + 2 * scale, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#f1e6cf';
+        ctx.font = `700 ${Math.round(r * 1.3)}px system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(here), x + 16 * scale, y + 2.5 * scale);
+      }
     }
     return anims.size > 0;
   }
 
-  return { draw, animate, isAnimating: () => anims.size > 0 };
+  /** A class pennant on a little pole behind the unit, in its faction's colour. */
+  function drawPennant(ctx, x, y, scale, colour, u, atlas) {
+    const h = 34 * scale;
+    ctx.fillStyle = '#2a1d12';
+    ctx.fillRect(Math.round(x), Math.round(y - h), Math.max(1, Math.round(1.5 * scale)), Math.round(h));
+    ctx.fillStyle = colour;
+    ctx.beginPath();
+    ctx.moveTo(x + 1.5 * scale, y - h);
+    ctx.lineTo(x + 15 * scale, y - h + 5 * scale);
+    ctx.lineTo(x + 1.5 * scale, y - h + 10 * scale);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#1b140d';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    if (scale >= 0.8) drawIcon(ctx, atlas, unitIconName(ruleset, u.type), x + 6.5 * scale, y - h + 5 * scale, Math.round(8 * scale));
+  }
+
+  function badge(ctx, x, y, scale, name, atlas) {
+    const r = Math.max(6, 8 * scale);
+    ctx.fillStyle = 'rgba(27, 20, 13, 0.85)';
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    drawIcon(ctx, atlas, name, x, y, Math.round(r * 1.3));
+  }
+
+  return { draw, animate, sheetFor, isAnimating: () => anims.size > 0 };
 }

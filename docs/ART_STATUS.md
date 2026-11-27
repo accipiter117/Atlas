@@ -5,7 +5,7 @@ code placeholder until a skin gives it real art, so the game is always playable.
 
 ## base-ancient
 
-95 art ids: 1 with art, 94 on placeholders.
+95 art ids: 38 with art, 57 on placeholders.
 
 | Art id | Status |
 | --- | --- |
@@ -47,14 +47,14 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `building.watchtower` | placeholder |
 | `building.water_mill` | placeholder |
 | `building.workshop` | placeholder |
-| `leader.ambiorix` | placeholder |
-| `leader.boudica` | placeholder |
-| `leader.cyrus` | placeholder |
-| `leader.dido` | placeholder |
-| `leader.emperor_wu` | placeholder |
-| `leader.hatshepsut` | placeholder |
-| `leader.pericles` | placeholder |
-| `leader.trajan` | placeholder |
+| `leader.ambiorix` | real art |
+| `leader.boudica` | real art |
+| `leader.cyrus` | real art |
+| `leader.dido` | real art |
+| `leader.emperor_wu` | real art |
+| `leader.hatshepsut` | real art |
+| `leader.pericles` | real art |
+| `leader.trajan` | real art |
 | `religion.flame_covenant` | placeholder |
 | `religion.grove_circle` | placeholder |
 | `religion.path_of_stone` | placeholder |
@@ -63,36 +63,36 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `religion.sky_lodge` | placeholder |
 | `religion.solar_way` | placeholder |
 | `religion.starward_faith` | placeholder |
-| `unit.archer` | placeholder |
-| `unit.bombard` | placeholder |
-| `unit.builder` | placeholder |
-| `unit.caravel` | placeholder |
-| `unit.catapult` | placeholder |
-| `unit.chariot` | placeholder |
-| `unit.crossbowman` | placeholder |
-| `unit.gaesatae` | placeholder |
-| `unit.hoplite` | placeholder |
-| `unit.horseman` | placeholder |
-| `unit.immortal` | placeholder |
-| `unit.knight` | placeholder |
-| `unit.legionary` | placeholder |
-| `unit.man_at_arms` | placeholder |
-| `unit.maryannu` | placeholder |
-| `unit.missionary` | placeholder |
-| `unit.musketman` | placeholder |
-| `unit.pikeman` | placeholder |
-| `unit.quinquereme` | placeholder |
-| `unit.scout` | placeholder |
-| `unit.settler` | placeholder |
-| `unit.slinger` | placeholder |
-| `unit.spearman` | placeholder |
-| `unit.spy` | placeholder |
-| `unit.swordsman` | placeholder |
-| `unit.trader` | placeholder |
-| `unit.trebuchet` | placeholder |
-| `unit.trireme` | placeholder |
+| `unit.archer` | real art |
+| `unit.bombard` | real art |
+| `unit.builder` | real art |
+| `unit.caravel` | real art |
+| `unit.catapult` | real art |
+| `unit.chariot` | real art |
+| `unit.crossbowman` | real art |
+| `unit.gaesatae` | real art |
+| `unit.hoplite` | real art |
+| `unit.horseman` | real art |
+| `unit.immortal` | real art |
+| `unit.knight` | real art |
+| `unit.legionary` | real art |
+| `unit.man_at_arms` | real art |
+| `unit.maryannu` | real art |
+| `unit.missionary` | real art |
+| `unit.musketman` | real art |
+| `unit.pikeman` | real art |
+| `unit.quinquereme` | real art |
+| `unit.scout` | real art |
+| `unit.settler` | real art |
+| `unit.slinger` | real art |
+| `unit.spearman` | real art |
+| `unit.spy` | real art |
+| `unit.swordsman` | real art |
+| `unit.trader` | real art |
+| `unit.trebuchet` | real art |
+| `unit.trireme` | real art |
 | `unit.warrior` | real art |
-| `unit.woad_raider` | placeholder |
+| `unit.woad_raider` | real art |
 | `wonder.atlas_of_the_world` | placeholder |
 | `wonder.colossus` | placeholder |
 | `wonder.great_library` | placeholder |
@@ -107,7 +107,7 @@ code placeholder until a skin gives it real art, so the game is always playable.
 
 ## base-ancient + witcher
 
-100 art ids: 1 with art, 99 on placeholders.
+100 art ids: 41 with art, 59 on placeholders.
 
 | Art id | Status |
 | --- | --- |
@@ -150,14 +150,14 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `building.water_mill` | placeholder |
 | `building.witcher_school` | placeholder |
 | `building.workshop` | placeholder |
-| `leader.bran` | placeholder |
-| `leader.demavend` | placeholder |
-| `leader.emhyr` | placeholder |
-| `leader.esterad` | placeholder |
-| `leader.foltest` | placeholder |
-| `leader.francesca` | placeholder |
-| `leader.henselt` | placeholder |
-| `leader.radovid` | placeholder |
+| `leader.bran` | real art |
+| `leader.demavend` | real art |
+| `leader.emhyr` | real art |
+| `leader.esterad` | real art |
+| `leader.foltest` | real art |
+| `leader.francesca` | real art |
+| `leader.henselt` | real art |
+| `leader.radovid` | real art |
 | `religion.eternal_fire` | placeholder |
 | `religion.freya` | placeholder |
 | `religion.great_sun` | placeholder |
@@ -165,41 +165,41 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `religion.lebioda` | placeholder |
 | `religion.melitele` | placeholder |
 | `religion.old_ways` | placeholder |
-| `unit.aedirnian_militia` | placeholder |
-| `unit.archer` | placeholder |
-| `unit.blue_stripes` | placeholder |
-| `unit.bombard` | placeholder |
-| `unit.builder` | placeholder |
-| `unit.caravel` | placeholder |
-| `unit.catapult` | placeholder |
-| `unit.chariot` | placeholder |
-| `unit.drakkar` | placeholder |
-| `unit.drowner` | placeholder |
-| `unit.ghoul` | placeholder |
-| `unit.horseman` | placeholder |
-| `unit.impera_guard` | placeholder |
-| `unit.kaedweni_halberdier` | placeholder |
-| `unit.knight` | placeholder |
-| `unit.kovirian_cuirassier` | placeholder |
-| `unit.man_at_arms` | placeholder |
-| `unit.missionary` | placeholder |
-| `unit.musketman` | placeholder |
-| `unit.nekker` | placeholder |
-| `unit.pikeman` | placeholder |
+| `unit.aedirnian_militia` | real art |
+| `unit.archer` | real art |
+| `unit.blue_stripes` | real art |
+| `unit.bombard` | real art |
+| `unit.builder` | real art |
+| `unit.caravel` | real art |
+| `unit.catapult` | real art |
+| `unit.chariot` | real art |
+| `unit.drakkar` | real art |
+| `unit.drowner` | real art |
+| `unit.ghoul` | real art |
+| `unit.horseman` | real art |
+| `unit.impera_guard` | real art |
+| `unit.kaedweni_halberdier` | real art |
+| `unit.knight` | real art |
+| `unit.kovirian_cuirassier` | real art |
+| `unit.man_at_arms` | real art |
+| `unit.missionary` | real art |
+| `unit.musketman` | real art |
+| `unit.nekker` | real art |
+| `unit.pikeman` | real art |
 | `unit.pikeman_north` | placeholder |
-| `unit.redanian_crossbowman` | placeholder |
+| `unit.redanian_crossbowman` | real art |
 | `unit.scout_north` | placeholder |
-| `unit.settler` | placeholder |
-| `unit.slinger` | placeholder |
-| `unit.spy` | placeholder |
-| `unit.squirrel_archer` | placeholder |
-| `unit.swordsman` | placeholder |
-| `unit.trader` | placeholder |
-| `unit.trebuchet` | placeholder |
-| `unit.trireme` | placeholder |
+| `unit.settler` | real art |
+| `unit.slinger` | real art |
+| `unit.spy` | real art |
+| `unit.squirrel_archer` | real art |
+| `unit.swordsman` | real art |
+| `unit.trader` | real art |
+| `unit.trebuchet` | real art |
+| `unit.trireme` | real art |
 | `unit.warrior` | real art |
-| `unit.witcher` | placeholder |
-| `unit.wyvern` | placeholder |
+| `unit.witcher` | real art |
+| `unit.wyvern` | real art |
 | `wonder.atlas_of_the_world` | placeholder |
 | `wonder.colossus` | placeholder |
 | `wonder.great_library` | placeholder |
@@ -214,7 +214,7 @@ code placeholder until a skin gives it real art, so the game is always playable.
 
 ## base-ancient + killzone
 
-67 art ids: 1 with art, 66 on placeholders.
+67 art ids: 24 with art, 43 on placeholders.
 
 | Art id | Status |
 | --- | --- |
@@ -248,31 +248,31 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `building.watchtower` | placeholder |
 | `building.water_mill` | placeholder |
 | `building.workshop` | placeholder |
-| `leader.templar` | placeholder |
-| `leader.visari` | placeholder |
-| `unit.archer` | placeholder |
-| `unit.bombard` | placeholder |
-| `unit.builder` | placeholder |
-| `unit.caravel` | placeholder |
-| `unit.catapult` | placeholder |
-| `unit.chariot` | placeholder |
+| `leader.templar` | real art |
+| `leader.visari` | real art |
+| `unit.archer` | real art |
+| `unit.bombard` | real art |
+| `unit.builder` | real art |
+| `unit.caravel` | real art |
+| `unit.catapult` | real art |
+| `unit.chariot` | real art |
 | `unit.helghast_heavy` | placeholder |
-| `unit.horseman` | placeholder |
+| `unit.horseman` | real art |
 | `unit.isa_sniper` | placeholder |
-| `unit.knight` | placeholder |
-| `unit.man_at_arms` | placeholder |
-| `unit.missionary` | placeholder |
-| `unit.musketman` | placeholder |
-| `unit.pikeman` | placeholder |
-| `unit.scout` | placeholder |
-| `unit.settler` | placeholder |
-| `unit.slinger` | placeholder |
-| `unit.spearman` | placeholder |
-| `unit.spy` | placeholder |
-| `unit.swordsman` | placeholder |
-| `unit.trader` | placeholder |
-| `unit.trebuchet` | placeholder |
-| `unit.trireme` | placeholder |
+| `unit.knight` | real art |
+| `unit.man_at_arms` | real art |
+| `unit.missionary` | real art |
+| `unit.musketman` | real art |
+| `unit.pikeman` | real art |
+| `unit.scout` | real art |
+| `unit.settler` | real art |
+| `unit.slinger` | real art |
+| `unit.spearman` | real art |
+| `unit.spy` | real art |
+| `unit.swordsman` | real art |
+| `unit.trader` | real art |
+| `unit.trebuchet` | real art |
+| `unit.trireme` | real art |
 | `unit.warrior` | real art |
 | `wonder.atlas_of_the_world` | placeholder |
 | `wonder.colossus` | placeholder |

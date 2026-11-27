@@ -1,0 +1,484 @@
+{
+  "contentType": "unitArtRecipes",
+  "note": "Read by tools/gen/lpc-units.mjs (graphics overhaul G4), never by the game.",
+  "skin": "witcher",
+  "body": "male",
+  "kits": {
+    "base": [
+      "body/body",
+      "head/heads/human/heads_human_male",
+      "feet/boots/feet_boots_basic"
+    ]
+  },
+  "units": {
+    "blue_stripes": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "headwear/hats/caps/hat_cap_leather",
+          "tint": true
+        },
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    },
+    "redanian_crossbowman": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        "torso/torso_chainmail",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_bascinet",
+        "weapons/ranged/weapon_ranged_crossbow"
+      ]
+    },
+    "kaedweni_halberdier": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/torso_chainmail",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_sugarloaf",
+        "weapons/polearm/weapon_polearm_halberd"
+      ]
+    },
+    "aedirnian_militia": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "hair/short/hair_bedhead",
+          "hsl": [
+            28,
+            0.45,
+            0.85
+          ]
+        },
+        {
+          "def": "weapons/polearm/weapon_polearm_spear",
+          "variant": "medium"
+        }
+      ]
+    },
+    "impera_guard": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        "torso/armour/torso_armour_plate",
+        "arms/shoulders/shoulders_pauldrons",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_close",
+        "weapons/shields/heater/shield_heater_wood",
+        {
+          "def": "weapons/sword/weapon_sword_longsword"
+        }
+      ]
+    },
+    "squirrel_archer": {
+      "attack": "shoot",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "headwear/coverings/hoods/hat_hood_cloth",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_straight",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        "torso/backpack/quiver",
+        "weapons/ranged/bow/weapon_ranged_bow_recurve",
+        "weapons/ranged/bow/weapon_ranged_bow_arrow"
+      ]
+    },
+    "witcher": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_straight",
+          "hsl": [
+            40,
+            0.05,
+            1.35
+          ]
+        },
+        {
+          "def": "hair/beards/beards_5oclock_shadow",
+          "hsl": [
+            40,
+            0.05,
+            1.35
+          ]
+        },
+        {
+          "def": "weapons/sword/weapon_sword_longsword"
+        }
+      ]
+    }
+  },
+  "code": {
+    "kovirian_cuirassier": {
+      "draw": "horse",
+      "attack": "thrust",
+      "barding": true,
+      "coat": "#3a2c22",
+      "rider": {
+        "layers": [
+          {
+            "kit": "base"
+          },
+          "torso/armour/torso_armour_plate",
+          {
+            "def": "torso/jacket/torso_jacket_tabard",
+            "tint": true
+          },
+          "headwear/helmets/helmets/hat_helmet_close",
+          {
+            "def": "weapons/polearm/weapon_polearm_spear",
+            "variant": "medium"
+          }
+        ]
+      }
+    },
+    "drakkar": {
+      "draw": "ship",
+      "kind": "drakkar",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 14,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "drowner": {
+      "draw": "monster",
+      "kind": "drowner",
+      "attack": "slash",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 20,
+        "y": 22,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "nekker": {
+      "draw": "monster",
+      "kind": "nekker",
+      "attack": "slash",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 22,
+        "y": 28,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "ghoul": {
+      "draw": "monster",
+      "kind": "ghoul",
+      "attack": "slash",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 22,
+        "y": 24,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "wyvern": {
+      "draw": "monster",
+      "kind": "wyvern",
+      "attack": "slash",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 18,
+        "y": 12,
+        "w": 32,
+        "h": 32
+      }
+    }
+  },
+  "leaders": {
+    "foltest": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/armour/torso_armour_plate",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            28,
+            0.45,
+            0.85
+          ]
+        },
+        {
+          "def": "hair/beards/beards_trimmed",
+          "hsl": [
+            28,
+            0.45,
+            0.85
+          ]
+        }
+      ]
+    },
+    "radovid": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            12,
+            0.7,
+            0.9
+          ]
+        }
+      ]
+    },
+    "henselt": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/torso_chainmail",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            25,
+            0.25,
+            0.55
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            25,
+            0.25,
+            0.55
+          ]
+        }
+      ]
+    },
+    "demavend": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        }
+      ]
+    },
+    "emhyr": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/armour/torso_armour_plate",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_straight",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        {
+          "def": "hair/beards/beards_trimmed",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    },
+    "bran": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_messy",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        }
+      ]
+    },
+    "esterad": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        },
+        {
+          "def": "hair/beards/beards_trimmed",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        }
+      ]
+    },
+    "francesca": {
+      "body": "female",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_female",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_straight",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        }
+      ]
+    }
+  }
+}

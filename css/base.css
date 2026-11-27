@@ -670,3 +670,7 @@ button.y-chip:hover { border-color: var(--brass-inner); background: var(--brass-
 kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 13px/1.4 var(--font-body); text-align: center; }
 @media (max-width: 899px) { .help-body { grid-template-columns: 1fr; } }
 .actions .btn.primary .key, .actions .btn.danger .key { color: inherit; border-color: currentColor; opacity: 0.8; }
+.portrait .portrait-art { width: 60px; height: 60px; image-rendering: pixelated; }
+/* Leader portraits (graphics overhaul G4): head and shoulders in a brass frame. */
+.dip-face { float: right; width: 96px; height: 96px; image-rendering: pixelated; border: 2px solid var(--brass); border-radius: 6px; box-shadow: inset 0 0 0 1px var(--brass-inner); background: var(--parchment); margin: 0 0 8px 12px; }
+.dip-face.small-face { float: none; width: 40px; height: 40px; margin: 0 8px 0 0; vertical-align: middle; }

@@ -14,8 +14,119 @@
       "body": "Inter"
     },
     "art": {
+      "leader.ambiorix": {
+        "sheet": "assets/sprites/base/leader.ambiorix.json"
+      },
+      "leader.boudica": {
+        "sheet": "assets/sprites/base/leader.boudica.json"
+      },
+      "leader.cyrus": {
+        "sheet": "assets/sprites/base/leader.cyrus.json"
+      },
+      "leader.dido": {
+        "sheet": "assets/sprites/base/leader.dido.json"
+      },
+      "leader.emperor_wu": {
+        "sheet": "assets/sprites/base/leader.emperor_wu.json"
+      },
+      "leader.hatshepsut": {
+        "sheet": "assets/sprites/base/leader.hatshepsut.json"
+      },
+      "leader.pericles": {
+        "sheet": "assets/sprites/base/leader.pericles.json"
+      },
+      "leader.trajan": {
+        "sheet": "assets/sprites/base/leader.trajan.json"
+      },
+      "unit.archer": {
+        "sheet": "assets/sprites/base/archer.json"
+      },
+      "unit.bombard": {
+        "sheet": "assets/sprites/base/bombard.json"
+      },
+      "unit.builder": {
+        "sheet": "assets/sprites/base/builder.json"
+      },
+      "unit.caravel": {
+        "sheet": "assets/sprites/base/caravel.json"
+      },
+      "unit.catapult": {
+        "sheet": "assets/sprites/base/catapult.json"
+      },
+      "unit.chariot": {
+        "sheet": "assets/sprites/base/chariot.json"
+      },
+      "unit.crossbowman": {
+        "sheet": "assets/sprites/base/crossbowman.json"
+      },
+      "unit.gaesatae": {
+        "sheet": "assets/sprites/base/gaesatae.json"
+      },
+      "unit.hoplite": {
+        "sheet": "assets/sprites/base/hoplite.json"
+      },
+      "unit.horseman": {
+        "sheet": "assets/sprites/base/horseman.json"
+      },
+      "unit.immortal": {
+        "sheet": "assets/sprites/base/immortal.json"
+      },
+      "unit.knight": {
+        "sheet": "assets/sprites/base/knight.json"
+      },
+      "unit.legionary": {
+        "sheet": "assets/sprites/base/legionary.json"
+      },
+      "unit.man_at_arms": {
+        "sheet": "assets/sprites/base/man_at_arms.json"
+      },
+      "unit.maryannu": {
+        "sheet": "assets/sprites/base/maryannu.json"
+      },
+      "unit.missionary": {
+        "sheet": "assets/sprites/base/missionary.json"
+      },
+      "unit.musketman": {
+        "sheet": "assets/sprites/base/musketman.json"
+      },
+      "unit.pikeman": {
+        "sheet": "assets/sprites/base/pikeman.json"
+      },
+      "unit.quinquereme": {
+        "sheet": "assets/sprites/base/quinquereme.json"
+      },
+      "unit.scout": {
+        "sheet": "assets/sprites/base/scout.json"
+      },
+      "unit.settler": {
+        "sheet": "assets/sprites/base/settler.json"
+      },
+      "unit.slinger": {
+        "sheet": "assets/sprites/base/slinger.json"
+      },
+      "unit.spearman": {
+        "sheet": "assets/sprites/base/spearman.json"
+      },
+      "unit.spy": {
+        "sheet": "assets/sprites/base/spy.json"
+      },
+      "unit.swordsman": {
+        "sheet": "assets/sprites/base/swordsman.json"
+      },
+      "unit.trader": {
+        "sheet": "assets/sprites/base/trader.json"
+      },
+      "unit.trebuchet": {
+        "sheet": "assets/sprites/base/trebuchet.json"
+      },
+      "unit.trireme": {
+        "sheet": "assets/sprites/base/trireme.json"
+      },
       "unit.warrior": {
-        "sheet": "assets/sprites/lpc-test-warrior.json"
+        "sheet": "assets/sprites/base/warrior.json"
+      },
+      "unit.woad_raider": {
+        "sheet": "assets/sprites/base/woad_raider.json"
       }
     },
     "sounds": {},

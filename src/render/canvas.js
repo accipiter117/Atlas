@@ -17,7 +17,7 @@ import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/citie
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
 
-export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, sheets: descriptors = {} }) {
+export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, civs = {}, sheets: descriptors = {} }) {
   const doc = host.ownerDocument;
   const win = doc.defaultView;
   const canvas = doc.createElement('canvas');
@@ -63,7 +63,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     frames: 0,
     lastFrameMs: 0,
   };
-  const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion });
+  const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, civs, reducedMotion });
   let size = { w: 0, h: 0 };
   // The parts of the canvas covered by floating panels (graphics overhaul G2): centring
   // aims at the middle of what is left, and ensureVisible keeps a hex out from under them.
@@ -126,7 +126,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     // Close up, units stand in front of their city; in the strategic view the city names go on top.
     if (!strategic) cities();
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
-    if (strategic) loadAtlas();
+    loadAtlas();
     const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0, strategic, atlas });
     if (strategic) cities();
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
@@ -290,6 +290,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setWar(factions) { view.atWar = new Set(factions); dirty = true; },
     /** Water sparkle and cloud drift on or off (they also stop with reduced motion). */
     setAmbient(on) { view.ambient = on; dirty = true; },
+    /** The sprite sheet a unit type uses for a faction (for portraits), or null. */
+    sheetFor: (type, faction) => unitsLayer.sheetFor(type, faction),
     /** Called with (camera, viewport) whenever either changes (the minimap's frame). */
     onView: null,
     centreOnTile(t) {

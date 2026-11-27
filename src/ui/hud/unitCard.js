@@ -69,7 +69,17 @@ export function createUnitCard(g) {
     const strength = def.strength ?? 0;
     const hpClass = u.hp >= 70 ? '' : u.hp >= 35 ? ' hurt' : ' low';
     const me = g.v.factions.find((f) => f.id === u.faction);
-    const portrait = el(g.doc, 'div', { class: 'portrait', 'aria-hidden': 'true' }, icon(g.doc, unitIconName(g.ruleset, u.type), { size: 32 }));
+    // The portrait (graphics overhaul G4): head and shoulders from the unit's sprite sheet in its
+    // faction's colour, or its class icon until the sheet has loaded.
+    const sheet = g.mapView.sheetFor(u.type, u.faction);
+    const face = g.doc.createElement('canvas');
+    face.width = 64;
+    face.height = 64;
+    face.className = 'portrait-art';
+    const drawn = sheet?.drawPortrait(face.getContext('2d'), 64, g.colours[u.faction]);
+    // Not loaded yet: draw the card again once it is.
+    if (sheet && !drawn) sheet.image?.decode?.().then(() => { if (g.selected === u.id) g.render(); }).catch(() => {});
+    const portrait = el(g.doc, 'div', { class: 'portrait', 'aria-hidden': 'true' }, drawn ? face : icon(g.doc, unitIconName(g.ruleset, u.type), { size: 32 }));
     portrait.style.setProperty('--faction-soft', g.ruleset.factions?.[me?.civ]?.colours.primary ?? '');
     const stat = (name, label, value) => el(g.doc, 'li', { title: label }, icon(g.doc, name, { size: 16, label }), el(g.doc, 'span', {}, value));
     fill(card,

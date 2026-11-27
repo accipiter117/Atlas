@@ -1,0 +1,828 @@
+{
+  "contentType": "unitArtRecipes",
+  "note": "Read by tools/gen/lpc-units.mjs (graphics overhaul G4), never by the game. Layers are LPC generator sheet_definitions; tint layers take the faction's colour.",
+  "skin": "base",
+  "body": "male",
+  "kits": {
+    "base": [
+      "body/body",
+      "head/heads/human/heads_human_male",
+      "feet/shoes/feet_shoes_basic"
+    ],
+    "soldier": [
+      "body/body",
+      "head/heads/human/heads_human_male",
+      "feet/boots/feet_boots_basic"
+    ]
+  },
+  "units": {
+    "settler": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            28,
+            0.45,
+            0.85
+          ]
+        },
+        {
+          "def": "torso/backpack/backpack",
+          "variant": "brown"
+        },
+        "weapons/polearm/weapon_polearm_cane"
+      ]
+    },
+    "builder": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/shortsleeve/torso_clothes_shortsleeve",
+          "tint": true
+        },
+        "torso/aprons/torso_aprons_overalls",
+        {
+          "def": "hair/short/hair_bedhead",
+          "hsl": [
+            25,
+            0.25,
+            0.55
+          ]
+        },
+        "tools/tool_hoe"
+      ]
+    },
+    "warrior": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        {
+          "def": "weapons/polearm/weapon_polearm_spear",
+          "variant": "medium"
+        }
+      ]
+    },
+    "scout": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "headwear/hats/caps/hat_cap_leather",
+          "tint": true
+        },
+        "torso/backpack/quiver",
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    },
+    "slinger": {
+      "attack": "shoot",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/shirts/shortsleeve/torso_clothes_shortsleeve",
+        {
+          "def": "hair/short/hair_bedhead",
+          "hsl": [
+            28,
+            0.45,
+            0.85
+          ]
+        },
+        "weapons/ranged/weapon_ranged_slingshot"
+      ]
+    },
+    "spearman": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        "headwear/helmets/helmets/hat_helmet_nasal",
+        "weapons/shields/heater/shield_heater_wood",
+        {
+          "def": "weapons/polearm/weapon_polearm_spear",
+          "variant": "medium"
+        }
+      ]
+    },
+    "archer": {
+      "attack": "shoot",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "headwear/hats/caps/hat_cap_leather",
+          "tint": true
+        },
+        "torso/backpack/quiver",
+        "weapons/ranged/bow/weapon_ranged_bow_normal",
+        "weapons/ranged/bow/weapon_ranged_bow_arrow"
+      ]
+    },
+    "swordsman": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        "legs/pants/legs_pants",
+        "torso/torso_chainmail",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_spangenhelm",
+        "weapons/shields/heater/shield_heater_wood",
+        {
+          "def": "weapons/sword/weapon_sword_arming",
+          "variant": "iron"
+        }
+      ]
+    },
+    "legionary": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/armour/torso_armour_legion",
+        "arms/shoulders/shoulders_legion",
+        "headwear/helmets/helmets/hat_helmet_legion",
+        "weapons/shields/heater/shield_heater_wood",
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    },
+    "hoplite": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        "legs/pants/legs_pants",
+        "torso/armour/torso_armour_legion",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_barbuta",
+        "weapons/shields/heater/shield_heater_wood",
+        {
+          "def": "weapons/polearm/weapon_polearm_spear",
+          "variant": "medium"
+        }
+      ]
+    },
+    "immortal": {
+      "attack": "shoot",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        {
+          "def": "headwear/coverings/hoods/hat_hood_cloth",
+          "tint": true
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        "torso/backpack/quiver",
+        "weapons/ranged/bow/weapon_ranged_bow_recurve",
+        "weapons/ranged/bow/weapon_ranged_bow_arrow"
+      ]
+    },
+    "gaesatae": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_messy",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        "weapons/shields/heater/shield_heater_wood",
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    },
+    "woad_raider": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        {
+          "def": "hair/short/hair_bedhead",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        {
+          "def": "hair/beards/beards_medium",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    },
+    "crossbowman": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        "legs/pants/legs_pants",
+        "torso/torso_chainmail",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_kettle",
+        "weapons/ranged/weapon_ranged_crossbow"
+      ]
+    },
+    "pikeman": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_morion",
+        {
+          "def": "weapons/polearm/weapon_polearm_spear",
+          "variant": "medium"
+        }
+      ]
+    },
+    "man_at_arms": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        "legs/pants/legs_pants",
+        "torso/armour/torso_armour_plate",
+        {
+          "def": "torso/jacket/torso_jacket_tabard",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_armet",
+        "weapons/shields/heater/shield_heater_wood",
+        {
+          "def": "weapons/sword/weapon_sword_arming",
+          "variant": "steel"
+        }
+      ]
+    },
+    "musketman": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "soldier"
+        },
+        {
+          "def": "legs/pants/legs_pants",
+          "tint": true
+        },
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        "headwear/helmets/helmets/hat_helmet_morion",
+        "weapons/ranged/weapon_ranged_crossbow"
+      ]
+    },
+    "missionary": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        {
+          "def": "headwear/coverings/hoods/hat_hood_cloth",
+          "tint": true
+        },
+        "weapons/magic/weapon_magic_simple"
+      ]
+    },
+    "trader": {
+      "attack": "thrust",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        {
+          "def": "torso/shirts/shortsleeve/torso_clothes_shortsleeve",
+          "tint": true
+        },
+        "torso/waist/belt_leather",
+        {
+          "def": "headwear/hats/caps/hat_cap_leather",
+          "tint": true
+        },
+        {
+          "def": "torso/backpack/backpack",
+          "variant": "brown"
+        },
+        "weapons/polearm/weapon_polearm_cane"
+      ]
+    },
+    "spy": {
+      "attack": "slash",
+      "layers": [
+        {
+          "kit": "base"
+        },
+        "legs/pants/legs_pants",
+        "torso/shirts/longsleeve/torso_clothes_longsleeve",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "headwear/coverings/hoods/hat_hood_cloth",
+          "tint": true
+        },
+        "weapons/sword/weapon_sword_dagger"
+      ]
+    }
+  },
+  "code": {
+    "horseman": {
+      "draw": "horse",
+      "attack": "thrust",
+      "rider": {
+        "layers": [
+          {
+            "kit": "base"
+          },
+          {
+            "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+            "tint": true
+          },
+          "torso/armour/torso_armour_leather",
+          "headwear/helmets/helmets/hat_helmet_nasal",
+          {
+            "def": "weapons/polearm/weapon_polearm_spear",
+            "variant": "medium"
+          }
+        ]
+      }
+    },
+    "chariot": {
+      "draw": "chariot",
+      "attack": "shoot",
+      "rider": {
+        "layers": [
+          {
+            "kit": "base"
+          },
+          {
+            "def": "torso/shirts/shortsleeve/torso_clothes_shortsleeve",
+            "tint": true
+          },
+          "headwear/helmets/helmets/hat_helmet_pointed",
+          "weapons/ranged/bow/weapon_ranged_bow_normal",
+          "weapons/ranged/bow/weapon_ranged_bow_arrow"
+        ]
+      }
+    },
+    "maryannu": {
+      "draw": "chariot",
+      "attack": "shoot",
+      "cart": "#c49a4a",
+      "coat": "#a87444",
+      "rider": {
+        "layers": [
+          {
+            "kit": "base"
+          },
+          {
+            "def": "torso/shirts/shortsleeve/torso_clothes_shortsleeve",
+            "tint": true
+          },
+          {
+            "def": "headwear/coverings/hoods/hat_hood_cloth",
+            "tint": true
+          },
+          "weapons/ranged/bow/weapon_ranged_bow_recurve",
+          "weapons/ranged/bow/weapon_ranged_bow_arrow"
+        ]
+      }
+    },
+    "knight": {
+      "draw": "horse",
+      "attack": "thrust",
+      "barding": true,
+      "coat": "#e2ddd2",
+      "rider": {
+        "layers": [
+          {
+            "kit": "base"
+          },
+          "torso/armour/torso_armour_plate",
+          {
+            "def": "torso/jacket/torso_jacket_tabard",
+            "tint": true
+          },
+          "headwear/helmets/helmets/hat_helmet_greathelm",
+          {
+            "def": "weapons/polearm/weapon_polearm_spear",
+            "variant": "medium"
+          }
+        ]
+      }
+    },
+    "catapult": {
+      "draw": "siege",
+      "kind": "catapult",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 22,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "trebuchet": {
+      "draw": "siege",
+      "kind": "trebuchet",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 14,
+        "y": 10,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "bombard": {
+      "draw": "siege",
+      "kind": "bombard",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 24,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "trireme": {
+      "draw": "ship",
+      "kind": "trireme",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 16,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "quinquereme": {
+      "draw": "ship",
+      "kind": "quinquereme",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 16,
+        "w": 32,
+        "h": 32
+      }
+    },
+    "caravel": {
+      "draw": "ship",
+      "kind": "caravel",
+      "attack": "thrust",
+      "portrait": {
+        "row": 11,
+        "col": 0,
+        "x": 16,
+        "y": 12,
+        "w": 32,
+        "h": 32
+      }
+    }
+  },
+  "leaders": {
+    "trajan": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "torso/armour/torso_armour_legion",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        }
+      ]
+    },
+    "pericles": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        "headwear/helmets/helmets/hat_helmet_barbuta",
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            30,
+            0.06,
+            1.0
+          ]
+        }
+      ]
+    },
+    "hatshepsut": {
+      "body": "female",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_female",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_straight",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    },
+    "cyrus": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    },
+    "dido": {
+      "body": "female",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_female",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_wavy",
+          "hsl": [
+            25,
+            0.25,
+            0.55
+          ]
+        }
+      ]
+    },
+    "ambiorix": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_messy",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        },
+        {
+          "def": "hair/beards/beards_beard",
+          "hsl": [
+            45,
+            0.6,
+            1.15
+          ]
+        }
+      ]
+    },
+    "boudica": {
+      "body": "female",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_female",
+        "torso/armour/torso_armour_leather",
+        {
+          "def": "torso/cape/cape_solid",
+          "tint": true
+        },
+        {
+          "def": "hair/long/hair_long_messy",
+          "hsl": [
+            12,
+            0.7,
+            0.9
+          ]
+        }
+      ]
+    },
+    "emperor_wu": {
+      "body": "male",
+      "layers": [
+        "body/body",
+        "head/heads/human/heads_human_male",
+        {
+          "def": "torso/shirts/longsleeve/torso_clothes_longsleeve",
+          "tint": true
+        },
+        {
+          "def": "hair/short/hair_plain",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        },
+        {
+          "def": "hair/beards/beards_trimmed",
+          "hsl": [
+            220,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    }
+  }
+}

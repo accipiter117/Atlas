@@ -14,7 +14,7 @@ const shared = {
 
 export default [
   // Vendored code from other Atlas-owner projects is kept unchanged so it can be refreshed (src/battles/*/sim/vendor).
-  { ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'src/battles/*/sim/vendor/**'] },
+  { ignores: ['node_modules/**', 'test-results/**', 'playwright-report/**', 'src/battles/*/sim/vendor/**', '.cache/**', 'tools/gen/unit-art/killzone/**', 'shots/**'] },
   {
     files: ['src/**/*.js'],
     languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: { ...globals.browser } },

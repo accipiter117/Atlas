@@ -13,7 +13,188 @@
       "display": "Cinzel",
       "body": "Inter"
     },
-    "art": {},
+    "art": {
+      "leader.templar": {
+        "sheet": "assets/sprites/killzone/leader.templar.json"
+      },
+      "leader.visari": {
+        "sheet": "assets/sprites/killzone/leader.visari.json"
+      },
+      "unit.archer.helghast": {
+        "sheet": "assets/sprites/killzone/archer.helghast.json"
+      },
+      "unit.archer.isa": {
+        "sheet": "assets/sprites/killzone/archer.isa.json"
+      },
+      "unit.bombard.helghast": {
+        "sheet": "assets/sprites/killzone/bombard.helghast.json"
+      },
+      "unit.bombard.isa": {
+        "sheet": "assets/sprites/killzone/bombard.isa.json"
+      },
+      "unit.builder.helghast": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.builder.isa": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.catapult.helghast": {
+        "sheet": "assets/sprites/killzone/catapult.helghast.json"
+      },
+      "unit.catapult.isa": {
+        "sheet": "assets/sprites/killzone/catapult.isa.json"
+      },
+      "unit.chariot.helghast": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.chariot.isa": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.crossbowman.helghast": {
+        "sheet": "assets/sprites/killzone/crossbowman.helghast.json"
+      },
+      "unit.crossbowman.isa": {
+        "sheet": "assets/sprites/killzone/crossbowman.isa.json"
+      },
+      "unit.gaesatae.helghast": {
+        "sheet": "assets/sprites/killzone/gaesatae.helghast.json"
+      },
+      "unit.gaesatae.isa": {
+        "sheet": "assets/sprites/killzone/gaesatae.isa.json"
+      },
+      "unit.helghast_heavy.helghast": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.helghast.json"
+      },
+      "unit.helghast_heavy.isa": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.isa.json"
+      },
+      "unit.hoplite.helghast": {
+        "sheet": "assets/sprites/killzone/hoplite.helghast.json"
+      },
+      "unit.hoplite.isa": {
+        "sheet": "assets/sprites/killzone/hoplite.isa.json"
+      },
+      "unit.horseman.helghast": {
+        "sheet": "assets/sprites/killzone/horseman.helghast.json"
+      },
+      "unit.horseman.isa": {
+        "sheet": "assets/sprites/killzone/horseman.isa.json"
+      },
+      "unit.immortal.helghast": {
+        "sheet": "assets/sprites/killzone/immortal.helghast.json"
+      },
+      "unit.immortal.isa": {
+        "sheet": "assets/sprites/killzone/immortal.isa.json"
+      },
+      "unit.isa_sniper.helghast": {
+        "sheet": "assets/sprites/killzone/isa_sniper.helghast.json"
+      },
+      "unit.isa_sniper.isa": {
+        "sheet": "assets/sprites/killzone/isa_sniper.isa.json"
+      },
+      "unit.knight.helghast": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.knight.isa": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.legionary.helghast": {
+        "sheet": "assets/sprites/killzone/legionary.helghast.json"
+      },
+      "unit.legionary.isa": {
+        "sheet": "assets/sprites/killzone/legionary.isa.json"
+      },
+      "unit.man_at_arms.helghast": {
+        "sheet": "assets/sprites/killzone/man_at_arms.helghast.json"
+      },
+      "unit.man_at_arms.isa": {
+        "sheet": "assets/sprites/killzone/man_at_arms.isa.json"
+      },
+      "unit.maryannu.helghast": {
+        "sheet": "assets/sprites/killzone/maryannu.helghast.json"
+      },
+      "unit.maryannu.isa": {
+        "sheet": "assets/sprites/killzone/maryannu.isa.json"
+      },
+      "unit.missionary.helghast": {
+        "sheet": "assets/sprites/killzone/missionary.helghast.json"
+      },
+      "unit.missionary.isa": {
+        "sheet": "assets/sprites/killzone/missionary.isa.json"
+      },
+      "unit.musketman.helghast": {
+        "sheet": "assets/sprites/killzone/musketman.helghast.json"
+      },
+      "unit.musketman.isa": {
+        "sheet": "assets/sprites/killzone/musketman.isa.json"
+      },
+      "unit.pikeman.helghast": {
+        "sheet": "assets/sprites/killzone/pikeman.helghast.json"
+      },
+      "unit.pikeman.isa": {
+        "sheet": "assets/sprites/killzone/pikeman.isa.json"
+      },
+      "unit.scout.helghast": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.scout.isa": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.settler.helghast": {
+        "sheet": "assets/sprites/killzone/settler.helghast.json"
+      },
+      "unit.settler.isa": {
+        "sheet": "assets/sprites/killzone/settler.isa.json"
+      },
+      "unit.slinger.helghast": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.slinger.isa": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.spearman.helghast": {
+        "sheet": "assets/sprites/killzone/spearman.helghast.json"
+      },
+      "unit.spearman.isa": {
+        "sheet": "assets/sprites/killzone/spearman.isa.json"
+      },
+      "unit.spy.helghast": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.spy.isa": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.swordsman.helghast": {
+        "sheet": "assets/sprites/killzone/swordsman.helghast.json"
+      },
+      "unit.swordsman.isa": {
+        "sheet": "assets/sprites/killzone/swordsman.isa.json"
+      },
+      "unit.trader.helghast": {
+        "sheet": "assets/sprites/killzone/trader.helghast.json"
+      },
+      "unit.trader.isa": {
+        "sheet": "assets/sprites/killzone/trader.isa.json"
+      },
+      "unit.trebuchet.helghast": {
+        "sheet": "assets/sprites/killzone/trebuchet.helghast.json"
+      },
+      "unit.trebuchet.isa": {
+        "sheet": "assets/sprites/killzone/trebuchet.isa.json"
+      },
+      "unit.warrior.helghast": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.warrior.isa": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.woad_raider.helghast": {
+        "sheet": "assets/sprites/killzone/woad_raider.helghast.json"
+      },
+      "unit.woad_raider.isa": {
+        "sheet": "assets/sprites/killzone/woad_raider.isa.json"
+      }
+    },
     "sounds": {},
     "factionColours": true,
     "tokens": {
