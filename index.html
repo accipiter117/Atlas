@@ -118,31 +118,45 @@
   </main>
 
   <main id="game" class="screen game" hidden aria-label="Game">
-    <header class="game-bar">
-      <button class="btn small bar-btn" type="button" data-action="game-menu" aria-label="Menu"><span class="icon" aria-hidden="true">&#9776;</span><span class="label">Menu</span></button>
+    <div id="game-map" class="map-host" tabindex="0" aria-label="Map"></div>
+    <header class="game-bar hud-panel">
+      <button class="bar-btn icon-btn" type="button" data-action="game-menu" aria-label="Menu" title="Menu"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-menu"/></svg><span class="label">Menu</span></button>
       <button class="btn small bar-btn phone-only" type="button" data-action="attention-toggle" aria-label="Needs attention" aria-expanded="false"><span class="icon" aria-hidden="true">!</span><span class="badge" data-field="attention-count">0</span></button>
-      <button class="btn small faction-chip" type="button" data-action="faction">Faction</button>
-      <strong class="game-turn" data-field="turn">Turn 1</strong>
+      <button class="faction-chip" type="button" data-action="faction">Faction</button>
       <span class="game-yields" data-field="yields"></span>
-      <button class="btn small bar-btn" type="button" data-action="empire" title="E" aria-label="Empire"><span class="icon" aria-hidden="true">&#9873;</span><span class="label">Empire</span></button>
-      <button class="btn small bar-btn" type="button" data-action="diplomacy" title="D" aria-label="Diplomacy"><span class="icon" aria-hidden="true">&#9993;</span><span class="label">Diplomacy</span></button>
-      <button class="btn small bar-btn" type="button" data-action="victory" title="V" aria-label="Victory"><span class="icon" aria-hidden="true">&#9733;</span><span class="label">Victory</span></button>
-      <button class="btn small bar-btn" type="button" data-action="journal" title="J" aria-label="AI journal"><span class="icon" aria-hidden="true">&#9998;</span><span class="label">AI journal</span></button>
-      <span class="game-hint" data-field="hint"></span>
+      <span class="bar-gap"></span>
+      <span class="game-turn" data-field="turn">Turn 1</span>
+      <span class="game-era" data-field="era"></span>
+      <span class="bar-buttons">
+        <button class="bar-btn icon-btn" type="button" data-action="empire" title="Empire (E)" aria-label="Empire"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-empire"/></svg><span class="label">Empire</span></button>
+        <button class="bar-btn icon-btn" type="button" data-action="diplomacy" title="Diplomacy (D)" aria-label="Diplomacy"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-diplomacy"/></svg><span class="label">Diplomacy</span></button>
+        <button class="bar-btn icon-btn" type="button" data-action="victory" title="Victory (V)" aria-label="Victory"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-victory"/></svg><span class="label">Victory</span></button>
+        <button class="bar-btn icon-btn" type="button" data-action="journal" title="AI journal (J)" aria-label="AI journal"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-journal"/></svg><span class="label">AI journal</span></button>
+        <button class="bar-btn icon-btn" type="button" data-action="help" title="Help (?)" aria-label="Help"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-help"/></svg><span class="label">Help</span></button>
+      </span>
     </header>
-    <div class="advice-line" data-field="advice" aria-live="polite"></div>
-    <aside class="attention" aria-labelledby="attention-title">
+    <section class="hud-progress hud-panel" data-field="progress" aria-label="Research and civics"></section>
+    <aside class="attention hud-panel" aria-labelledby="attention-title">
       <h2 id="attention-title" data-field="attention-title">Needs attention</h2>
       <ul data-field="attention"></ul>
     </aside>
-    <div id="game-map" class="map-host" tabindex="0" aria-label="Map"></div>
     <div class="drawer-backdrop phone-only" data-field="drawer-backdrop" hidden></div>
-    <aside class="unit-panel" aria-live="polite">
+    <aside class="unit-panel hud-panel" aria-live="polite">
       <button class="sheet-handle phone-only" type="button" data-action="sheet-toggle" aria-label="Show or hide the panel" aria-expanded="true"><span aria-hidden="true"></span></button>
       <div class="unit-card" data-field="unit-card"></div>
       <div class="actions" data-field="actions"></div>
-      <button class="btn primary next" type="button" data-action="next" title="Enter">Next turn</button>
+      <p class="game-hint" data-field="hint"></p>
     </aside>
+    <div class="hud-endturn">
+      <div class="advice-line hud-panel" data-field="advice" aria-live="polite"></div>
+      <button class="btn primary next" type="button" data-action="next" title="Enter">Next turn</button>
+      <div class="map-toggles" role="group" aria-label="Map display">
+        <button class="toggle-btn" type="button" data-action="lens" aria-pressed="false" title="Religion lens (L)" aria-label="Religion lens"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-lens-religion"/></svg></button>
+        <button class="toggle-btn" type="button" data-action="yield-icons" aria-pressed="false" title="Yield icons (Y)" aria-label="Yield icons"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-lens-yields"/></svg></button>
+        <button class="toggle-btn" type="button" data-action="grid" aria-pressed="false" title="Hex grid (G)" aria-label="Hex grid"><svg class="icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><use href="assets/icons.svg#i-grid"/></svg></button>
+      </div>
+    </div>
+    <div class="hud-minimap hud-panel"><canvas data-field="minimap" aria-label="Minimap: click or drag to move the map"></canvas></div>
   </main>
 
 

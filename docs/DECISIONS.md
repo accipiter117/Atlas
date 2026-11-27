@@ -273,6 +273,13 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G1: game.js split through a context object.** The moved functions reach the game screen's shared state through `g` (getters, and setters for what they change), so behaviour is identical; the whole browser suite passed unchanged after the split.
 - **G1: the screenshot saves** are played by the computer on every seat to turn 120 and stop at the start of your own turn, so they open ready to play.
 - **G1: the phone layout is frozen.** The overhaul targets screens 1280px wide and up. The phone Playwright tests stay in place but are skipped (a note points to docs/OVERHAUL.md); a phone pass comes after G8. The phone CSS stays as it is until then.
+- **G2: every HUD button is at least 44px.** The plan drew 32px map toggles and smaller bar chips; the standing rule (targets at least 44px, touch-safe always) wins, so the bar's buttons fill its 44px height and the toggles are 44px squares.
+- **G2: the lens button is a toggle while there is one lens.** The plan calls it a lenses menu; with the religion lens the only one, a menu would add a click for nothing. It becomes a menu when a second lens arrives. L still toggles it.
+- **G2: the clear area is measured, not guessed.** The map view takes insets from the panels' real positions after every render (so a tall builder card or the city panel counts), centres on the middle of what is left, and only moves the camera for a selection when the unit would sit under a panel or off screen.
+- **G2: notifications dismiss until next turn.** A right-click hides an item for the rest of the turn (it comes back next turn if it still applies). An empty list hides the panel on a laptop; the end-turn button already says there is nothing waiting.
+- **G2: the top bar shows six empire yields.** Food is the surplus after eating, production the sum of every city's; gold and faith show the stock and the rate. Amenities are per city, so they stay in the city panel rather than the bar.
+- **G2: hex tooltips on hover only, for now.** On a laptop a hex tooltip appears after the tooltip delay (at least a quarter of a second, so sweeping the mouse does not flicker). Touch keeps tapping to select; the same information for touch comes with the phone pass.
+- **G2: the phone grid absorbs the new markup.** Under 900px the floating panels fold back into the phase 21 grid (progress widget, minimap and toggles hidden, the end-turn button its own row), so the 820px touch project keeps working while the phone layout stays frozen.
 
 ## Later
 

@@ -74,6 +74,28 @@ export function showTooltip(target, content) {
   place(t, target);
 }
 
+/** The delay before a tooltip shows on hover, in ms (null when tooltips are off). */
+export function tooltipDelay() {
+  return mode === 'off' ? null : DELAYS[mode] ?? 400;
+}
+
+/** Show a tooltip next to a point on the page (the map's hex tooltips), keeping it on screen. */
+export function showTooltipAt(doc, x, y, content) {
+  if (mode === 'off' || !content) return;
+  const t = render(doc, content);
+  current = null;
+  t.hidden = false;
+  const win = doc.defaultView;
+  const w = t.offsetWidth;
+  const h = t.offsetHeight;
+  let left = x + 18;
+  let top = y + 18;
+  if (left + w > win.innerWidth - 8) left = x - w - 14;
+  if (top + h > win.innerHeight - 8) top = y - h - 14;
+  t.style.left = `${Math.round(Math.max(8, left))}px`;
+  t.style.top = `${Math.round(Math.max(8, top))}px`;
+}
+
 export function hideTooltip() {
   clearTimeout(timer);
   timer = null;

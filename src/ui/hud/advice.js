@@ -15,7 +15,7 @@ export function createAdvice(g) {
   /** A government you could adopt and have not (only when you have none yet). */
   function readyGovernment() {
     if (!g.ruleset.governments || g.v.government?.id || g.v.government?.anarchy || g.v.pendingGovernment) return null;
-    return Object.values(g.ruleset.governments).find((g) => governmentAvailable(knownWorld(g.v), g.ruleset, g.human, g.id))?.id ?? null;
+    return Object.values(g.ruleset.governments).find((gov) => governmentAvailable(knownWorld(g.v), g.ruleset, g.human, gov.id))?.id ?? null;
   }
 
   /** Is a policy slot of your working government empty while a card could fill it? */

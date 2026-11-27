@@ -1,10 +1,13 @@
-// The top bar: your faction, the turn, gold, era, research, civic, faith and the religion lens.
+// The top bar (graphics overhaul G2): your faction, every yield as an icon and a number
+// with a tooltip breaking it down, the turn and era, and the screen buttons; plus the
+// progress widget (research and civic with rings) and the lens toggle's state.
 // Split out of src/ui/game.js (graphics overhaul G1) with no change in behaviour:
 // everything the game screen shares comes in through `g` (see game.js).
 
-import { eraOf, upkeepOf } from '../../sim/index.js';
+import { eraOf, upkeepOf, costOf } from '../../sim/index.js';
+import { icon } from './icons.js';
 import { attachTooltip } from './tooltip.js';
-import { el, knownWorld, fmt, signed } from './shared.js';
+import { el, fill, knownWorld, fmt, signed } from './shared.js';
 
 const SOURCE_GROUP = { tiles: 'tiles', city: 'city', citizens: 'citizens', building: 'buildings', adjacency: 'buildings', specialists: 'specialists', trade: 'trade', effects: 'bonuses', percent: 'bonuses' };
 const SOURCE_ORDER = ['tiles', 'city', 'citizens', 'buildings', 'specialists', 'trade', 'bonuses'];
@@ -12,36 +15,88 @@ const SOURCE_ICON = { tiles: 'food', city: 'city', citizens: 'population', build
 const KEY_HINT = { science: 'tooltip.key.trees', culture: 'tooltip.key.civics', faith: 'tooltip.key.religion' };
 
 export function createTopBar(g) {
+  /** One yield in the bar: its icon, the number and (for stocks) the rate; a button when it opens something. */
+  function chip(y, { value, rate = null, action = null, onclick = null, label, falling = false }) {
+    const kids = [icon(g.doc, y, { size: 18 }), el(g.doc, 'span', { class: 'val' }, value)];
+    if (rate !== null) kids.push(el(g.doc, 'span', { class: 'rate' }, `(${rate})`));
+    const props = { class: `y-chip y ${y}${falling ? ' falling' : ''}`, 'aria-label': label };
+    if (action) return el(g.doc, 'button', { ...props, type: 'button', dataset: { action }, onclick }, ...kids);
+    return el(g.doc, 'span', { ...props, role: 'img', tabindex: '0' }, ...kids);
+  }
+
   function renderBar() {
     g.$('[data-field="turn"]').textContent = g.tt('game.turn', { n: g.state.turn });
-    const total = { gold: 0, science: 0, culture: 0, faith: 0 };
+    g.$('[data-field="era"]').textContent = g.tt('game.era', { era: g.ruleset.text[g.ruleset.eras?.[eraOf(knownWorld(g.v), g.ruleset, g.human)]?.nameKey] ?? '' });
+    const total = { gold: 0, science: 0, culture: 0, faith: 0, production: 0, food: 0 };
     for (const c of g.myCities()) {
-      const y = g.yieldsOf(c).total;
-      for (const k of Object.keys(total)) total[k] += y[k];
+      const r = g.yieldsOf(c);
+      for (const k of ['gold', 'science', 'culture', 'faith', 'production']) total[k] += r.total[k];
+      total.food += r.surplus;
     }
     const s = g.v.stocks ?? { gold: 0, faith: 0 };
     const me = g.v.factions.find((f) => f.id === g.human);
-    const chip = g.$('[data-action="faction"]');
-    chip.textContent = g.tt('game.factionCard', { faction: g.civName(g.human) });
-    chip.style.setProperty('--faction', g.ruleset.factions?.[me?.civ]?.colours.primary ?? '#888');
+    const chipBtn = g.$('[data-action="faction"]');
+    chipBtn.textContent = g.tt('game.factionCard', { faction: g.civName(g.human) });
+    chipBtn.style.setProperty('--faction', g.ruleset.factions?.[me?.civ]?.colours.primary ?? '#888');
+    const science = g.v.research?.current ? g.tt('game.bar.science', { rate: signed(total.science), item: g.techName(g.v.research.current) }) : g.tt('game.bar.noResearch', { rate: signed(total.science) });
+    const culture = !g.ruleset.civics ? g.tt('game.bar.culture', { rate: signed(total.culture) })
+      : g.v.civicResearch?.current ? g.tt('game.bar.civic', { rate: signed(total.culture), item: g.civicName(g.v.civicResearch.current) }) : g.tt('game.bar.noCivic', { rate: signed(total.culture) });
+    const faith = g.tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) });
     g.$('[data-field="yields"]').replaceChildren(
-      el(g.doc, 'span', { class: `y gold${g.netGold() < 0 ? ' falling' : ''}` }, g.tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(g.netGold()) })),
-      el(g.doc, 'span', { class: 'y era' }, g.tt('game.era', { era: g.ruleset.text[g.ruleset.eras?.[eraOf(knownWorld(g.v), g.ruleset, g.human)]?.nameKey] ?? '' })),
-      el(g.doc, 'button', { type: 'button', class: 'y science link-like', dataset: { action: 'trees' }, onclick: g.openTrees },
-        g.v.research?.current ? g.tt('game.bar.science', { rate: signed(total.science), item: g.techName(g.v.research.current) }) : g.tt('game.bar.noResearch', { rate: signed(total.science) })),
-      g.ruleset.civics ? el(g.doc, 'button', { type: 'button', class: 'y culture link-like', dataset: { action: 'civics' }, onclick: () => g.openTrees('civics') },
-        g.v.civicResearch?.current ? g.tt('game.bar.civic', { rate: signed(total.culture), item: g.civicName(g.v.civicResearch.current) }) : g.tt('game.bar.noCivic', { rate: signed(total.culture) }))
-        : el(g.doc, 'span', { class: 'y culture' }, g.tt('game.bar.culture', { rate: signed(total.culture) })),
-      g.ruleset.beliefs ? el(g.doc, 'button', { type: 'button', class: 'y faith link-like', dataset: { action: 'religion' }, onclick: () => g.openEmpire('religion') }, g.tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) }))
-        : el(g.doc, 'span', { class: 'y faith' }, g.tt('game.bar.faith', { stock: fmt(s.faith), rate: signed(total.faith) })),
-      g.ruleset.beliefs ? el(g.doc, 'button', { type: 'button', class: `y link-like lens${g.religionLens ? ' on' : ''}`, dataset: { action: 'lens' }, 'aria-pressed': String(g.religionLens), onclick: toggleLens }, g.tt('game.lens')) : null,
+      chip('food', { value: signed(total.food), label: g.tt('game.bar.food', { rate: signed(total.food) }) }),
+      chip('production', { value: signed(total.production), label: g.tt('game.bar.production', { rate: signed(total.production) }) }),
+      chip('gold', { value: fmt(s.gold), rate: signed(g.netGold()), falling: g.netGold() < 0, label: g.tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(g.netGold()) }) }),
+      chip('science', { value: signed(total.science), action: 'trees', onclick: () => g.openTrees('techs'), label: science }),
+      chip('culture', { value: signed(total.culture), action: g.ruleset.civics ? 'civics' : null, onclick: () => g.openTrees('civics'), label: culture }),
+      chip('faith', { value: fmt(s.faith), rate: signed(total.faith), action: g.ruleset.beliefs ? 'religion' : null, onclick: () => g.openEmpire('religion'), label: faith }),
     );
-    // Tooltips (graphics overhaul G1): each yield broken down by where it comes from.
+    // Tooltips: each yield broken down by where it comes from.
     const bar = g.$('[data-field="yields"]');
-    for (const y of ['gold', 'science', 'culture', 'faith']) {
+    for (const y of ['food', 'production', 'gold', 'science', 'culture', 'faith']) {
       const node = bar.querySelector(`.y.${y}`);
-      if (node) attachTooltip(node, () => yieldTooltip(y));
+      if (node) attachTooltip(node, () => (y === 'food' || y === 'production' ? cityTooltip(y) : yieldTooltip(y)));
     }
+    renderProgress(total);
+    // The map toggles under the end-turn button.
+    const lens = g.$('[data-action="lens"]');
+    lens.hidden = !g.ruleset.beliefs;
+    lens.setAttribute('aria-pressed', String(Boolean(g.religionLens)));
+  }
+
+  /** The progress widget (top left): research and civic, each with a ring and turns left; click opens the tree. */
+  function renderProgress(total) {
+    const world = knownWorld(g.v);
+    const row = (tree, r, perTurn, name, noneKey) => {
+      const id = r?.current ?? null;
+      const cost = id ? costOf(world, g.ruleset, id, tree) : 1;
+      const done = id ? Math.min(1, (r.progress?.[id] ?? 0) / Math.max(1, cost)) : 0;
+      const turns = id ? Math.max(1, Math.ceil((cost - (r.progress?.[id] ?? 0)) / Math.max(1, perTurn))) : null;
+      const yieldName = tree === 'civics' ? 'culture' : 'science';
+      const circ = 2 * Math.PI * 16;
+      const ring = el(g.doc, 'span', { class: 'ring' });
+      ring.innerHTML = `<svg class="ring-track" viewBox="0 0 38 38" aria-hidden="true"><circle class="back" cx="19" cy="19" r="16"/><circle class="${yieldName}" cx="19" cy="19" r="16" stroke-dasharray="${(done * circ).toFixed(1)} ${circ.toFixed(1)}"/></svg>`;
+      ring.append(icon(g.doc, tree === 'civics' ? 'civics' : 'techs', { size: 18 }));
+      return el(g.doc, 'button', { type: 'button', class: 'progress-row', dataset: { progress: tree }, onclick: () => g.openTrees(tree),
+        'aria-label': id ? g.tt('game.progress.label', { name: name(id), n: turns }) : g.tt(noneKey) },
+      ring,
+      el(g.doc, 'span', { class: `name${id ? '' : ' none'}` }, id ? name(id) : g.tt(noneKey)),
+      id ? el(g.doc, 'span', { class: 'turns' }, turns === 1 ? g.tt('game.progress.turn') : g.tt('game.progress.turns', { n: turns })) : el(g.doc, 'span'));
+    };
+    const host = g.$('[data-field="progress"]');
+    fill(host,
+      g.ruleset.techs ? row('techs', g.v.research, total.science, g.techName, 'game.progress.noResearch') : null,
+      g.ruleset.civics ? row('civics', g.v.civicResearch, total.culture, g.civicName, 'game.progress.noCivic') : null);
+  }
+
+  /** Food or production by city, biggest first. */
+  function cityTooltip(y) {
+    const rows = g.myCities().map((c) => { const r = g.yieldsOf(c); return { name: c.name, n: y === 'food' ? r.surplus : r.total.production }; })
+      .sort((a, b) => b.n - a.n);
+    const lines = rows.slice(0, 8).map((r) => ({ icon: 'city', text: r.name, value: signed(r.n) }));
+    if (rows.length > 8) lines.push({ text: g.tt('tooltip.moreCities', { n: rows.length - 8 }), muted: true });
+    if (!lines.length) lines.push({ text: g.tt('tooltip.none'), muted: true });
+    lines.push({ icon: y, text: g.tt(y === 'food' ? 'tooltip.foodSurplus' : 'tooltip.perTurn'), value: signed(rows.reduce((n, r) => n + r.n, 0)), total: true });
+    return { title: g.tt(`tooltip.yield.${y}`), lines };
   }
 
   /** Where a yield comes from, summed over your cities (and, for gold, what upkeep costs). */

@@ -34,6 +34,17 @@
   --parchment-ink: #2a1f14;
   --gold: #c9a227;
   --danger: #a63a2b;
+  /* HUD (graphics overhaul G2): derived from the ones above, so a skin that changes walnut, brass or gold follows. */
+  --panel-ink-soft: color-mix(in srgb, var(--panel-ink) 72%, var(--walnut-solid));
+  --panel-ink-faint: color-mix(in srgb, var(--panel-ink) 52%, var(--walnut-solid));
+  --gold-bright: color-mix(in srgb, var(--gold) 80%, white);
+  --danger-bright: color-mix(in srgb, var(--danger) 78%, white);
+  --brass-glow: color-mix(in srgb, var(--brass) 16%, transparent);
+  --hud-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --hp-good: #6fae3e;
+  --hp-hurt: #d9a43a;
+  --map-void: #0b0c10;
+  --minimap-unexplored: #15110c;
   --y-food: #7cb342;
   --y-production: #c97b2a;
   --y-gold: #e6b422;

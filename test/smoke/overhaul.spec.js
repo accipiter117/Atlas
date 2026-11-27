@@ -41,7 +41,8 @@ test('G1: yield tooltips, UI scale, fonts, icons and sounds', async ({ page }, i
   await page.locator('.game-yields .y.science').hover();
   await expect(tip).toContainText('Science');
   await expect(tip).toContainText('tech tree');
-  await page.mouse.move(5, 400);
+  // Somewhere with no tooltip of its own (the gap in the top bar).
+  await page.mouse.move(760, 22);
   await expect(tip).toBeHidden();
 
   // The icon sprite is served and holds the yields.

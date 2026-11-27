@@ -133,57 +133,152 @@ body {
 .report code { font: 12.5px ui-monospace, Menlo, Consolas, monospace; background: var(--paper-deep); padding: 0 4px; border-radius: 4px; overflow-wrap: anywhere; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mods-status.ok { color: #7cc48b; } }
 
-/* The game screen: top bar, needs-attention list, map, unit panel. */
-.screen.game {
-  display: grid; place-items: stretch; padding: 0; height: 100vh; height: 100dvh;
-  grid-template-columns: 220px minmax(0, 1fr) 300px; grid-template-rows: auto auto minmax(0, 1fr);
-  grid-template-areas: "bar bar bar" "advice advice advice" "attention map panel";
-}
-.game-bar {
-  grid-area: bar; display: flex; align-items: center; gap: 14px; padding: 6px 12px;
-  background: var(--panel); border-bottom: 1px solid var(--line);
-}
-.game-turn { font: 600 18px/1 var(--font-display); white-space: nowrap; }
-.game-hint { color: var(--ink-soft); font-size: 14px; }
-.attention, .unit-panel { background: var(--panel); padding: 12px; overflow-y: auto; }
-.attention { grid-area: attention; border-right: 1px solid var(--line); }
-.attention h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); }
-.attention ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
-.attention .none { font-size: 14px; color: var(--muted); }
-.attention-item {
-  width: 100%; min-height: var(--target); padding: 8px 10px; text-align: left; cursor: pointer;
-  border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--ink); font: 500 14px/1.3 var(--font-body);
-}
-.attention-item:hover { border-color: var(--accent); }
-.attention-item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-#game-map { grid-area: map; background: #0b0c10; }
+/* The game screen (graphics overhaul G2, docs/OVERHAUL.md section 3): the map
+   fills the window and walnut panels with brass edges float over it. */
+.screen.game { display: block; position: relative; padding: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+#game-map { position: absolute; inset: 0; background: var(--map-void); }
 #game-map:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
-.unit-panel { grid-area: panel; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
-.unit-card h2 { margin: 0; font: 600 22px/1.2 var(--font-display); }
+/* Inside a HUD panel the page colours turn into the walnut set, so everything
+   drawn with the usual tokens (buttons, lists, muted text) reads on dark wood. */
+.hud-panel {
+  --ink: var(--panel-ink); --ink-soft: var(--panel-ink-soft); --muted: var(--panel-ink-faint); --line: var(--brass-inner);
+  --panel: transparent; --paper: var(--walnut-solid); --accent: var(--gold); --accent-ink: var(--walnut-solid); --accent-hover: var(--gold-bright);
+  position: absolute; z-index: 5; color: var(--ink); background: var(--walnut);
+  border: 1.5px solid var(--brass); border-radius: 6px; box-shadow: inset 0 0 0 1px var(--brass-inner), var(--hud-shadow);
+}
+.hud-panel .btn { font-size: 15px; }
+.hud-panel .btn.primary, .hud-panel .btn.danger { color: var(--accent-ink); }
+.hud-panel .btn.danger { background: var(--danger); border-color: var(--danger); color: var(--panel-ink); }
+
+/* Top bar: 44px, full width. */
+.game-bar {
+  top: 0; left: 0; right: 0; height: 44px; border-radius: 0; border-width: 0 0 1.5px; z-index: 6;
+  display: flex; align-items: center; gap: 10px; padding: 0 8px;
+}
+.bar-gap { flex: 1; }
+.icon-btn {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid transparent; border-radius: 6px;
+  background: transparent; color: var(--ink); cursor: pointer;
+}
+.icon-btn:hover { border-color: var(--brass); background: var(--brass-glow); }
+.icon-btn:focus-visible, .toggle-btn:focus-visible, .y-chip:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.icon-btn .icon { width: 20px; height: 20px; }
+.icon-btn .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.bar-buttons { display: flex; gap: 2px; }
+.faction-chip {
+  height: 44px; padding: 0 12px 0 10px; border: 1px solid transparent; border-left: 6px solid var(--faction, var(--gold)); border-radius: 0;
+  background: transparent; color: var(--ink); font: 600 15px/1 var(--font-heading); letter-spacing: 0.04em; cursor: pointer; white-space: nowrap;
+}
+.faction-chip:hover { background: var(--brass-glow); }
+.game-turn { font: 600 16px/1 var(--font-heading); white-space: nowrap; }
+.game-era { font-size: 14px; color: var(--ink-soft); white-space: nowrap; padding-right: 4px; }
+.game-yields { display: flex; align-items: center; gap: 2px; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; min-width: 0; }
+.y-chip {
+  display: inline-flex; align-items: center; gap: 4px; height: 44px; padding: 0 7px; border: 1px solid transparent; border-radius: 6px;
+  background: transparent; color: var(--ink); font: inherit; white-space: nowrap;
+}
+button.y-chip { cursor: pointer; }
+button.y-chip:hover { border-color: var(--brass-inner); background: var(--brass-glow); }
+.y-chip .icon { width: 18px; height: 18px; }
+.y-chip .rate { font-weight: 500; color: var(--ink-soft); }
+.y-chip.falling .rate { color: var(--danger-bright); font-weight: 700; }
+
+/* Progress widget: top left, research and civic with rings. */
+.hud-progress { top: 52px; left: 8px; width: 260px; padding: 6px; display: grid; gap: 2px; }
+.hud-progress[hidden], .hud-progress:empty { display: none; }
+.progress-row {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 44px; width: 100%; padding: 2px 6px 2px 2px;
+  border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+}
+.progress-row:hover { border-color: var(--brass-inner); background: var(--brass-glow); }
+.progress-row .name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.progress-row .name.none { color: var(--gold); }
+.progress-row .turns { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.ring { position: relative; width: 38px; height: 38px; display: grid; place-items: center; }
+.ring svg.ring-track { position: absolute; inset: 0; width: 38px; height: 38px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 4; }
+.ring .back { stroke: var(--brass-inner); }
+.ring .science { stroke: var(--y-science); }
+.ring .culture { stroke: var(--y-culture); }
+.ring .icon { width: 18px; height: 18px; }
+
+/* Notifications: top right, replacing the old left column. */
+.attention { top: 52px; right: 8px; width: 280px; padding: 8px; max-height: calc(100% - 52px - 184px); overflow-y: auto; }
+.attention h2 { margin: 0 0 6px; font: 600 12px/1.2 var(--font-heading); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+.attention ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.attention .none, .attention .more { font-size: 14px; color: var(--muted); padding: 2px 4px; }
+.attention-item {
+  width: 100%; min-height: 44px; padding: 4px 8px; display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink); font: 500 14px/1.25 var(--font-body);
+}
+.attention-item .icon { width: 18px; height: 18px; }
+.attention-item:hover { border-color: var(--brass); background: var(--brass-glow); }
+.attention-item:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+.attention-item.urgent { border-color: var(--gold); border-left-width: 4px; font-weight: 600; }
+
+/* Selection panel: bottom left. */
+.unit-panel {
+  left: 8px; bottom: 8px; width: 380px; min-height: 200px; max-height: calc(100% - 52px - 112px); overflow-y: auto;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.screen.game.city-open .unit-panel { top: 52px; max-height: none; }
+.screen.game.city-open .hud-progress { display: none; }
+.unit-card h2 { margin: 0; font: 600 20px/1.2 var(--font-heading); }
 .unit-card p { margin: 2px 0; font-size: 14px; }
 .unit-card .muted, .unit-panel .muted { color: var(--ink-soft); }
-.unit-card .status { margin-top: 6px; font-weight: 600; }
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.actions .btn.small { width: 100%; padding: 6px 8px; }
+.unit-card .status { margin-top: 4px; font-weight: 600; }
+.unit-head { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; }
+.portrait {
+  width: 64px; height: 64px; display: grid; place-items: center; border: 2px solid var(--brass); border-radius: 6px;
+  background: radial-gradient(circle at 35% 30%, var(--faction-soft, var(--brass-inner)), var(--walnut-solid) 75%); box-shadow: inset 0 0 0 1px var(--brass-inner);
+}
+.portrait .icon { width: 40px; height: 40px; }
+.hp-bar { position: relative; height: 10px; margin: 4px 0 2px; border: 1px solid var(--brass-inner); border-radius: 3px; background: var(--walnut-solid); overflow: hidden; }
+.hp-bar span { position: absolute; inset: 0 auto 0 0; background: var(--hp-good); }
+.hp-bar.hurt span { background: var(--hp-hurt); }
+.hp-bar.low span { background: var(--danger-bright); }
+.stats { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 14px; font-variant-numeric: tabular-nums; }
+.stats li { display: inline-flex; align-items: center; gap: 4px; }
+.stats .icon { width: 16px; height: 16px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.actions .btn.small { width: 100%; padding: 4px 8px; min-height: 44px; font-size: 14px; }
+.actions .btn .key { margin-left: auto; padding: 0 5px; border: 1px solid var(--brass-inner); border-radius: 4px; font: 600 11px/16px var(--font-body); color: var(--ink-soft); }
+.actions .btn:disabled .key { opacity: 0.6; }
+.actions .wide { grid-column: 1 / -1; }
+.game-hint { margin: 0; color: var(--muted); font-size: 13px; }
+.game-hint:empty { display: none; }
+
+/* End-turn cluster: bottom right, left of the minimap. */
+.hud-endturn { position: absolute; z-index: 5; right: 256px; bottom: 8px; width: 300px; display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
+.hud-endturn .advice-line { position: static; }
+.advice-line { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; font-size: 14px; line-height: 1.25; }
+.advice-line:empty { display: none; }
+.advice-text { flex: 1; min-width: 0; }
+.advice-text::before { content: "\203A  "; color: var(--gold); font-weight: 700; }
+.advice-line .btn { flex: none; min-height: 44px; padding: 4px 12px; font-size: 14px; }
+.hud-endturn .next {
+  min-height: 54px; border: 2px solid var(--brass); border-radius: 6px; background: var(--danger); color: var(--panel-ink);
+  font: 700 17px/1.1 var(--font-heading); letter-spacing: 0.04em; box-shadow: inset 0 0 0 1px var(--brass-inner), var(--hud-shadow);
+}
+.hud-endturn .next:hover:not(:disabled) { background: var(--danger-bright); border-color: var(--gold); }
+.map-toggles { display: flex; gap: 6px; justify-content: flex-end; }
+.toggle-btn {
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1.5px solid var(--brass); border-radius: 6px;
+  background: var(--walnut); color: var(--panel-ink); cursor: pointer; box-shadow: inset 0 0 0 1px var(--brass-inner);
+}
+.toggle-btn .icon { width: 20px; height: 20px; }
+.toggle-btn:hover { border-color: var(--gold); }
+.toggle-btn[aria-pressed="true"] { border-color: var(--gold); background: var(--walnut-solid); box-shadow: inset 0 0 0 2px var(--gold); }
+.toggle-btn[hidden] { display: none; }
+
+/* Minimap: bottom right. */
+.hud-minimap { right: 8px; bottom: 8px; width: 240px; height: 160px; padding: 3px; }
+.hud-minimap canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; image-rendering: pixelated; border-radius: 3px; }
+
 .btn.danger { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.unit-panel .next { margin-top: auto; min-height: 52px; }
 /* Phone-only controls (phase 21) are hidden on wider screens. */
 .phone-only { display: none !important; }
-.bar-btn .icon { display: none; font-size: 18px; line-height: 1; }
-.game-yields { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; font-weight: 600; }
-.game-yields .gold { color: #9a7410; }
-.game-yields .science { color: #2f6fbf; }
-.game-yields .culture { color: #8a3f9c; }
-.game-yields .faith { color: #4b6f8c; }
-.advice-line {
-  grid-area: advice; display: flex; align-items: center; gap: 12px; padding: 4px 12px; min-height: 52px;
-  background: color-mix(in srgb, var(--accent) 9%, var(--panel)); border-bottom: 1px solid var(--line); font-size: 15px;
-}
-.advice-line:empty { display: none; }
-.advice-text::before { content: "\203A  "; color: var(--accent); font-weight: 700; }
-.advice-line .btn { margin-left: auto; flex: none; }
-.attention-item.urgent { border-color: var(--accent); font-weight: 600; }
-.actions .wide { grid-column: 1 / -1; }
+.bar-btn .icon { font-size: 18px; line-height: 1; }
 .city-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .city-yields { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin: 6px 0; font-size: 14px; }
 .city-yields .food { grid-column: 1 / -1; font-weight: 600; }
@@ -210,7 +305,6 @@ body {
 .focus { display: flex; flex-wrap: wrap; gap: 6px; }
 .focus .btn.small { padding: 4px 10px; font-size: 13px; }
 .muted.small { font-size: 12.5px; }
-.unit-panel.city-open .next { margin-top: 8px; }
 
 /* Phase 6: faction cards, the faction chip, buildings and mood in the city drawer, overlays. */
 .faction-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
@@ -225,8 +319,6 @@ body {
 .faction-card p { margin: 0; font-size: 14px; }
 .faction-card .agenda { color: var(--ink-soft); font-size: 13px; }
 .faction-card .btn { margin-top: auto; }
-.faction-chip { border-left: 6px solid var(--faction, var(--accent)); }
-.game-yields .falling { color: var(--accent); }
 .mood { margin: 2px 0; font-size: 14px; }
 .mood.good { color: #2f7a3f; }
 .mood.bad { color: var(--accent); font-weight: 600; }
@@ -274,7 +366,6 @@ body {
 .tech-bar span { display: block; height: 100%; background: #2f6fbf; }
 .tech-queue { border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--accent); font: 600 12px var(--font-body); min-height: 32px; cursor: pointer; }
 .link-like { border: 0; background: transparent; font: inherit; cursor: pointer; padding: 0; min-height: var(--target); text-decoration: underline dotted; }
-.game-yields .era { color: var(--ink-soft); }
 .journal { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; padding-top: 8px; }
 .journal-faction h3 { margin: 0 0 4px; }
 .journal-faction ol { margin: 0; padding-left: 30px; display: grid; gap: 4px; font-size: 13.5px; }
@@ -398,7 +489,6 @@ body {
 .rel-list .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; align-self: center; }
 .rel-beliefs { flex-basis: 100%; padding-left: 22px; }
 .religion-tab input[type="text"], .religion-tab select { min-height: var(--target); font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
-.game-yields .lens.on { font-weight: 700; color: var(--accent); }
 
 /* Phase 14: trade. */
 .trade-dests { display: grid; gap: 6px; margin-bottom: 8px; grid-column: 1 / -1; }
@@ -454,14 +544,25 @@ body {
    home bar. Every target stays at least 44px. */
 @media (max-width: 899px) {
   .phone-only { display: revert !important; }
+  /* The floating HUD (G2) folds back into the phase 21 grid: frozen until the phone pass. */
   .screen.game {
-    grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto;
-    grid-template-areas: "bar" "advice" "map" "panel";
+    display: grid; place-items: stretch;
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "bar bar" "advice advice" "map map" "panel panel" "next toggles";
   }
+  #game-map { position: relative; inset: auto; grid-area: map; }
+  .game-bar, .unit-panel, .advice-line { position: static; border-radius: 0; box-shadow: none; }
+  .hud-progress, .hud-minimap, .bar-gap { display: none !important; }
+  .map-toggles { grid-area: toggles; align-items: center; padding: 0 6px; background: var(--walnut-solid); }
+  .hud-endturn, .bar-buttons { display: contents; }
+  .advice-line { grid-area: advice; border-width: 0 0 1px; }
+  .hud-endturn .next { grid-area: next; border-radius: 0; min-height: var(--target); }
+  .game-era { display: none; }
+  .game-bar [data-action="help"] { grid-area: hlp; }
   .game-bar {
-    display: grid; gap: 4px 6px; padding: 4px 8px; align-items: center;
-    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
-    grid-template-areas: "menu att chip emp dip vic jou" "turn turn yields yields yields yields yields";
+    display: grid; gap: 4px 6px; padding: 4px 8px; align-items: center; height: auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto auto;
+    grid-template-areas: "menu att chip emp dip vic jou hlp" "turn turn yields yields yields yields yields yields";
     padding-top: max(4px, env(safe-area-inset-top)); padding-left: max(8px, env(safe-area-inset-left)); padding-right: max(8px, env(safe-area-inset-right));
   }
   .game-bar [data-action="game-menu"] { grid-area: menu; }
@@ -496,6 +597,7 @@ body {
   .drawer-backdrop[hidden] { display: none !important; }
   /* The bottom sheet. */
   .unit-panel {
+    grid-area: panel; width: auto; min-height: 0; max-height: none;
     border-left: 0; border-top: 1px solid var(--line); border-radius: 14px 14px 0 0; gap: 6px;
     /* A fixed height while open, so the map never shifts under your finger when the panel's content changes. */
     height: 40vh; height: 40dvh;
@@ -507,8 +609,7 @@ body {
   .advice-line { font-size: 13px; min-height: 48px; }
   .sheet-handle span { width: 44px; height: 5px; border-radius: 3px; background: var(--line); }
   .screen.game.sheet-min .unit-panel { height: auto; }
-  .screen.game.sheet-min .unit-panel > :not(.sheet-handle):not(.next) { display: none; }
-  .unit-panel .next { margin-top: 4px; min-height: var(--target); position: sticky; bottom: 0; }
+  .screen.game.sheet-min .unit-panel > :not(.sheet-handle) { display: none; }
   /* Overlays fill the screen. */
   .overlay { padding: 0; place-items: stretch; }
   .overlay-card { width: 100%; min-height: 100%; border-radius: 0; align-content: start; overflow-y: auto;
@@ -525,21 +626,21 @@ body {
 /* A phone on its side: the map on the left, the panel on the right. */
 @media (max-width: 899px) and (orientation: landscape) and (max-height: 520px) {
   .screen.game {
-    grid-template-columns: minmax(0, 1fr) min(300px, 40vw); grid-template-rows: auto auto minmax(0, 1fr);
-    grid-template-areas: "bar bar" "advice advice" "map panel";
+    grid-template-columns: minmax(0, 1fr) min(300px, 40vw); grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "bar bar" "advice advice" "map panel" "map next" "map toggles";
   }
   .unit-panel { height: auto; max-height: none; border-radius: 0; border-top: 0; border-left: 1px solid var(--line); box-shadow: none; padding-top: 10px; }
   .sheet-handle { display: none !important; }
   .screen.game.sheet-min .unit-panel > * { display: revert; }
   /* One row: buttons, the turn and the scrolling yields. */
-  .game-bar { grid-template-columns: auto auto minmax(0, 8rem) auto minmax(0, 1fr) auto auto auto auto; grid-template-areas: "menu att chip turn yields emp dip vic jou"; }
+  .game-bar { grid-template-columns: auto auto minmax(0, 8rem) auto minmax(0, 1fr) auto auto auto auto; grid-template-areas: "menu att chip turn yields emp dip vic jou hlp"; grid-template-columns: auto auto minmax(0, 8rem) auto minmax(0, 1fr) auto auto auto auto auto; }
   .advice-line { min-height: var(--target); padding-top: 2px; padding-bottom: 2px; }
 }
 
 /* ---------- Graphics overhaul G1: UI scale ----------
    Everything but the map grows or shrinks with the UI scale setting. Zoom keeps
    the layout's own pixel sizes, so nothing needs rewriting per scale. */
-.screen:not(.game) > .card, .game-bar, .advice-line, .attention, .unit-panel, .overlay-card, .panel-card, .toast, .battle-screen > *, .tooltip { zoom: var(--ui-scale); }
+.screen:not(.game) > .card, .game-bar, .hud-progress, .hud-endturn, .hud-minimap, .attention, .unit-panel, .overlay-card, .panel-card, .toast, .battle-screen > *, .tooltip { zoom: var(--ui-scale); }
 
 /* Tooltips (graphics overhaul G1): walnut and brass, from the new tokens. */
 .tooltip {
@@ -556,3 +657,16 @@ body {
 .tooltip-line.muted { opacity: 0.75; }
 .tooltip-key { margin-top: 4px; font-size: 12px; color: var(--gold); }
 .icon { display: inline-block; flex: none; vertical-align: -3px; image-rendering: pixelated; }
+
+/* Graphics overhaul G2: an empty notifications panel is hidden on a laptop (the end-turn button says it all). */
+@media (min-width: 900px) { .attention.empty { display: none; } }
+/* The Help sheet. */
+.help-body { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; overflow: auto; padding-top: 8px; }
+.help-body h3 { margin: 0 0 6px; font: 600 18px/1.3 var(--font-heading); }
+.help-body p { margin: 0 0 8px; }
+.help-keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; align-items: baseline; }
+.help-keys dt { text-align: right; }
+.help-keys dd { margin: 0; }
+kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; font: 600 13px/1.4 var(--font-body); text-align: center; }
+@media (max-width: 899px) { .help-body { grid-template-columns: 1fr; } }
+.actions .btn.primary .key, .actions .btn.danger .key { color: inherit; border-color: currentColor; opacity: 0.8; }

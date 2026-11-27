@@ -3,8 +3,9 @@
 // It draws what it is given: the full map in the developer viewer, a
 // faction's view (fog and all) in the game.
 
-import { createCamera, clampToWorld, centreOn, screenToWorld } from './camera.js';
-import { worldSize, HEX_SCREEN, SQRT3 } from './hexDraw.js';
+import { createCamera, clampToWorld, screenToWorld, worldToScreen } from './camera.js';
+import { worldSize, tileCentre, HEX_SCREEN, SQRT3 } from './hexDraw.js';
+import { loadIconAtlas, drawIcon } from './art/icons.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
@@ -53,6 +54,15 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
   };
   const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, reducedMotion });
   let size = { w: 0, h: 0 };
+  // The parts of the canvas covered by floating panels (graphics overhaul G2): centring
+  // aims at the middle of what is left, and ensureVisible keeps a hex out from under them.
+  let insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  // The yield overlay: a function tile -> { food, production, ... } or null when off.
+  let yieldsAt = null;
+  let atlas = null;
+  let lastView = null;
+  const screenOf = (cam, t) => { const p = tileCentre(view.map, t); return worldToScreen(cam, p.x, p.y); };
+  const YIELD_ORDER = ['food', 'production', 'gold', 'science', 'culture', 'faith'];
 
   function resize() {
     const dpr = win.devicePixelRatio || 1;
@@ -95,14 +105,72 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     if (view.target !== null) drawTileOutline(ctx, view.map, cam, view.target, '#ff5a4a', 3);
     const walking = unitsLayer.draw(ctx, cam, view.units, { selected: view.selected, now: t0 });
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
+    if (yieldsAt) drawYieldOverlay(cam, visible);
     if (walking) dirty = true;
     view.frames += 1;
     view.lastFrameMs = win.performance.now() - t0;
   }
 
+  /** Yield icons on every hex you know of in view, repeated once per point (up to four), on a dark plate. */
+  function drawYieldOverlay(cam, visible) {
+    const style = win.getComputedStyle(host);
+    const size = Math.max(8, Math.round(11 * cam.zoom));
+    const gap = size + 1;
+    const rowH = HEX_SCREEN * 1.5;
+    const colW = HEX_SCREEN * SQRT3;
+    const r0 = Math.max(0, Math.floor(visible.y / rowH) - 1);
+    const r1 = Math.min(view.map.height - 1, Math.ceil((visible.y + visible.h) / rowH) + 1);
+    const c0 = Math.max(0, Math.floor(visible.x / colW) - 1);
+    const c1 = Math.min(view.map.width - 1, Math.ceil((visible.x + visible.w) / colW) + 1);
+    for (let r = r0; r <= r1; r += 1) {
+      for (let c = c0; c <= c1; c += 1) {
+        const i = r * view.map.width + c;
+        if (view.fog && view.fog[i] === 0) continue;
+        const y = yieldsAt(i);
+        if (!y) continue;
+        const icons = [];
+        for (const k of YIELD_ORDER) for (let n = 0; n < Math.min(4, Math.floor(y[k] ?? 0)); n += 1) icons.push(k);
+        if (!icons.length) continue;
+        const perRow = Math.min(icons.length, icons.length > 4 ? Math.ceil(icons.length / 2) : 4);
+        const rows = Math.ceil(icons.length / perRow);
+        const p = screenOf(cam, i);
+        const top = p.y + 6 * cam.zoom;
+        ctx.fillStyle = 'rgba(20, 14, 8, 0.55)';
+        ctx.fillRect(Math.round(p.x - (perRow * gap) / 2 - 2), Math.round(top - 2), perRow * gap + 3, rows * gap + 3);
+        icons.forEach((k, n) => {
+          const row = Math.floor(n / perRow);
+          const inRow = Math.min(perRow, icons.length - row * perRow);
+          const x = p.x - (inRow * gap) / 2 + (n % perRow) * gap + gap / 2;
+          const yy = top + row * gap + gap / 2;
+          if (!drawIcon(ctx, atlas, k, x, yy, size)) {
+            ctx.fillStyle = style.getPropertyValue(`--y-${k}`).trim() || '#ccc';
+            ctx.beginPath();
+            ctx.arc(x, yy, size / 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      }
+    }
+  }
+
+  function loadAtlas() {
+    if (atlas || !win.fetch) return;
+    atlas = { ready: false };
+    win.fetch('assets/icons.json').then((r) => (r.ok ? r.json() : null)).then((layout) => {
+      if (!layout) return;
+      atlas = loadIconAtlas(win, layout);
+      atlas.image?.addEventListener('load', () => { dirty = true; });
+    }).catch(() => {});
+  }
+
   function loop() {
     resize();
     if (dirty) { dirty = false; draw(); }
+    const cam = view.cam;
+    if (api.onView && (!lastView || lastView.x !== cam.x || lastView.y !== cam.y || lastView.zoom !== cam.zoom || lastView.w !== size.w || lastView.h !== size.h)) {
+      lastView = { ...cam, w: size.w, h: size.h };
+      api.onView(cam, { ...size });
+    }
     if (!api.destroyed) win.requestAnimationFrame(loop);
   }
 
@@ -116,7 +184,28 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       view.cam = clampToWorld(cam, world, size.w, size.h);
       dirty = true;
     },
-    centreOnWorld(wx, wy) { api.setCamera(centreOn(view.cam, wx, wy, size.w, size.h)); },
+    /** Centre on a world point: the middle of the area the panels leave clear. */
+    centreOnWorld(wx, wy) {
+      const cx = insets.left + Math.max(0, size.w - insets.left - insets.right) / 2;
+      const cy = insets.top + Math.max(0, size.h - insets.top - insets.bottom) / 2;
+      api.setCamera({ ...view.cam, x: wx - cx / view.cam.zoom, y: wy - cy / view.cam.zoom });
+    },
+    /** Which parts of the canvas floating panels cover: { top, right, bottom, left } in CSS pixels. */
+    setInsets(next) { insets = { top: 0, right: 0, bottom: 0, left: 0, ...next }; },
+    get insets() { return { ...insets }; },
+    /** Is a hex's centre in the clear area (with a margin), not under a panel? */
+    isClear(t, margin = 48) {
+      const p = screenOf(view.cam, t);
+      return p.x >= insets.left + margin && p.x <= size.w - insets.right - margin && p.y >= insets.top + margin && p.y <= size.h - insets.bottom - margin;
+    },
+    /** Bring a hex into the clear area if a panel (or the edge) hides it. */
+    ensureVisible(t) { if (!api.isClear(t)) api.centreOnTile(t); },
+    /** Hex to screen (CSS pixels on the canvas), for placing things over the map. */
+    tileToScreen(t) { return screenOf(view.cam, t); },
+    /** The yield overlay: fn(tile) -> yields, or null to turn it off. */
+    setYieldOverlay(fn) { yieldsAt = fn; if (fn) loadAtlas(); dirty = true; },
+    /** Called with (camera, viewport) whenever either changes (the minimap's frame). */
+    onView: null,
     centreOnTile(t) {
       const r = Math.floor(t / view.map.width);
       const c = t - r * view.map.width;

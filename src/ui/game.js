@@ -13,6 +13,8 @@ import { el, knownWorld } from './hud/shared.js';
 import { createTopBar } from './hud/topBar.js';
 import { createAdvice } from './hud/advice.js';
 import { createAttention } from './hud/attention.js';
+import { createMapHud } from './hud/mapHud.js';
+import { hideTooltip } from './hud/tooltip.js';
 import { createUnitCard } from './hud/unitCard.js';
 import { createCityDrawer } from './screens/cityDrawer.js';
 import { createDialogs } from './screens/dialogs.js';
@@ -273,10 +275,14 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const { openTrees, openDiplomacy, openEmpire, openJournal, nameOf, openVictory, exportInto, openMenu, showEnd } = createOverlays(g);
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, sheets });
+  const { refreshMinimap, updateInsets, toggleYields, toggleGrid, hexHover, hexLeave, hexContent, openHelp } = createMapHud(g);
+  doc.defaultView.addEventListener('resize', () => updateInsets());
   // What tests and the dev tools can see; published on window once the opening seats have played.
   const api = { get state() { return state; }, get view() { return v; }, get busy() { return busy; }, mapView, human, ruleset, get journals() { return journals; }, usesWorker: Boolean(worker),
     /** Open one of your cities' panels (the screenshot harness and tests). */
-    openCity: (id) => openCityDrawer(id, { centre: true }) };
+    openCity: (id) => openCityDrawer(id, { centre: true }),
+    /** What the hover tooltip says about a hex (tests). */
+    hexTooltip: (tile) => hexContent(tile) };
   if (debug) {
     // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
     // state directly, outside the rules, so they are never available in a normal game.
@@ -451,9 +457,11 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     mapView.setSelection(id);
     mapView.setPath(null, null);
     mapView.setCityOverlay(null, null);
+    render();
+    // Graphics overhaul G2: the camera keeps the selected unit out from under the panels.
     const u = selectedUnit();
     if (u && centre) mapView.centreOnTile(u.tile);
-    render();
+    else if (u) mapView.ensureVisible(u.tile);
   }
 
   function openCityDrawer(id, { centre = false } = {}) {
@@ -465,9 +473,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     mapView.setSelection(null);
     mapView.setPath(null, null);
     mapView.setCityOverlay(id, cityOverlay());
+    render();
     const c = theCity();
     if (c && centre) mapView.centreOnTile(c.tile);
-    render();
+    else if (c) mapView.ensureVisible(c.tile);
   }
 
   function selectNextIdle() {
@@ -487,6 +496,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (v.pendingEvent) showEventDialog();
     if (selected && !selectedUnit()) select(null);
     if (openCity) mapView.setCityOverlay(openCity, cityOverlay());
+    refreshMinimap();
     render();
   }
 
@@ -788,6 +798,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   function onTap(sx, sy, pointerType) {
     lastTouch = pointerType === 'touch' || pointerType === 'pen';
+    hexLeave();
     const tile = mapView.tileAt(sx, sy);
     if (tile < 0) return;
     if (shootingCity) {
@@ -836,6 +847,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
 
   function onHover(sx, sy) {
+    if (sx === null) hexLeave(); else hexHover(sx, sy, mapView.tileAt(sx, sy));
     const u = selectedUnit();
     if (sx === null || !u) { mapView.setHover(null); if (!pendingTarget) mapView.setPath(null, null); return; }
     const tile = mapView.tileAt(sx, sy);
@@ -873,6 +885,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const c = theCity();
     const u = selectedUnit();
     root.querySelector('.unit-panel').classList.toggle('city-open', Boolean(c));
+    root.classList.toggle('city-open', Boolean(c));
     if (c) renderCityDrawer(c);
     else if (u) renderUnitCard(u);
     else {
@@ -882,6 +895,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     }
     $('[data-action="next"]').textContent = noProduction().length ? tt('game.nextChooseProduction')
       : idle().length ? tt('game.nextUnit', { n: idle().length }) : tt('game.nextTurn');
+    updateInsets();
   }
 
   root.addEventListener('keydown', (e) => {
@@ -898,14 +912,35 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       l: () => (ruleset.beliefs ? toggleLens() : false),
       j: () => openJournal(),
       v: () => openVictory(),
+      y: () => toggleYields(),
+      g: () => toggleGrid(),
+      '?': () => openHelp(),
       f: () => act('fortify'),
       s: () => (selectedUnit() ? act('skip') : false),
       z: () => act('sleep'),
       Delete: () => act('disband'),
-      Escape: () => { if (!panel.hidden) { panel.hidden = true; return true; } if (selected || openCity) select(null); else return false; },
+      // Escape closes whatever is open, the top-most first: a sheet, the faction card, then the selection.
+      Escape: () => {
+        hideTooltip();
+        if (!panel.hidden) { panel.hidden = true; return true; }
+        if (!overlay.hidden) { overlay.hidden = true; return true; }
+        if (selected || openCity) select(null); else return false;
+      },
     }[key];
     if (handled && handled() !== false) e.preventDefault();
   });
+  // Escape also works while a sheet or the faction card has the focus (they sit outside the game screen).
+  const onDocKey = (e) => {
+    if (e.key !== 'Escape' || root.hidden || root.contains(e.target)) return;
+    if (e.target.closest?.('.battle-screen')) return;
+    if (!panel.hidden) panel.hidden = true;
+    else if (!overlay.hidden) overlay.hidden = true;
+    else return;
+    hideTooltip();
+    e.preventDefault();
+    $('#game-map').focus({ preventScroll: true });
+  };
+  doc.addEventListener('keydown', onDocKey);
   $('[data-action="next"]').onclick = next;
   const panel = doc.querySelector('[data-field="panel"]');
   let lastTree = 'techs';
@@ -959,5 +994,5 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     checkEnd();
     doc.defaultView.__atlasGame = api;
   });
-  return { destroy: () => { mapView.destroy(); worker?.terminate(); }, get state() { return state; }, snapshot };
+  return { destroy: () => { mapView.destroy(); worker?.terminate(); doc.removeEventListener('keydown', onDocKey); hideTooltip(); }, get state() { return state; }, snapshot };
 }

@@ -1,5 +1,18 @@
 # Changelog
 
+## Graphics overhaul G2: the new game screen
+
+The map now fills the whole window and everything else floats over it in walnut panels with brass edges, so at 1366x768 you see far more of the map than before.
+
+What you can try: start or load a game. The top bar shows every yield (food, production, gold, science, culture, faith) as an icon and a number; rest the mouse on one for where it comes from (cities for food and production). The turn and era sit on the right with icon buttons for Empire, Diplomacy, Victory, the AI journal and Help. Top left, your research and civic show as rings filling up with turns left; click one to open its tree. Top right, the needs-attention list has an icon per item; click to go there, right-click to dismiss it until next turn (six show at most, then "and N more"). Bottom left, the selected unit has a portrait slot, a health bar, its stats as icons and buttons showing their keys (F, S, Z, Del, B); a city's panel takes the whole left side. Bottom right, the minimap (click or drag it to move the map), and beside it the advice line, the big end-turn button and three toggles: the religion lens, yield icons on every hex (Y) and the hex grid (G). Rest the mouse on any hex to see its terrain, feature, resource, yields, owner, improvement and units. Press ? for Help with every shortcut; Escape closes whatever sheet is open.
+
+- `index.html` and `css/base.css`: the floating HUD over a full-screen map, coloured from the overhaul's tokens (so the Witcher and Killzone skins restyle it); no underlined links in the HUD.
+- `src/render/minimap.js`: fog-aware, faction colours, cities, the view frame, click and drag.
+- `src/render/canvas.js`: the clear area (insets from the panels' real positions), so centring aims at what the panels leave and a selected unit is never left under a panel; the yield-icon overlay from the icon atlas.
+- `src/ui/hud/mapHud.js`: the minimap, toggles, hex tooltips, the clear area and the Help sheet. The top bar, notifications and unit card modules are rebuilt for the new look.
+- Fixed a slip from the G1 split that could have broken the "adopt a government" advice.
+- Tests: a browser test of the HUD (panels in their corners and never overlapping, every yield with its icon, no underlined links, the selected unit clear of the panels, a hex tooltip, the progress widget, dismissing a notification, the minimap moving the camera, the grid and yield toggles, Help and Escape, the city panel); unit tests of the minimap's maths. Screenshots of this phase are in `docs/shots/G2/`.
+
 ## Graphics overhaul G1: foundations for the new look
 
 The plan for the overhaul is now in the repository as `docs/OVERHAUL.md` (eight phases, G1 to G8). G1 lays the groundwork; the game looks almost the same afterwards.

@@ -119,7 +119,7 @@ export const ICONS = {
   // Lenses and map toggles.
   'lens-religion': (k) => flame(k, C.purple, C.purpleD),
   'lens-yields': (k) => k.rect(2, 9, 3, 5, C.green).rect(6, 5, 3, 9, C.orange).rect(10, 2, 3, 12, C.gold),
-  grid: (k) => hexagon(k, C.dark),
+  grid: (k) => hexagon(k, C.cream),
   // Screen buttons.
   menu: (k) => k.rect(2, 3, 12, 2, C.cream).rect(2, 7, 12, 2, C.cream).rect(2, 11, 12, 2, C.cream),
   empire: (k) => k.poly([[2, 13], [2, 5], [5, 8], [8, 3], [11, 8], [14, 5], [14, 13]], C.gold).rect(2, 11, 12, 2, C.goldD).set(8, 6, C.red),

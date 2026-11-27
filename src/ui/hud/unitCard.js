@@ -1,10 +1,23 @@
-// The selected unit's card: stats, odds against the enemy pointed at, promotions.
+// The selection panel's unit card (graphics overhaul G2): a portrait slot, the HP bar,
+// stats with icons, action buttons showing their keys, odds against the enemy pointed
+// at, promotions.
 // Split out of src/ui/game.js (graphics overhaul G1) with no change in behaviour:
 // everything the game screen shares comes in through `g` (see game.js).
 
 import { foundingProblem, improvementProblem, builderTargets, preachTarget, combatKind, promotionOptions } from '../../sim/index.js';
 import { renderTraderList } from '../tradeTab.js';
 import { el, fill, knownWorld } from './shared.js';
+import { icon, unitIconName } from './icons.js';
+
+// The keys the game screen listens for (src/ui/game.js), shown on the buttons.
+const ACTION_KEYS = {
+  foundCity: { label: 'B', aria: 'B' },
+  fortify: { label: 'F', aria: 'F' },
+  skip: { label: 'S', aria: 'S' },
+  sleep: { label: 'Z', aria: 'Z' },
+  wake: { label: 'Z', aria: 'Z' },
+  disband: { label: 'Del', aria: 'Delete' },
+};
 
 export function createUnitCard(g) {
   function oddsPanel() {
@@ -53,18 +66,34 @@ export function createUnitCard(g) {
     const status = u.goto !== null ? g.tt('game.unit.status.goto', { turns: turnsLeft }) : g.tt(`game.unit.status.${u.activity}`, { turns: u.fortifiedTurns });
     const thresholds = g.ruleset.tuning?.experience?.promotionThresholds ?? [15, 45, 90, 150];
     const nextAt = thresholds.find((x) => x > (u.xp ?? 0));
-    fill(card, 
-      el(g.doc, 'h2', {}, g.unitName(u)),
-      el(g.doc, 'p', { class: 'muted' }, g.isCivilian(u) ? g.tt('game.unit.civilian') : `${g.ruleset.text[g.ruleset.unitClasses[def.class]?.nameKey] ?? def.class} · ${def.strength}`),
-      el(g.doc, 'p', { dataset: { field: 'moves' } }, g.tt('game.unit.moves', { left: u.moves, max: def.moves })),
-      el(g.doc, 'p', {}, g.tt('game.unit.health', { hp: u.hp })),
+    const strength = def.strength ?? 0;
+    const hpClass = u.hp >= 70 ? '' : u.hp >= 35 ? ' hurt' : ' low';
+    const me = g.v.factions.find((f) => f.id === u.faction);
+    const portrait = el(g.doc, 'div', { class: 'portrait', 'aria-hidden': 'true' }, icon(g.doc, unitIconName(g.ruleset, u.type), { size: 32 }));
+    portrait.style.setProperty('--faction-soft', g.ruleset.factions?.[me?.civ]?.colours.primary ?? '');
+    const stat = (name, label, value) => el(g.doc, 'li', { title: label }, icon(g.doc, name, { size: 16, label }), el(g.doc, 'span', {}, value));
+    fill(card,
+      el(g.doc, 'div', { class: 'unit-head' }, portrait,
+        el(g.doc, 'div', {},
+          el(g.doc, 'h2', {}, g.unitName(u)),
+          el(g.doc, 'p', { class: 'muted' }, g.isCivilian(u) ? g.tt('game.unit.civilian') : (g.ruleset.text[g.ruleset.unitClasses[def.class]?.nameKey] ?? def.class)),
+          el(g.doc, 'div', { class: `hp-bar${hpClass}`, role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(u.hp), 'aria-label': g.tt('game.unit.health', { hp: u.hp }) },
+            el(g.doc, 'span', { style: `width:${Math.max(0, Math.min(100, u.hp))}%` })))),
+      el(g.doc, 'ul', { class: 'stats' },
+        g.isCivilian(u) ? null : stat('strength', g.tt('stat.strength'), String(strength)),
+        def.rangedStrength ? stat('ranged', g.tt('stat.ranged'), `${def.rangedStrength} (${def.range ?? 1})`) : null,
+        stat('moves', g.tt('stat.moves'), el(g.doc, 'span', { dataset: { field: 'moves' } }, `${u.moves}/${def.moves}`)),
+        stat('hp', g.tt('stat.hp'), String(u.hp)),
+        combatKind(g.ruleset, u) === 'none' ? null : stat('xp', g.tt('stat.xp'), `${u.xp ?? 0}/${nextAt ?? '-'}`)),
       el(g.doc, 'p', { class: 'status' }, status),
-      combatKind(g.ruleset, u) === 'none' ? null : el(g.doc, 'p', { class: 'muted small' }, g.tt('game.unit.xp', { xp: u.xp ?? 0, next: nextAt ?? '-' })),
       (u.promotions ?? []).length ? el(g.doc, 'p', { class: 'muted small' }, g.tt('game.unit.promotions', { list: u.promotions.map((p) => g.ruleset.text[g.ruleset.promotions[p]?.nameKey] ?? p).join(', ') })) : null,
       promotionPanel(u),
       oddsPanel(),
     );
-    const button = (type, label, disabled = false, extra = '') => el(g.doc, 'button', { type: 'button', class: `btn small${extra}${type === 'disband' && g.confirmDisband ? ' danger' : ''}`, dataset: { act: type }, disabled, onclick: () => g.act(type) }, label);
+    // Each button shows its key (and says it to screen readers through aria-keyshortcuts).
+    const button = (type, label, disabled = false, extra = '') => el(g.doc, 'button', { type: 'button', class: `btn small${extra}${type === 'disband' && g.confirmDisband ? ' danger' : ''}`, dataset: { act: type }, disabled, onclick: () => g.act(type),
+      ...(ACTION_KEYS[type] ? { 'aria-keyshortcuts': ACTION_KEYS[type].aria } : {}) },
+    el(g.doc, 'span', {}, label), ACTION_KEYS[type] ? el(g.doc, 'span', { class: 'key', 'aria-hidden': 'true' }, ACTION_KEYS[type].label) : null);
     const foundable = g.isFounder(u) && u.moves > 0 && !foundingProblem(knownWorld(g.v), g.ruleset, g.human, u.tile);
     // Builders: one button per improvement that fits a hex they can reach now.
     const improve = [];
@@ -75,7 +104,7 @@ export function createUnitCard(g) {
         for (const tile of builderTargets(world, g.ruleset, id, u.tile)) {
           if (improvementProblem(world, g.ruleset, g.human, id, tile)) continue;
           const label = g.tt('game.action.improve', { name: g.ruleset.text[imp.nameKey] ?? id });
-          improve.push(el(g.doc, 'button', { type: 'button', class: 'btn small wide', dataset: { improve: id }, title: g.ruleset.text[imp.descriptionKey] ?? '', disabled: u.moves <= 0,
+          improve.push(el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { improve: id }, title: g.ruleset.text[imp.descriptionKey] ?? '', disabled: u.moves <= 0,
             onclick: () => { const r = g.run({ type: 'buildImprovement', faction: g.human, unit: u.id, improvement: id, tile }); if (r) g.selectNextIdle(); } }, label));
           break;
         }

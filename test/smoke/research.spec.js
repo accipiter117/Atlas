@@ -12,10 +12,12 @@ test('research tree, queueing, and the AI journal', async ({ page }, info) => {
   await page.getByRole('button', { name: 'New game' }).click();
   await page.waitForFunction(() => window.__atlasGame);
 
-  // The top bar shows the era and that nothing is being researched yet.
+  // The top bar shows the era; the progress widget shows that nothing is being researched yet.
   const bar = page.locator('[data-field="yields"]');
-  await expect(bar).toContainText('Ancient');
+  await expect(page.locator('[data-field="era"]')).toContainText('Ancient');
   await expect(bar.locator('[data-action="trees"]')).toBeVisible();
+  const progress = page.locator('[data-field="progress"]');
+  await expect(progress.locator('[data-progress="techs"]')).toContainText('Choose research');
 
   // Open the tree from the top bar (tap) or with R (keyboard).
   if (info.project.use.hasTouch) await bar.locator('[data-action="trees"]').click();
@@ -37,7 +39,8 @@ test('research tree, queueing, and the AI journal', async ({ page }, info) => {
   await page.screenshot({ path: `test-results/tech-tree-${info.project.name}.png` });
   await panel.locator('[data-action="close-tree"]').click();
   await expect(panel).toBeHidden();
-  await expect(bar).toContainText('Pottery');
+  await expect(progress.locator('[data-progress="techs"]')).toContainText('Pottery');
+  await expect(bar.locator('[data-action="trees"]')).toHaveAttribute('aria-label', /Pottery/);
 
   // Play a few turns, then read the AI journal.
   // Units waiting for orders are skipped; a city with nothing to build gets the first option.
