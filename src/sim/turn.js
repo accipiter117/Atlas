@@ -23,6 +23,16 @@ import { addModifier } from './diplomacy.js';
 import { eliminate } from './elimination.js';
 import { forEachWorld, wholeGame } from './worlds.js';
 import { startSpaceTurn, spaceRound } from './space.js';
+import { supplyOn, supplyTurn, warTurn, captureRound } from './war.js';
+import { finishImprovement } from './unitCommands.js';
+
+/** Does this ruleset use any of the K3 war rules (supply, war infrastructure, theatre rules)? */
+const WAR = new WeakMap();
+function warRules(ruleset) {
+  if (!ruleset || typeof ruleset !== 'object') return false;
+  if (!WAR.has(ruleset)) WAR.set(ruleset, supplyOn(ruleset) || Object.values(ruleset.improvements ?? {}).some((d) => d.war || (d.turns ?? 1) > 1) || Object.values(ruleset.worlds ?? {}).some((w) => w.theatre));
+  return WAR.get(ruleset);
+}
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
@@ -37,9 +47,13 @@ function startFactionTurn(state, factionId, events, ruleset) {
   // Section 3.14: cities first (yields, growth, production, borders), then units.
   // With several worlds (K1a), each world's cities and units take their turn in order.
   if (state.space) startSpaceTurn(state, ruleset, factionId);
+  const war = warRules(ruleset);
   forEachWorld(state, () => {
     if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
+    // K3: supply first (the cut off do not heal), then units, then the war's own work.
+    if (war && state.units && supplyOn(ruleset)) supplyTurn(state, ruleset, factionId, events);
     if (state.units) startUnitsTurn(state, ruleset, factionId, events);
+    if (war && state.units) warTurn(state, ruleset, factionId, events, finishImprovement);
   });
 }
 
@@ -57,7 +71,11 @@ function startRound(state, events, ruleset) {
     diplomacyRound(state, ruleset, events);
     religionRound(state, ruleset, events);
     // Phase 19: armies push the front (only in front-line games).
-    forEachWorld(state, () => { if (state.frontline) frontlineRound(state, ruleset, events); });
+    forEachWorld(state, () => {
+      if (state.frontline) frontlineRound(state, ruleset, events);
+      // K3: whoever holds every key site with no enemy left holds the world.
+      if (state.worlds) captureRound(state, ruleset, events);
+    });
     eliminate(state, ruleset, events);
     // Victory judges factions across every world (read only; the winner is written here).
     const whole = wholeGame(state);

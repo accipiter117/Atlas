@@ -107,6 +107,34 @@ def preset(pid, rows, start, cities, units, sites=()):
             'front': len(rows[0]) // 2, 'start': start, 'cities': cities, 'units': units, 'sites': list(sites)}
 
 
+# Theatre rules (docs/KILLZONE.md 3.4).
+STATION = {'noVehicles': True, 'objective': 'reactor'}
+THEATRE = {
+    'helghan': {'storm': {'every': 4, 'offset': 1, 'sight': -1, 'blocksOrbit': True}, 'toxic': {'damage': 5, 'terrain': ['desert'], 'immune': ['helghast']}},
+    'halcyon': {'lowGravity': {'moves': 1, 'tag': 'jump'}},
+    'morrow': {'lowGravity': {'moves': 1, 'tag': 'jump'}},
+    'bastion': STATION, 'ardent': STATION, 'midway': STATION,
+}
+
+# War infrastructure (docs/KILLZONE.md 3.2): engineers build these wherever their side holds the ground.
+FEATURES = ['forest', 'jungle', 'marsh', 'floodplain', 'oasis']
+WORKS = [
+    ('trench', 2, 4, {'zoc': True}, 'Trench line', '+4 defence, and a zone of control even when empty: the enemy stops when it comes next to it.'),
+    ('wire', 1, 0, {'stopsEntry': True}, 'Sandbags and razor wire', 'An enemy that walks in loses the rest of its moves.'),
+    ('mg_nest', 2, 2, {'freeShot': 15}, 'Machine gun nest', '+2 defence, and a free shot at the first enemy that stops beside it each turn.'),
+    ('bunker', 4, 8, {'strikeArmour': 50}, 'Bunker', '+8 defence; the garrison takes half damage from orbital strikes and artillery.'),
+    ('artillery_battery', 3, 0, {'bombard': {'strength': 45, 'range': 3, 'crew': True}}, 'Artillery battery', 'With one of your units standing in it, shells the nearest enemy within 3 hexes each turn.'),
+    ('anti_air_battery', 3, 0, {'antiAir': 2}, 'Anti-air battery', 'No enemy drop zone or orbital strike within 2 hexes.'),
+    ('arc_tower', 3, 0, {'arcDamage': 15, 'faction': 'helghast'}, 'Arc tower', 'Helghast only: arcs hit every enemy beside it each turn.'),
+    ('minefield', 1, 0, {'hidden': True, 'mineDamage': 35}, 'Minefield', 'Hidden from the enemy; the first of them to walk in sets it off.'),
+    ('landing_bay', 4, 0, {'landingBay': True, 'supply': 2}, 'Landing bay', 'Army groups land here from orbit without dropships; supplies 2 hexes.'),
+    ('supply_depot', 3, 0, {'supply': 3}, 'Supply depot', 'Supplies every hex your side holds within 3.'),
+    ('command_post', 4, 0, {'supply': 3}, 'Forward command post', 'Supplies every hex your side holds within 3.'),
+    ('field_hospital', 2, 0, {'heal': 20}, 'Field hospital', 'Your units here heal 20 more each turn.'),
+    ('comms_relay', 2, 0, {'reveal': 2}, 'Comms relay', 'Reveals enemy minefields within 2 hexes.'),
+]
+
+
 def main():
     rng = random.Random(1201)
     presets = []
@@ -127,13 +155,16 @@ def main():
     mor = blob(24, 18, rng, ',', sea='o', edge='o', fill=0.7, scatter=[('h', 0.2), (':', 0.12), ('^', 0.04)])
     presets.append(preset('kw_morrow', mor, 'side1', place(mor, [(11, 9, {'pop': 2})], 1), place(mor, [(12, 9, {'type': 'warrior'})], 1)))
     # Bastion Station and Ardent Platform: decks.
+    def reactor(rows, c, r):
+        cc, rr = nearest_land(rows, c, r)
+        return [{'site': 'reactor', 'col': cc, 'row': rr}]
     bas = decks(16, 12, rng)
-    presets.append(preset('kw_bastion', bas, 'side0', place(bas, [(7, 6, {'pop': 1})], 0), place(bas, [(8, 6, {'type': 'warrior'})], 0)))
+    presets.append(preset('kw_bastion', bas, 'side0', place(bas, [(7, 6, {'pop': 1})], 0), place(bas, [(8, 6, {'type': 'warrior'})], 0), reactor(bas, 11, 5)))
     ard = decks(16, 12, rng)
-    presets.append(preset('kw_ardent', ard, 'side1', place(ard, [(8, 6, {'pop': 1})], 1), place(ard, [(9, 6, {'type': 'warrior'})], 1)))
-    # Midway Relay: neutral decks. Kerberos Belt: neutral rocks with a refinery to claim.
+    presets.append(preset('kw_ardent', ard, 'side1', place(ard, [(8, 6, {'pop': 1})], 1), place(ard, [(9, 6, {'type': 'warrior'})], 1), reactor(ard, 4, 5)))
+    # Midway Relay: neutral decks round a reactor. Kerberos Belt: neutral rocks with a refinery to claim.
     mid = decks(14, 10, rng)
-    presets.append(preset('kw_midway', mid, 'neutral', [], []))
+    presets.append(preset('kw_midway', mid, 'neutral', [], [], reactor(mid, 7, 5)))
     ker = rocks(18, 12, rng)
     kc, kr = nearest_land(ker, 10, 8)
     presets.append(preset('kw_kerberos', ker, 'neutral', [], [], [{'site': 'refinery', 'col': kc, 'row': kr}]))
@@ -156,6 +187,8 @@ def main():
             e['start'] = True
         if fleets:
             e['fleets'] = fleets
+        if wid in THEATRE:
+            e['theatre'] = THEATRE[wid]
         world_entries.append(e)
     lanes = [('vekta', 'bastion'), ('vekta', 'halcyon'), ('bastion', 'halcyon'), ('helghan', 'ardent'), ('helghan', 'morrow'), ('ardent', 'morrow'),
              ('bastion', 'midway'), ('ardent', 'midway'), ('halcyon', 'kerberos'), ('morrow', 'kerberos')]
@@ -178,6 +211,13 @@ def main():
         ]
         for s in ships[-4:]:
             s['faction'] = side
+    improvement_entries = []
+    for wid_, turns, defence, war, name, text in WORKS:
+        e = {'id': wid_, 'nameKey': f'improvement.{wid_}.name', 'descriptionKey': f'improvement.{wid_}.text', 'turns': turns, 'charges': 1,
+             'validTerrain': ['grassland', 'plains', 'desert', 'tundra', 'snow'], 'validFeatures': FEATURES, 'war': war}
+        if defence:
+            e['defence'] = defence
+        improvement_entries.append(e)
     unit_entries = [{'id': s['id'], 'nameKey': f"unit.{s['id']}.name", 'descriptionKey': f"unit.{s['id']}.text", 'class': s['cls'], 'domain': 'space', 'strength': s['strength'],
                      'moves': 1, 'cost': s['cost'], 'upkeep': 2, 'requires': {'faction': s['faction']}, 'space': s['space'], 'tags': ['ship']} for s in ships]
 
@@ -206,6 +246,11 @@ def main():
         names[f"mapPreset.{p['id']}.name"] = names[f'world.{wid}.name'] + ' (placeholder)'
         names[f"mapPreset.{p['id']}.text"] = 'A stand-in map until K4 draws this world.'
 
+    for wid_, turns, defence, war, name, text in WORKS:
+        names[f'improvement.{wid_}.name'] = name
+        names[f'improvement.{wid_}.text'] = text
+    names['site.reactor.name'] = 'Reactor'
+    names['site.reactor.text'] = 'The heart of a station: whoever holds it holds the station.'
     os.makedirs(os.path.join(ROOT, 'text'), exist_ok=True)
 
     def write(name, content_type, entries):
@@ -217,6 +262,10 @@ def main():
     write('lanes.json', 'lanes', lane_entries)
     write('unitClasses.json', 'unitClasses', classes)
     write('units.json', 'units', unit_entries)
+    write('improvements.json', 'improvements', improvement_entries)
+    write('sites.json', 'sites', [{'id': 'reactor', 'nameKey': 'site.reactor.name', 'descriptionKey': 'site.reactor.text', 'icon': 'site.power_plant', 'effects': [{'effect': 'yieldBonus', 'yield': 'production', 'amount': 1}]}])
+    with open(os.path.join(ROOT, 'tuning.json'), 'w') as f:
+        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True}}, indent=2) + '\n')
     write('scenarios.json', 'scenarios', [{'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}}])
     with open(os.path.join(ROOT, 'text', 'en-GB.json'), 'w') as f:
         f.write(json.dumps({'contentType': 'text', 'strings': names}, indent=2, ensure_ascii=False) + '\n')
@@ -228,9 +277,9 @@ def main():
             'bastion': '#8fa3b8', 'ardent': '#b0653a', 'midway': '#a8a49a', 'kerberos': '#8a7a62', 'space': '#0b0e17', 'lane': '#5a6478'}}}}, indent=2) + '\n')
     manifest = {
         'id': 'killzone-war', 'name': 'Killzone: Extrasolar War', 'version': '0.1.0', 'type': 'conversion', 'engine': '>=0.1.0',
-        'description': 'The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, and the star map rules only (Killzone Extrasolar War, phase K2).',
+        'description': 'The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, the star map, supply, war infrastructure and theatre rules (Killzone Extrasolar War, phases K2 and K3).',
         'dependsOn': ['killzone'], 'loadAfter': [], 'incompatibleWith': [], 'options': [],
-        'files': ['unitClasses.json', 'units.json', 'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
+        'files': ['tuning.json', 'sites.json', 'improvements.json', 'unitClasses.json', 'units.json', 'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
         'credits': 'Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games.',
     }
     with open(os.path.join(ROOT, 'mod.json'), 'w') as f:

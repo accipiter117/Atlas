@@ -28,6 +28,7 @@ import { canStand, unitsAt } from './units.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { currentFactionId } from './queries.js';
+import { antiAirWorksNear, strikeArmour, stormBlocksOrbit, stormNow, workAt } from './war.js';
 
 const tun = (ruleset) => ruleset.tuning?.space ?? {};
 
@@ -217,9 +218,15 @@ function onFleetWorld(state, fleet) {
 
 const capacity = (ruleset, fleet) => fleet.ships.reduce((n, s) => n + (shipDef(ruleset, s)?.space?.capacity ?? 0), 0);
 
+/** Your landing bays on the active world (K3 war infrastructure with landingBay). */
+export function bayTiles(state, ruleset, faction) {
+  return Object.keys(state.map?.works ?? {}).map(Number).filter((t) => { const w = workAt(state, ruleset, t); return w?.war.landingBay && w.faction === faction; });
+}
+
 /** Enemy anti-air (units tagged antiAir) within range of a hex, on the active world. */
 export function antiAirNear(state, ruleset, faction, tile) {
   const range = tun(ruleset).antiAirRange ?? 2;
+  if (antiAirWorksNear(state, ruleset, faction, tile)) return true; // K3: anti-air batteries
   return Object.values(state.units ?? {}).some((u) => atWar(state, faction, u.faction) && (ruleset.units[u.type]?.tags ?? []).includes('antiAir') && distance(state.map, u.tile, tile) <= range);
 }
 
@@ -265,8 +272,8 @@ export const loadArmy = {
     if (!holdsOrbit(state, ruleset, cmd.faction, fleet.at) && orbitOf(state, ruleset, fleet.at).factions.length) return err('noOrbit', 'You need the orbit to embark');
     // Units embark from one of your bases, or next to one.
     const range = tun(ruleset).loadRange ?? 1;
-    const bases = Object.values(state.cities ?? {}).filter((c) => c.faction === cmd.faction);
-    if (units.some((u) => !bases.some((c) => distance(state.map, c.tile, u.tile) <= range))) return err('notAtBase', 'Units embark at or next to one of your bases');
+    const bases = [...Object.values(state.cities ?? {}).filter((c) => c.faction === cmd.faction).map((c) => c.tile), ...bayTiles(state, ruleset, cmd.faction)];
+    if (units.some((u) => !bases.some((t) => distance(state.map, t, u.tile) <= range))) return err('notAtBase', 'Units embark at or next to one of your bases');
     return null;
   },
   apply(state, cmd, events) {
@@ -296,9 +303,12 @@ export const landArmy = {
     if (base && base.faction !== cmd.faction) return err('enemyBase', 'You cannot land in an enemy base');
     if (unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction))) return err('occupied', 'The enemy holds that hex');
     if (!canStand(state, ruleset, group[0].type, cmd.faction, t) && !base) return err('badTile', 'Troops cannot land there');
-    if (!base) {
+    // K3: your landing bays take army groups from orbit like your bases do.
+    const bay = bayTiles(state, ruleset, cmd.faction).includes(t);
+    if (!base && !bay) {
       if (!fleet.ships.some((s) => shipDef(ruleset, s)?.space?.lands)) return err('noDropships', 'Landing away from a base needs dropships');
       if (antiAirNear(state, ruleset, cmd.faction, t)) return err('antiAir', 'Enemy anti-air covers that drop zone');
+      if (stormBlocksOrbit(state, ruleset, fleet.at)) return err('storm', 'A storm grounds the dropships this turn');
     }
     return null;
   },
@@ -327,6 +337,7 @@ export const orbitalStrike = {
     if (where) return where;
     if (!holdsOrbit(state, ruleset, cmd.faction, fleet.at)) return err('noOrbit', 'You need to hold the orbit to strike');
     if (!fleet.ships.some((s) => shipDef(ruleset, s)?.space?.bombard && !fleet.struck.includes(s.id))) return err('noBombard', 'No cruiser in this fleet can strike again this turn');
+    if (stormBlocksOrbit(state, ruleset, fleet.at)) return err('storm', 'A storm hides the ground this turn');
     const t = cmd.tile;
     if (!Number.isInteger(t) || t < 0 || t >= state.map.terrain.length) return err('badTile', 'Choose a hex on this world');
     if (antiAirNear(state, ruleset, cmd.faction, t)) return err('antiAir', 'Enemy anti-air covers that hex');
@@ -343,7 +354,9 @@ export const orbitalStrike = {
     for (const u of unitsAt(state, cmd.tile).filter((x) => atWar(state, cmd.faction, x.faction))) {
       const def = ruleset.units[u.type]?.strength ?? 0;
       const roll = (combat.randomMin ?? 0.8) + ((combat.randomMax ?? 1.2) - (combat.randomMin ?? 0.8)) * random(state);
-      const dmg = Math.max(1, Math.min(100, Math.round((combat.baseDamage ?? 30) * Math.exp((strength - def) / ((combat.strengthScale ?? 25) * 2)) * roll)));
+      const raw = Math.round((combat.baseDamage ?? 30) * Math.exp((strength - def) / ((combat.strengthScale ?? 25) * 2)) * roll);
+      // K3: a bunker's garrison takes less from strikes.
+      const dmg = Math.max(1, Math.min(100, Math.round((raw * (100 - strikeArmour(state, ruleset, cmd.tile))) / 100)));
       u.hp -= dmg;
       hits.push({ unit: u.id, damage: dmg, killed: u.hp <= 0 });
       if (u.hp <= 0) { delete state.units[u.id]; events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: cmd.tile }); }
@@ -360,6 +373,7 @@ export const supplyDrop = {
     if (where) return where;
     if (!holdsOrbit(state, ruleset, cmd.faction, fleet.at)) return err('noOrbit', 'You need to hold the orbit for a supply drop');
     if (!fleet.ships.some((s) => shipDef(ruleset, s)?.space?.bombard && !fleet.struck.includes(s.id))) return err('noBombard', 'No cruiser in this fleet is free this turn');
+    if (stormBlocksOrbit(state, ruleset, fleet.at)) return err('storm', 'A storm hides the ground this turn');
     const t = cmd.tile;
     if (!Number.isInteger(t) || t < 0 || t >= state.map.terrain.length) return err('badTile', 'Choose a hex on this world');
     if (antiAirNear(state, ruleset, cmd.faction, t)) return err('antiAir', 'Enemy anti-air covers that hex');
@@ -420,7 +434,8 @@ export function spaceView(state, ruleset, faction, sideOf) {
     const data = worldData(state, id);
     const cities = Object.values(data.cities ?? {});
     const sides = new Set(cities.map((c) => sideOf(state, ruleset, c.faction)));
-    const holder = sides.size === 1 ? [...sides][0] : sides.size > 1 ? 'contested' : null;
+    // K3: a world captured (every key site, no enemy left) is held whatever its bases say.
+    const holder = state.holders?.[id] !== undefined && sides.size <= 1 ? state.holders[id] : sides.size === 1 ? [...sides][0] : sides.size > 1 ? 'contested' : null;
     const control = data.frontline?.control ?? [];
     let a = 0;
     let b = 0;
@@ -430,7 +445,7 @@ export function spaceView(state, ruleset, faction, sideOf) {
     return { id, kind: ruleset.worlds[id].kind, holder, share, myBases: cities.filter((c) => c.faction === faction).length, bases: cities.length,
       armies: Object.values(data.units ?? {}).filter((u) => u.faction !== 'raiders' && (ruleset.units[u.type]?.strength ?? 0) > 0).length,
       seen: seen.has(id), orbit: seen.has(id) ? { factions: orbit.factions, contested: orbit.contested, mine: holdsOrbit(state, ruleset, faction, id) } : null,
-      blockaded: seen.has(id) && Object.values(state.space.fleets).some((f) => f.blockade && f.at === id && !f.transit) };
+      blockaded: seen.has(id) && Object.values(state.space.fleets).some((f) => f.blockade && f.at === id && !f.transit), storm: stormNow(state, ruleset, id) };
   });
   const fleets = Object.values(state.space.fleets).filter((f) => f.faction === faction || (f.transit ? true : seen.has(f.at))).map((f) => (f.faction === faction
     ? JSON.parse(JSON.stringify(f))

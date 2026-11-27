@@ -262,7 +262,10 @@ test('a scripted 60-turn invasion of Morrow plays the same every time', () => {
         if (g?.at === 'morrow' && !g.transit) {
           const m = worldData(s, 'morrow');
           const guard = Object.values(m.units).find((u) => u.faction === 'f1');
-          if (guard && go({ type: 'orbitalStrike', faction: 'f0', fleet: fl, tile: guard.tile, world: 'morrow' }).ok) strikes += 1;
+          // Before landing the cruiser strikes the garrison; after, it keeps the beachhead in supply (K3).
+          const ours = Object.values(m.units).find((u) => u.faction === 'f0');
+          if (landed && ours) go({ type: 'supplyDrop', faction: 'f0', fleet: fl, tile: ours.tile, world: 'morrow' });
+          else if (guard && go({ type: 'orbitalStrike', faction: 'f0', fleet: fl, tile: guard.tile, world: 'morrow' }).ok) strikes += 1;
           if (!landed && g.cargo.length) {
             const map = worldData(s, 'morrow').map;
             const city = Object.values(worldData(s, 'morrow').cities)[0];

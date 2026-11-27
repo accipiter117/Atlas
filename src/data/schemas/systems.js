@@ -101,6 +101,15 @@ export const worlds = entryType('worlds', {
   fleets: list(obj({ side: req(int(0, 1)), ships: req(list(ref('units'), { min: 1 })) })),
   // K2: where the world sits on the star map, in percent of its width and height.
   pos: obj({ x: req(int(0, 100)), y: req(int(0, 100)) }),
+  // K3: the world's own theatre rules (src/sim/war.js).
+  theatre: obj({
+    storm: obj({ every: req(int(2, 20)), offset: int(0, 19), sight: int(-3, 0), blocksOrbit: bool() }),
+    toxic: obj({ damage: req(int(1, 50)), terrain: refs('terrain'), immune: refs('factions') }),
+    lowGravity: obj({ moves: req(int(1, 3)), tag: str() }),
+    noVehicles: bool(),
+    vehicleTag: str(),
+    objective: ref('sites'),
+  }),
 });
 
 // K2: the star map's lanes between worlds. turns: how many system turns the jump takes;

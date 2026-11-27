@@ -10,6 +10,7 @@ import { sumHook } from './effects/index.js';
 import { improvementProblem, builderTargets, placeImprovement } from './improvements.js';
 import { assignCitizens } from './cities.js';
 import { clearCampAt } from './raiders.js';
+import { onEnter, afterMove } from './war.js';
 
 const refuse = (code, message) => ({ code, message });
 
@@ -55,9 +56,13 @@ export function advanceUnit(state, ruleset, unit, target, events) {
     unit.acted = true;
     walked.push(next);
     clearCampAt(state, ruleset, unit, next, events);
-    if (canStop(state, ruleset, unit, next)) lastStop = { tile: next, moves: left };
+    // K3: mines, wire and trenches (src/sim/war.js).
+    const hit = state.map.works ? onEnter(state, ruleset, unit, next, events) : null;
+    if (hit?.dead) { if (walked.length > 1) events.push({ type: 'unitMoved', unit: unit.id, faction: unit.faction, path: walked }); return walked; }
+    if (hit?.stop) unit.moves = 0;
+    if (canStop(state, ruleset, unit, next)) lastStop = { tile: next, moves: unit.moves };
     updateVisibility(state, ruleset, unit.faction);
-    if (left <= 0) break;
+    if (unit.moves <= 0) break;
   }
   // Never end on a tile shared with a unit of the same kind (passing through is fine).
   if (unit.tile !== lastStop.tile) {
@@ -68,6 +73,7 @@ export function advanceUnit(state, ruleset, unit, target, events) {
   }
   unit.goto = unit.tile === target ? null : target;
   if (walked.length > 1) events.push({ type: 'unitMoved', unit: unit.id, faction: unit.faction, path: walked });
+  if (walked.length > 1 && state.map.works) afterMove(state, ruleset, unit, events);
   return walked;
 }
 
@@ -137,7 +143,8 @@ export function healAmount(state, ruleset, unit) {
 export function startUnitsTurn(state, ruleset, factionId, events) {
   for (const unit of Object.values(state.units ?? {})) {
     if (unit.faction !== factionId) continue;
-    if (unit.hp < 100 && !unit.acted) unit.hp = Math.min(100, unit.hp + healAmount(state, ruleset, unit));
+    // K3: a unit cut off from supply (unit.cut) cannot heal.
+    if (unit.hp < 100 && !unit.acted && !unit.cut) unit.hp = Math.min(100, unit.hp + healAmount(state, ruleset, unit));
     unit.acted = false;
     unit.moves = maxMoves(ruleset, unit, state);
     if (unit.activity === 'skip') unit.activity = 'none';
@@ -166,7 +173,25 @@ export const buildImprovement = {
   apply(state, cmd, events, ruleset) {
     const unit = state.units[cmd.unit];
     const tile = cmd.tile ?? unit.tile;
-    placeImprovement(state, ruleset, cmd.improvement, tile);
+    // K3: works that take several turns: the engineer stays on the job (src/sim/war.js warTurn).
+    const turns = ruleset.improvements[cmd.improvement].turns ?? 1;
+    if (turns > 1) {
+      unit.building = { improvement: cmd.improvement, tile, left: turns - 1 };
+      unit.moves = 0;
+      unit.acted = true;
+      unit.activity = 'none';
+      events.push({ type: 'improvementStarted', improvement: cmd.improvement, tile, unit: unit.id, faction: unit.faction, turns });
+      return;
+    }
+    finishImprovement(state, ruleset, cmd.improvement, tile, unit, events);
+  },
+};
+
+/** An engineer finishes a work: place it, spend the charge, and update who works the land. */
+export function finishImprovement(state, ruleset, improvement, tile, unit, events) {
+  {
+    const cmd = { improvement };
+    placeImprovement(state, ruleset, cmd.improvement, tile, unit.faction);
     unit.charges -= ruleset.improvements[cmd.improvement].charges ?? 1;
     unit.moves = 0;
     unit.acted = true;
@@ -179,5 +204,5 @@ export const buildImprovement = {
     const owner = state.owner?.[tile];
     if (owner && state.cities[owner]) assignCitizens(state, ruleset, state.cities[owner]);
     updateVisibility(state, ruleset, unit.faction);
-  },
-};
+  }
+}

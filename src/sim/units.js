@@ -10,6 +10,7 @@ import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
 import { sumHook, difficultyOf } from './effects/index.js';
 import { atWar } from './diplomacy.js';
+import { theatreMoves, theatreAllows } from './war.js';
 
 export const CIVILIAN = 'civilian';
 export const COMBAT = 'combat';
@@ -38,7 +39,7 @@ export function domainOf(ruleset, typeId) {
 export function maxMoves(ruleset, unit, state = null) {
   const base = unitDef(ruleset, unit)?.moves ?? 1;
   if (!state?.factions) return base + promotionSum(ruleset, unit, 'moveBonus');
-  return Math.max(1, base + promotionSum(ruleset, unit, 'moveBonus') + sumHook('move', state, ruleset, unit.faction, { unit }));
+  return Math.max(1, base + promotionSum(ruleset, unit, 'moveBonus') + sumHook('move', state, ruleset, unit.faction, { unit }) + theatreMoves(state, ruleset, unit));
 }
 
 /** The total of one effect across a unit's promotions (they always reach the unit itself). */
@@ -73,6 +74,7 @@ export function canStand(state, ruleset, typeId, factionId, tile, ignoreUnitId =
   if (domain === 'land' && terrain.water) return false;
   if (domain === 'sea' && !terrain.water) return false;
   if (domain === 'space') return false; // ships never stand on a world's map (K2)
+  if (state.world && !theatreAllows(state, ruleset, typeId)) return false; // K3: no vehicles on a station
   const slot = slotOf(ruleset, typeId);
   for (const u of unitsAt(state, tile)) {
     if (u.id === ignoreUnitId) continue;

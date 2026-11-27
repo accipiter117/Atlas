@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "conversion",
   "engine": ">=0.1.0",
-  "description": "The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, and the star map rules only (Killzone Extrasolar War, phase K2).",
+  "description": "The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, the star map, supply, war infrastructure and theatre rules (Killzone Extrasolar War, phases K2 and K3).",
   "dependsOn": [
     "killzone"
   ],
@@ -12,6 +12,9 @@
   "incompatibleWith": [],
   "options": [],
   "files": [
+    "tuning.json",
+    "sites.json",
+    "improvements.json",
     "unitClasses.json",
     "units.json",
     "mapPresets.json",

@@ -91,5 +91,7 @@ test('G7: auto end turn when nothing needs you', async ({ page }, info) => {
     const g = window.__atlasGame;
     for (const u of g.view.units.filter((x) => x.faction === g.human)) g.debug.run({ type: 'sleep', faction: g.human, unit: u.id });
   });
-  await expect(page.locator('[data-field="turn"]')).toHaveText('Turn 2', { timeout: 30_000 });
+  // With every unit asleep nothing needs you, so turns end by themselves, each a moment after the last;
+  // they can pass faster than a check for one exact turn, so check that the turn has moved on.
+  await expect.poll(() => page.evaluate(() => window.__atlasGame.state.turn), { timeout: 30_000 }).toBeGreaterThan(1);
 });

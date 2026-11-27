@@ -2,12 +2,12 @@
   "contentType": "worlds",
   "entries": [
     {"id": "vekta", "nameKey": "world.vekta.name", "descriptionKey": "world.vekta.text", "kind": "homeworld", "order": 0, "map": {"preset": "kw_vekta"}, "pos": {"x": 9, "y": 50}, "start": true, "fleets": [{"side": 0, "ships": ["isa_cruiser", "isa_destroyer", "isa_intruder", "isa_transport"]}]},
-    {"id": "helghan", "nameKey": "world.helghan.name", "descriptionKey": "world.helghan.text", "kind": "homeworld", "order": 1, "map": {"preset": "kw_helghan"}, "pos": {"x": 91, "y": 50}, "fleets": [{"side": 1, "ships": ["helghast_cruiser", "helghast_destroyer", "helghast_dropship", "helghast_transport"]}]},
-    {"id": "halcyon", "nameKey": "world.halcyon.name", "descriptionKey": "world.halcyon.text", "kind": "moon", "order": 2, "map": {"preset": "kw_halcyon"}, "pos": {"x": 28, "y": 74}},
-    {"id": "morrow", "nameKey": "world.morrow.name", "descriptionKey": "world.morrow.text", "kind": "moon", "order": 3, "map": {"preset": "kw_morrow"}, "pos": {"x": 72, "y": 74}},
-    {"id": "bastion", "nameKey": "world.bastion.name", "descriptionKey": "world.bastion.text", "kind": "station", "order": 4, "map": {"preset": "kw_bastion"}, "pos": {"x": 28, "y": 26}, "fleets": [{"side": 0, "ships": ["isa_destroyer"]}]},
-    {"id": "ardent", "nameKey": "world.ardent.name", "descriptionKey": "world.ardent.text", "kind": "station", "order": 5, "map": {"preset": "kw_ardent"}, "pos": {"x": 72, "y": 26}, "fleets": [{"side": 1, "ships": ["helghast_destroyer"]}]},
-    {"id": "midway", "nameKey": "world.midway.name", "descriptionKey": "world.midway.text", "kind": "station", "order": 6, "map": {"preset": "kw_midway"}, "pos": {"x": 50, "y": 22}},
+    {"id": "helghan", "nameKey": "world.helghan.name", "descriptionKey": "world.helghan.text", "kind": "homeworld", "order": 1, "map": {"preset": "kw_helghan"}, "pos": {"x": 91, "y": 50}, "fleets": [{"side": 1, "ships": ["helghast_cruiser", "helghast_destroyer", "helghast_dropship", "helghast_transport"]}], "theatre": {"storm": {"every": 4, "offset": 1, "sight": -1, "blocksOrbit": true}, "toxic": {"damage": 5, "terrain": ["desert"], "immune": ["helghast"]}}},
+    {"id": "halcyon", "nameKey": "world.halcyon.name", "descriptionKey": "world.halcyon.text", "kind": "moon", "order": 2, "map": {"preset": "kw_halcyon"}, "pos": {"x": 28, "y": 74}, "theatre": {"lowGravity": {"moves": 1, "tag": "jump"}}},
+    {"id": "morrow", "nameKey": "world.morrow.name", "descriptionKey": "world.morrow.text", "kind": "moon", "order": 3, "map": {"preset": "kw_morrow"}, "pos": {"x": 72, "y": 74}, "theatre": {"lowGravity": {"moves": 1, "tag": "jump"}}},
+    {"id": "bastion", "nameKey": "world.bastion.name", "descriptionKey": "world.bastion.text", "kind": "station", "order": 4, "map": {"preset": "kw_bastion"}, "pos": {"x": 28, "y": 26}, "fleets": [{"side": 0, "ships": ["isa_destroyer"]}], "theatre": {"noVehicles": true, "objective": "reactor"}},
+    {"id": "ardent", "nameKey": "world.ardent.name", "descriptionKey": "world.ardent.text", "kind": "station", "order": 5, "map": {"preset": "kw_ardent"}, "pos": {"x": 72, "y": 26}, "fleets": [{"side": 1, "ships": ["helghast_destroyer"]}], "theatre": {"noVehicles": true, "objective": "reactor"}},
+    {"id": "midway", "nameKey": "world.midway.name", "descriptionKey": "world.midway.text", "kind": "station", "order": 6, "map": {"preset": "kw_midway"}, "pos": {"x": 50, "y": 22}, "theatre": {"noVehicles": true, "objective": "reactor"}},
     {"id": "kerberos", "nameKey": "world.kerberos.name", "descriptionKey": "world.kerberos.text", "kind": "asteroid", "order": 7, "map": {"preset": "kw_kerberos"}, "pos": {"x": 50, "y": 78}}
   ]
 }

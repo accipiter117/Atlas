@@ -1,0 +1,6 @@
+{
+  "contentType": "tuning",
+  "set": {
+    "supply.enabled": true
+  }
+}

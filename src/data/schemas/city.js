@@ -61,4 +61,23 @@ export const improvements = entryType('improvements', {
   charges: int(0, 5),
   art: str(),
   descriptionKey: key(),
+  // K3: how many turns an engineer takes over it (1 when left out).
+  turns: int(1, 9),
+  // K3: war infrastructure (src/sim/war.js). Built anywhere your side holds; who built it counts.
+  war: obj({
+    faction: ref('factions'),
+    zoc: bool(),
+    stopsEntry: bool(),
+    freeShot: int(0, 100),
+    mineDamage: int(0, 100),
+    hidden: bool(),
+    antiAir: int(0, 6),
+    strikeArmour: int(0, 100),
+    arcDamage: int(0, 100),
+    bombard: obj({ strength: req(int(1, 200)), range: req(int(1, 6)), crew: bool() }),
+    landingBay: bool(),
+    supply: int(0, 8),
+    heal: int(0, 100),
+    reveal: int(0, 6),
+  }),
 });

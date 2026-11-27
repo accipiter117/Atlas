@@ -15,3 +15,4 @@ Each folder holds the same set of screenshots (G8 and G9 also have a page showin
 | G9 | [G9](G9/) | Polish after review: the zoomed-out view keeps to your explored land and centres on your empire, strategic banners show each unit's class, units without pennants and with status badges only on hover or selection, towns drawn over crowded garrisons, a compact selection panel that keeps city names clear, Killzone's own tech and civic trees, and fog of war with dithered edges. |
 | K1b | [K1b](K1b/) | Killzone Extrasolar War: a two-world Killzone game with the world switcher in the top bar, on Vekta and on Helghan (a stand-in map). |
 | K2 | [K2](K2/) | Killzone: Extrasolar War: the star map (eight worlds, lanes, fleets, status cards), a fleet's orders, and an army landed on Halcyon. |
+| K3 | [K3](K3/) | Killzone: Extrasolar War: war infrastructure round Vekta Landing (placeholder art), a unit cut off from supply, and the star map. |

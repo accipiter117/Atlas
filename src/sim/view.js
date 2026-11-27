@@ -9,6 +9,7 @@ import { VISIBLE, UNEXPLORED } from './visibility.js';
 import { opinionOf } from './diplomacy.js';
 import { multiWorld, lookAt, activeWorld } from './worlds.js';
 import { spaceView } from './space.js';
+import { hiddenFrom } from './war.js';
 import { sideOf } from './frontline.js';
 
 const HIDDEN = -1;
@@ -64,7 +65,9 @@ export function view(state, factionId, ruleset = null, opts = {}) {
     river: mask(map.river, 0),
     road: map.road ? mask(map.road, 0) : null,
     improvementIds: (map.improvementIds ?? []).slice(),
-    improvement: map.improvement ? mask(map.improvement) : null,
+    // K3: enemy minefields stay hidden unless a comms relay of yours reveals them.
+    improvement: map.improvement ? mask(map.improvement).map((v, i) => (v >= 0 && map.works?.[i] && hiddenFrom(state, ruleset ?? {}, factionId, i) ? -1 : v)) : null,
+    works: map.works ? Object.fromEntries(Object.entries(map.works).filter(([t]) => fog[t] !== UNEXPLORED && !hiddenFrom(state, ruleset ?? {}, factionId, Number(t))).map(([t, w]) => [t, { faction: w.faction }])) : undefined,
     owner: state.owner ? mask(state.owner, null) : null,
   };
   // Cities: your own in full; others where you have explored, outside details only.

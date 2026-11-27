@@ -347,6 +347,8 @@ Build the star map screen: starfield, code-drawn pixel planets with orbit rings,
 
 ### K3: Theatre rules, supply and war infrastructure
 
+**Progress.** K3 is done: supply, thirteen kinds of war infrastructure, storms, toxic ground, low gravity, stations and capturing a world (see CHANGELOG.md and the K3 entries in docs/DECISIONS.md, which also list what was left for later). K4 is next.
+
 **Check on your laptop.** Units cut off from supply lose health; engineers build every item in section 3.2 and each changes combat as described; Helghan has storms, the moons have low gravity, stations have corridors; holding every key site captures a world.
 
 ```text

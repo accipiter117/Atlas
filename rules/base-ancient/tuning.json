@@ -234,6 +234,15 @@
     "ai": {
       "lateGameMode": "normal"
     },
+    "supply": {
+      "enabled": false,
+      "cityRange": 4,
+      "controlThreshold": 25,
+      "attrition": 10,
+      "penalty": 5,
+      "surrenderTurns": 3,
+      "dropRadius": 2
+    },
     "space": {
       "fleetSize": 6,
       "groupSize": 4,

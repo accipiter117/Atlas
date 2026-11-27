@@ -10,6 +10,7 @@ import { line } from '../core/hex.js';
 import { neighbourCache, tileHex, tileIndex } from './map.js';
 import { factionUnits, unitDef, promotionSum } from './units.js';
 import { sumHook, effectsFor } from './effects/index.js';
+import { theatreSight } from './war.js';
 
 export const UNEXPLORED = 0;
 export const EXPLORED = 1;
@@ -25,7 +26,7 @@ function blocksSight(state, ruleset, t) {
 export function sightRange(state, ruleset, unit, effects = undefined) {
   const base = unitDef(ruleset, unit)?.sight ?? ruleset.tuning?.sight?.default ?? 2;
   const bonus = (state.factions ? sumHook('sight', state, ruleset, unit.faction, { unit }, effects) : 0) + promotionSum(ruleset, unit, 'sightBonus');
-  return base + bonus + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0);
+  return Math.max(1, base + bonus + theatreSight(state, ruleset) + (state.map.hills[unit.tile] ? ruleset.tuning?.sight?.hillsBonus ?? 1 : 0));
 }
 
 /** Tiles a viewer on `from` with range `radius` can see. */

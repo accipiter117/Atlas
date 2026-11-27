@@ -63,7 +63,10 @@ export function createUnitCard(g) {
     const actions = g.$('[data-field="actions"]');
     const def = g.ruleset.units[u.type];
     const turnsLeft = u.goto !== null ? (g.plan(u, u.goto)?.arrivesOnTurn ?? 0) + 1 : 0;
-    const status = u.goto !== null ? g.tt('game.unit.status.goto', { turns: turnsLeft }) : g.tt(`game.unit.status.${u.activity}`, { turns: u.fortifiedTurns });
+    let status = u.goto !== null ? g.tt('game.unit.status.goto', { turns: turnsLeft }) : g.tt(`game.unit.status.${u.activity}`, { turns: u.fortifiedTurns });
+    // K3: an engineer on a job that takes several turns, and a unit cut off from supply.
+    if (u.building) status = g.tt('game.unit.status.building', { name: g.ruleset.text[g.ruleset.improvements?.[u.building.improvement]?.nameKey] ?? u.building.improvement, turns: u.building.left });
+    if (u.cut) status = `${status} · ${g.tt('game.unit.status.cut', { turns: u.cut })}`;
     const thresholds = g.ruleset.tuning?.experience?.promotionThresholds ?? [15, 45, 90, 150];
     const nextAt = thresholds.find((x) => x > (u.xp ?? 0));
     const strength = def.strength ?? 0;
@@ -116,7 +119,7 @@ export function createUnitCard(g) {
       for (const [id, imp] of Object.entries(g.ruleset.improvements ?? {})) {
         for (const tile of builderTargets(world, g.ruleset, id, u.tile)) {
           if (improvementProblem(world, g.ruleset, g.human, id, tile)) continue;
-          const label = g.tt('game.action.improve', { name: g.ruleset.text[imp.nameKey] ?? id });
+          const label = (imp.turns ?? 1) > 1 ? g.tt('game.action.improveTurns', { name: g.ruleset.text[imp.nameKey] ?? id, turns: imp.turns }) : g.tt('game.action.improve', { name: g.ruleset.text[imp.nameKey] ?? id });
           improve.push(el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { improve: id }, title: g.ruleset.text[imp.descriptionKey] ?? '', disabled: u.moves <= 0,
             onclick: () => { const r = g.run({ type: 'buildImprovement', faction: g.human, unit: u.id, improvement: id, tile }); if (r) g.afterOrders(); } }, label));
           break;

@@ -1,0 +1,6 @@
+{
+  "contentType": "sites",
+  "entries": [
+    {"id": "reactor", "nameKey": "site.reactor.name", "descriptionKey": "site.reactor.text", "icon": "site.power_plant", "effects": [{"effect": "yieldBonus", "yield": "production", "amount": 1}]}
+  ]
+}

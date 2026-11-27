@@ -235,6 +235,114 @@ export function drawImprovementArt(ctx, cx, cy, id, colours) {
       for (const [x, y] of [[-8, -6], [6, -6], [-8, 5], [6, 5]]) ctx.fillRect(cx + x, cy + y, 3, 2);
       break;
     }
+    // Killzone Extrasolar War K3: war infrastructure (placeholders until K7's art).
+    case 'trench':
+      // A dug zigzag with sandbagged lips.
+      ctx.fillStyle = shade(colours.spoil, -0.25);
+      for (let k = -7; k <= 6; k += 1) ctx.fillRect(cx + k, cy + (Math.abs((k + 7) % 6 - 3)) - 2, 2, 2);
+      ctx.fillStyle = colours.hide;
+      for (let k = -7; k <= 6; k += 3) ctx.fillRect(cx + k, cy - 4, 2, 1);
+      break;
+    case 'wire':
+      // Coils of wire on stakes.
+      ctx.fillStyle = colours.timber;
+      for (const x of [-6, 0, 6]) ctx.fillRect(cx + x, cy - 3, 1, 5);
+      ctx.fillStyle = colours.metal;
+      for (let k = -7; k <= 7; k += 1) ctx.fillRect(cx + k, cy - 2 + ((k + 8) % 3), 1, 1);
+      break;
+    case 'mg_nest':
+      // A ring of sandbags with a gun barrel.
+      ctx.fillStyle = colours.hide;
+      ctx.fillRect(cx - 5, cy - 1, 10, 4);
+      ctx.fillStyle = shade(colours.hide, -0.2);
+      ctx.fillRect(cx - 5, cy + 2, 10, 1);
+      ctx.fillStyle = ink;
+      ctx.fillRect(cx - 1, cy - 3, 7, 1);
+      break;
+    case 'bunker':
+      // A squat concrete block with a firing slit, lit from the top left.
+      ctx.fillStyle = shade(colours.stone, 0.08);
+      ctx.fillRect(cx - 7, cy - 4, 14, 8);
+      ctx.fillStyle = shade(colours.stone, -0.18);
+      ctx.fillRect(cx - 7, cy + 2, 14, 2);
+      ctx.fillStyle = ink;
+      ctx.fillRect(cx - 4, cy - 1, 8, 1);
+      break;
+    case 'artillery_battery':
+      // A gun on a wheeled carriage, barrel up and to the right.
+      ctx.fillStyle = colours.metal;
+      for (let k = 0; k < 7; k += 1) ctx.fillRect(cx - 1 + k, cy - 1 - k, 2, 1);
+      ctx.fillStyle = ink;
+      ctx.fillRect(cx - 5, cy + 1, 3, 3);
+      ctx.fillRect(cx + 1, cy + 1, 3, 3);
+      ctx.fillStyle = colours.timber;
+      ctx.fillRect(cx - 6, cy, 11, 1);
+      break;
+    case 'anti_air_battery':
+      // Twin barrels pointing straight up on a turret.
+      ctx.fillStyle = colours.stone;
+      ctx.fillRect(cx - 4, cy, 8, 4);
+      ctx.fillStyle = colours.metal;
+      ctx.fillRect(cx - 2, cy - 7, 1, 7);
+      ctx.fillRect(cx + 1, cy - 7, 1, 7);
+      break;
+    case 'arc_tower':
+      // A mast with a glowing coil.
+      ctx.fillStyle = colours.metal;
+      ctx.fillRect(cx, cy - 8, 1, 12);
+      ctx.fillRect(cx - 3, cy + 3, 7, 1);
+      ctx.fillStyle = '#7fd0ff';
+      ctx.fillRect(cx - 2, cy - 9, 5, 3);
+      ctx.fillStyle = '#e8f8ff';
+      ctx.fillRect(cx, cy - 8, 1, 1);
+      break;
+    case 'minefield':
+      // Little studs in the dirt (only its own side sees them).
+      ctx.fillStyle = colours.metal;
+      for (const [x, y] of [[-5, -2], [-1, 1], [3, -3], [5, 2], [-3, 3]]) ctx.fillRect(cx + x, cy + y, 2, 1);
+      break;
+    case 'landing_bay':
+      // A pad with an H and corner lights.
+      ctx.fillStyle = shade(colours.stone, -0.1);
+      ctx.fillRect(cx - 7, cy - 4, 14, 9);
+      ctx.fillStyle = '#e8d070';
+      ctx.fillRect(cx - 3, cy - 2, 1, 5);
+      ctx.fillRect(cx + 2, cy - 2, 1, 5);
+      ctx.fillRect(cx - 3, cy, 6, 1);
+      for (const [x, y] of [[-7, -4], [6, -4], [-7, 4], [6, 4]]) ctx.fillRect(cx + x, cy + y, 1, 1);
+      break;
+    case 'supply_depot':
+    case 'command_post':
+      // Stacked crates (the command post flies a pennant).
+      ctx.fillStyle = colours.timber;
+      ctx.fillRect(cx - 6, cy, 5, 4);
+      ctx.fillRect(cx, cy, 5, 4);
+      ctx.fillRect(cx - 3, cy - 4, 5, 4);
+      ctx.fillStyle = shade(colours.timber, -0.25);
+      ctx.fillRect(cx - 6, cy + 3, 11, 1);
+      if (id === 'command_post') {
+        ctx.fillStyle = ink;
+        ctx.fillRect(cx + 5, cy - 8, 1, 12);
+        ctx.fillStyle = '#d04a3a';
+        ctx.fillRect(cx + 6, cy - 8, 4, 3);
+      }
+      break;
+    case 'field_hospital':
+      // A tent with a cross.
+      ctx.fillStyle = '#e9e2d0';
+      for (let k = 0; k < 5; k += 1) ctx.fillRect(cx - k - 1, cy - 4 + k, 2 * k + 3, 1);
+      ctx.fillStyle = '#c0392b';
+      ctx.fillRect(cx, cy - 2, 1, 3);
+      ctx.fillRect(cx - 1, cy - 1, 3, 1);
+      break;
+    case 'comms_relay':
+      // A lattice mast with a dish.
+      ctx.fillStyle = colours.metal;
+      ctx.fillRect(cx, cy - 7, 1, 11);
+      for (let k = -6; k <= 3; k += 3) ctx.fillRect(cx - 1, cy + k, 3, 1);
+      ctx.fillStyle = shade(colours.metal, 0.15);
+      ctx.fillRect(cx + 1, cy - 8, 3, 2);
+      break;
     default:
       ctx.fillStyle = ink;
       ctx.fillRect(cx - 2, cy - 2, 4, 4);

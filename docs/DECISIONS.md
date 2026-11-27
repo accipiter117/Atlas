@@ -339,6 +339,13 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **K2: what you see of space.** Every world and who holds its bases, always; enemy fleets only where you have a base or a fleet, or next to one; every long jump in flight.
 - **K2: the computer leaves its fleets at home** until K5's star map AI; it builds no ships, so nothing is wasted. Ships pay upkeep and never stand on a map.
 - **K2: upkeep's free allowance applies per world** (each world's cities and units are paid for in turn). With several worlds that is a little generous; K4's economy will settle it.
+- **K3: supply follows the front.** Bases supply 4 hexes, depots and command posts 3, landing bays 2, a supply drop 2 for a turn, but supply only spreads through hexes your side holds by more than 25 points of front control. On a world without a front everyone is supplied. Cut off: -10 health a turn, no healing, -5 strength, surrender after three turns. All in tuning.supply (off in every other game).
+- **K3: who built a work is remembered** (map.works, made only when the first work is built), because a trench helps whoever built it and hurts their enemies, whoever holds the ground later.
+- **K3: engineers are the existing builders** (three charges, one per work). Works go anywhere your side holds, not only inside your borders; a job of several turns keeps the engineer busy, and walking away abandons it.
+- **K3: artillery batteries fire by themselves** at the nearest enemy within 3 each turn while one of your units stands in them, rather than giving that unit a ranged attack. It plays the same at theatre scale and keeps the battery's job readable.
+- **K3: storms keep a fixed rhythm** (Helghan: one turn in four), so you can plan a landing around them.
+- **K3: a world is held by whoever holds every key site with no enemy army or base left** (on a station, only the reactor counts). Who holds each world is recorded from the start; the star map shows it.
+- **K3: not yet.** A command post that new units can be sent to, the comms relay's extra sight, the petrusite extractor and arc towers needing petrusite (K4 resources), Kerberos's bridges, breaching charges on stations (K6 battles), Vekta's defenders' bonus (K4), and the computer building works or minding supply (K5).
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## After the overhaul

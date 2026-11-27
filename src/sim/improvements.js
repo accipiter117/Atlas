@@ -8,6 +8,7 @@
 
 import { neighbourCache } from './map.js';
 import { knows } from './progression.js';
+import { workProblem, noteWork } from './war.js';
 
 export function improvementIndex(map, id) {
   return map.improvementIds ? map.improvementIds.indexOf(id) : -1;
@@ -28,8 +29,14 @@ export function improvementProblem(state, ruleset, factionId, id, tile) {
     if (terrain.water) return 'badTile';
     return map.road[tile] ? 'alreadyBuilt' : null;
   }
-  const owner = state.owner?.[tile];
-  if (owner === null || owner === undefined || state.cities[owner]?.faction !== factionId) return 'notYourLand';
+  // K3: war infrastructure goes wherever your side holds the ground, not only inside your borders.
+  if (def.war) {
+    const why = workProblem(state, ruleset, factionId, def, tile);
+    if (why) return why;
+  } else {
+    const owner = state.owner?.[tile];
+    if (owner === null || owner === undefined || state.cities[owner]?.faction !== factionId) return 'notYourLand';
+  }
   if (Boolean(def.water) !== Boolean(terrain.water)) return 'badTile';
   if (map.improvement[tile] === improvementIndex(map, id)) return 'alreadyBuilt';
   const resourceId = map.resource[tile] >= 0 ? map.resourceIds[map.resource[tile]] : null;
@@ -51,10 +58,12 @@ export function builderTargets(state, ruleset, id, tile) {
   return [tile];
 }
 
-export function placeImprovement(state, ruleset, id, tile) {
+export function placeImprovement(state, ruleset, id, tile, faction = null) {
   const def = ruleset.improvements[id];
   if (def.road) { state.map.road[tile] = 1; return; }
   state.map.improvement[tile] = improvementIndex(state.map, id);
+  if (def.war) noteWork(state, tile, faction);
+  else if (state.map.works?.[tile]) delete state.map.works[tile];
 }
 
 /** Lay road on the shortest land path between two tiles (no road onto water or mountains). Returns the tiles roaded. */

@@ -35,6 +35,7 @@ export function createStarMapScreen(g) {
     if (w.armies) parts.push(tt('starmap.armies', { n: w.armies }));
     if (w.orbit) parts.push(w.orbit.contested ? tt('starmap.orbitContested') : w.orbit.mine ? tt('starmap.orbitYours') : w.orbit.factions.length ? tt('starmap.orbitEnemy') : tt('starmap.orbitEmpty'));
     if (w.blockaded) parts.push(tt('starmap.blockaded'));
+    if (w.storm) parts.push(tt('starmap.storm'));
     return parts.join(' · ');
   }
 

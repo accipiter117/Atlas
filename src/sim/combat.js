@@ -14,6 +14,7 @@
 //   both: -woundedPenaltyPer10Hp per 10 HP missing; combatBonus abilities
 //   and promotions (with vs and when filters)
 
+import { supplyModifiers } from './war.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { unitsAt, slotOf, isEnemy, unitDef } from './units.js';
@@ -181,7 +182,7 @@ export function buildSpec(state, ruleset, unit, target) {
   const ranged = kind0 === 'ranged';
   const kind = ranged ? 'ranged' : 'field';
   const attackerEntry = unitEntry(ruleset, unit);
-  const aMods = [...wounded(unit, t)];
+  const aMods = [...wounded(unit, t), ...supplyModifiers(ruleset, unit)];
   const dMods = [];
   let defenderSide;
   const opponentInfo = (u) => ({ class: unitDef(ruleset, u).class, tags: unitDef(ruleset, u).tags ?? [], ranged: combatKind(ruleset, u) === 'ranged' });
@@ -198,7 +199,7 @@ export function buildSpec(state, ruleset, unit, target) {
     defenderSide = { faction: defender.faction, civ: state.factions.find((f) => f.id === defender.faction)?.civ ?? null, human: state.factions.find((f) => f.id === defender.faction)?.kind === 'human', units: [unitEntry(ruleset, defender)], city: null };
     dMods.push(...terrainModifiers(state, ruleset, target));
     if (defender.activity === 'fortify' && defender.fortifiedTurns >= (t.fortifyTurns ?? 2)) dMods.push({ source: 'fortified', amount: t.fortifyBonus ?? 4 });
-    dMods.push(...wounded(defender, t));
+    dMods.push(...wounded(defender, t), ...supplyModifiers(ruleset, defender));
     dMods.push(...combatBonuses(ruleset, defender, { role: 'defender', opponent: opponentInfo(unit) }));
     aMods.push(...combatBonuses(ruleset, unit, { role: 'attacker', opponent: opponentInfo(defender) }));
   }
@@ -234,7 +235,7 @@ export function buildSpec(state, ruleset, unit, target) {
 export function buildCitySpec(state, ruleset, city, target) {
   const t = combatTuning(ruleset);
   const defender = defenderAt(state, ruleset, city.faction, target);
-  const dMods = [...terrainModifiers(state, ruleset, target), ...wounded(defender, t)];
+  const dMods = [...terrainModifiers(state, ruleset, target), ...wounded(defender, t), ...supplyModifiers(ruleset, defender)];
   if (defender.activity === 'fortify' && defender.fortifiedTurns >= (t.fortifyTurns ?? 2)) dMods.push({ source: 'fortified', amount: t.fortifyBonus ?? 4 });
   const strength = cityStrength(state, ruleset, city);
   const battle = ruleset.tuning?.battle?.auto ?? { baseDamage: 30, strengthScale: 25, spread: 0.2 };

@@ -22,6 +22,8 @@ export function createAttention(g) {
       ...g.starving().map((c) => ({ key: `s${c.id}`, icon: 'food', label: g.tt('game.attention.starving', { city: c.name }), go: () => g.openCityDrawer(c.id, { centre: true }), urgent: true })),
       ...g.myUnits().filter((u) => promotionsAvailable(g.ruleset, u) > 0 && combatKind(g.ruleset, u) !== 'none').map((u) => ({ key: `pr${u.id}`, icon: 'xp', label: g.tt('game.attention.promote', { unit: g.unitName(u) }), go: () => g.select(u.id, { centre: true }) })),
       ...(g.v.diplomacy?.deals ?? []).filter((d) => d.to === g.human).map((d) => ({ key: `deal${d.id}`, icon: 'diplomacy', label: g.tt('game.attention.offer', { faction: g.civName(d.from) }), go: () => g.openDiplomacy(d.from), urgent: true })),
+      // K3: units cut off from supply, before they surrender.
+      ...g.myUnits().filter((u) => u.cut).map((u) => ({ key: `cut${u.id}`, icon: 'hp', label: g.tt('game.attention.cut', { unit: g.unitName(u), turns: u.cut }), go: () => g.select(u.id, { centre: true }), urgent: true })),
       ...g.idle().map((u) => ({ key: u.id, icon: unitIconName(g.ruleset, u.type), label: g.tt('game.attention.idle', { unit: g.unitName(u) }), go: () => g.select(u.id, { centre: true }), unit: u.id })),
     ];
     // Several worlds (K1b): another world waiting for orders comes first, one click away.
