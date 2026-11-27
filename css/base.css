@@ -773,3 +773,49 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px soli
 .settings-card { padding-top: 18px; padding-bottom: 18px; }
 input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .settings-groups label.setup-row:not(.tick) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+
+/* Trees (graphics overhaul G8): era bands, lines, the path in gold, badges, search and zoom. */
+.tree-scroll { position: relative; overflow: auto; cursor: grab; }
+.tree-scroll.dragging { cursor: grabbing; user-select: none; }
+.tree-canvas { position: relative; width: max-content; }
+.tree-grid { position: relative; z-index: 1; grid-template-columns: repeat(var(--cols), 176px); column-gap: 40px; }
+.tree-lines { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
+.tree-lines path { fill: none; stroke: var(--line); stroke-width: 2; }
+.tree-lines path.done { stroke: color-mix(in srgb, var(--line) 60%, transparent); }
+.tree-lines path.gold { stroke: var(--gold); stroke-width: 3.5; }
+.tree-band { z-index: -1; margin: 0 -20px; border-radius: 8px; background: color-mix(in srgb, var(--paper-deep) 35%, transparent); }
+.tree-band.odd { background: color-mix(in srgb, var(--paper-deep) 70%, transparent); }
+.tech { position: relative; z-index: 2; }
+.tech.onpath { border-color: var(--gold); box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 55%, transparent); }
+.tech.current { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 3px var(--gold); }
+.tech.match { box-shadow: 0 0 0 3px var(--focus); }
+.tech.faded { opacity: 0.3; }
+.tech .tech-unlocks { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.boost-badge { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--y-science); color: #fff; font: 700 11px/1 var(--font-body); }
+.boost-badge.done { background: var(--y-food); }
+.tree-civics .boost-badge { background: var(--y-culture); }
+.tree-search { min-height: 44px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; width: 220px; }
+.tree-scroll.zoomed-out .tree-canvas { zoom: 0.5; }
+
+/* The city screen (graphics overhaul G8): a 420px parchment panel beside the live map. */
+.screen.game.city-open .unit-panel {
+  width: 420px; background: var(--parchment); border-color: var(--brass);
+  --ink: var(--parchment-ink); --ink-soft: color-mix(in srgb, var(--parchment-ink) 70%, var(--parchment)); --muted: color-mix(in srgb, var(--parchment-ink) 55%, var(--parchment));
+  --line: color-mix(in srgb, var(--brass) 60%, var(--parchment)); --panel: transparent; --paper: var(--parchment); --accent: var(--danger); --accent-ink: var(--panel-ink); --accent-hover: var(--danger-bright);
+}
+.city-head { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px auto; align-items: center; gap: 6px; }
+.city-head h2 { text-align: center; }
+.city-step { border: 1px solid var(--line); color: var(--ink); }
+.city-food { margin: 6px 0 2px; font-weight: 600; font-size: 14px; }
+.city-yields { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 8px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.city-y { display: inline-flex; align-items: center; gap: 4px; }
+.city-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-bottom: 2px solid var(--line); margin: 4px 0 6px; }
+.city-tab { min-height: 44px; border: 0; border-radius: 6px 6px 0 0; background: transparent; color: var(--ink-soft); font: 600 15px/1 var(--font-heading); cursor: pointer; }
+.city-tab.on { background: var(--accent); color: var(--accent-ink); }
+.city-queue { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.city-queue li { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 2px 4px 2px 8px; border: 1px solid var(--line); border-radius: 6px; }
+.queue-arrows { display: flex; gap: 2px; }
+.queue-arrows .icon-btn { color: var(--ink); }
+.queue-arrows .icon-btn:disabled { opacity: 0.35; cursor: default; }
+.choose-item .name { display: inline-flex; align-items: center; gap: 6px; }
+.can-build { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13.5px; }

@@ -19,6 +19,20 @@ function throwaway(seed) {
  * @returns {{ win: number, lose: number, attackerLoss: number, defenderLoss: number, attack: number, defence: number }}
  *   win: chance the defender (unit, or city to 0 HP) falls; lose: chance the attacker dies.
  */
+/**
+ * The odds in plain words (graphics overhaul G8): the text key for a verdict on a
+ * battle's chances, from { win, lose } (chances, 0 to 1).
+ */
+export function verdictKey(o) {
+  const settle = (o.win ?? 0) + (o.lose ?? 0);
+  if (settle < 0.15) return 'verdict.noneFall';
+  if (o.win >= 0.85) return 'verdict.sureWin';
+  if (o.win >= 0.6) return 'verdict.likelyWin';
+  if (o.lose >= 0.85) return 'verdict.sureLose';
+  if (o.lose >= 0.6) return 'verdict.likelyLose';
+  return 'verdict.even';
+}
+
 export function estimateOdds(spec, samples = 400) {
   const rng = throwaway(0x5eed);
   const { attack, defence, ranged } = strengths(spec);

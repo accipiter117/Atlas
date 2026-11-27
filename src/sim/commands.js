@@ -26,7 +26,7 @@ const buyWithFaith = {
   apply: (s, c, e, r) => faithBuy.apply(s, c, e, r, { completeItem }),
 };
 import { attack, cityAttack, resolveBattle, autoResolveBattle, captureChoice, promote } from './combatCommands.js';
-import { foundCity, setProduction, queueProduction, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
+import { foundCity, setProduction, queueProduction, moveQueueItem, removeQueueItem, buyItem, setFocus, lockTile, unlockTile, buyTile } from './cityCommands.js';
 
 /** Every command the sim understands, by type. Each has validate (returns an error or null) and apply. */
 export const COMMANDS = Object.freeze({
@@ -41,6 +41,8 @@ export const COMMANDS = Object.freeze({
   foundCity,
   setProduction,
   queueProduction,
+  moveQueueItem,
+  removeQueueItem,
   buyItem,
   setFocus,
   lockTile,

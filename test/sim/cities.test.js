@@ -185,3 +185,22 @@ test('100 turns of AIs founding cities stays deterministic and in range', () => 
     assert.ok(d >= ruleset.tuning.cities.minCityDistance, `cities ${x.name} and ${y.name} are ${d} apart`);
   }
 });
+
+test('graphics overhaul G8: the queue can be reordered and trimmed, and bad places are refused', () => {
+  const { s, city } = withCity();
+  let st = s;
+  for (const id of ['warrior', 'settler', 'builder']) st = play(st, { type: 'queueProduction', faction: 'f0', city: city.id, item: { kind: 'unit', id } }).state;
+  const ids = (x) => x.cities[city.id].queue.map((q) => q.id);
+  const before = ids(st);
+  const moved = play(st, { type: 'moveQueueItem', faction: 'f0', city: city.id, index: before.length - 1, to: 0 }).state;
+  assert.deepEqual(ids(moved), [before.at(-1), ...before.slice(0, -1)]);
+  const trimmed = play(moved, { type: 'removeQueueItem', faction: 'f0', city: city.id, index: 0 }).state;
+  assert.deepEqual(ids(trimmed), before.slice(0, -1));
+  // The original state is untouched (commands work on a copy), and bad places are refused.
+  assert.deepEqual(ids(st), before);
+  for (const cmd of [{ type: 'moveQueueItem', index: 0, to: 9 }, { type: 'moveQueueItem', index: 1, to: 1 }, { type: 'removeQueueItem', index: 7 }, { type: 'removeQueueItem', index: -1 }]) {
+    const r = applyCommand(st, { ...cmd, faction: 'f0', city: city.id }, ruleset);
+    assert.equal(r.ok, false);
+    assert.equal(r.error.code, 'badQueueIndex');
+  }
+});

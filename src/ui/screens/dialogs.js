@@ -2,7 +2,7 @@
 // Split out of src/ui/game.js (graphics overhaul G1) with no change in behaviour:
 // everything the game screen shares comes in through `g` (see game.js).
 
-import { estimateOdds } from '../odds.js';
+import { estimateOdds, verdictKey } from '../odds.js';
 import { getModule } from '../../battles/index.js';
 
 import { el, fill } from '../hud/shared.js';
@@ -76,7 +76,7 @@ export function createDialogs(g) {
       colours: { attacker: g.colours[p.spec.attacker.faction], defender: g.colours[p.spec.defender.faction] },
       names: { attacker: sideName(p.spec.attacker.faction), defender: sideName(p.spec.defender.faction) },
       unitName: (type) => g.unitName({ type }),
-      oddsText: g.tt('tactical.odds', { win: Math.round(o.win * 100), lose: Math.round(o.lose * 100) }),
+      oddsText: g.tt('tactical.odds', { verdict: g.tt(verdictKey(o)), win: Math.round(o.win * 100), lose: Math.round(o.lose * 100) }),
       playerSide: 'attacker',
       finish: (result) => {
         g.battleScreen?.screen?.destroy?.();

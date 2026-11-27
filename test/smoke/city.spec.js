@@ -52,7 +52,7 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
 
   // The drawer: food with turns to grow, production, a ranked list with reasons.
   await expect(page.locator('.city-head h2')).toHaveText(c.name);
-  await expect(page.locator('.city-yields .food')).toContainText(/grows in \d+ turns/);
+  await expect(page.locator('[data-field="city-food"]')).toContainText(/grows in \d+ turns/);
   await expect(page.locator('.choose-item').first().locator('.reason')).not.toBeEmpty();
   // An empty entry must never show up as the word "null" in the panel.
   await expect(page.locator('.unit-panel')).not.toContainText('null');
@@ -71,6 +71,7 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
     const cc = g.view.cities.find((x) => x.faction === 'f0');
     return cc.worked.map((t) => g.view.map.hills[t] + (g.view.map.feature[t] >= 0 ? 1 : 0));
   });
+  await page.locator('[data-city-tab="citizens"]').click();
   await page.locator('[data-focus="food"]').click();
   const food = await prodOf();
   await page.locator('[data-focus="production"]').click();
@@ -93,6 +94,7 @@ test('found a city, read the drawer, focus, lock a tile, follow the advice', asy
   await page.screenshot({ path: `test-results/city-lock-${info.project.name}.png` });
 
   // Choose a warrior; it appears after enough turns.
+  await page.locator('[data-city-tab="production"]').click();
   if (!(await page.locator('.choose-item[data-item="warrior"]').count())) await page.getByRole('button', { name: /Show all/ }).click();
   await page.locator('.choose-item[data-item="warrior"]').click();
   await expect(page.locator('[data-field="building"]')).toContainText('Warrior');

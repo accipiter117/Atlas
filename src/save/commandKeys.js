@@ -8,7 +8,7 @@
 
 const TYPES = {
   endTurn: 'E', moveUnit: 'MV', fortify: 'FT', skip: 'SK', sleep: 'SL', wake: 'WK', disband: 'DB',
-  buildImprovement: 'BI', foundCity: 'FC', setProduction: 'SP', queueProduction: 'QP', buyItem: 'BY',
+  buildImprovement: 'BI', foundCity: 'FC', setProduction: 'SP', queueProduction: 'QP', moveQueueItem: 'MQ', removeQueueItem: 'RQ', buyItem: 'BY',
   setFocus: 'SF', lockTile: 'LT', unlockTile: 'UT', buyTile: 'BT', attack: 'AT', cityAttack: 'CA',
   resolveBattle: 'RB', autoResolveBattle: 'AB', captureChoice: 'CC', promote: 'PR',
   setResearch: 'SR', queueResearch: 'QR', declareWar: 'DW', setGovernment: 'SG', setPolicy: 'SY',

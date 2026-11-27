@@ -83,6 +83,38 @@ export const queueProduction = {
   },
 };
 
+/**
+ * Reorder the queue (graphics overhaul G8: the city screen's arrows): move the item at
+ * `index` to position `to`. Production carries over to whatever ends up first.
+ */
+export const moveQueueItem = {
+  validate(state, cmd) {
+    const [city, problem] = ownCity(state, cmd);
+    if (problem) return problem;
+    const n = city.queue.length;
+    if (!Number.isInteger(cmd.index) || !Number.isInteger(cmd.to) || cmd.index < 0 || cmd.to < 0 || cmd.index >= n || cmd.to >= n || cmd.index === cmd.to) return refuse('badQueueIndex', 'There is no such place in the queue');
+    return null;
+  },
+  apply(state, cmd) {
+    const q = state.cities[cmd.city].queue;
+    const [item] = q.splice(cmd.index, 1);
+    q.splice(cmd.to, 0, item);
+  },
+};
+
+/** Take an item out of the queue (graphics overhaul G8). */
+export const removeQueueItem = {
+  validate(state, cmd) {
+    const [city, problem] = ownCity(state, cmd);
+    if (problem) return problem;
+    if (!Number.isInteger(cmd.index) || cmd.index < 0 || cmd.index >= city.queue.length) return refuse('badQueueIndex', 'There is no such place in the queue');
+    return null;
+  },
+  apply(state, cmd) {
+    state.cities[cmd.city].queue.splice(cmd.index, 1);
+  },
+};
+
 /** Gold to finish the item at the head of the queue now (wonders cannot be bought). */
 export function buyPrice(ruleset, city, state = null) {
   const item = city.queue[0];

@@ -33,6 +33,7 @@ test('faction picker, faction card, a builder farms, the drawer shows buildings 
   // Found the capital: it gets a palace and, from Rome's trait, a free monument.
   await page.locator('[data-action="advice"]').click();
   await page.locator('[data-act="foundCity"]').click();
+  await page.locator('[data-city-tab="buildings"]').click();
   await expect(page.locator('[data-field="buildings"] [data-building="palace"]')).toBeVisible();
   await expect(page.locator('[data-field="buildings"] [data-building="monument"]')).toBeVisible();
   await expect(page.locator('[data-field="amenities"]')).toContainText('Amenities');

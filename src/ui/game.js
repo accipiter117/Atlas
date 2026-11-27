@@ -275,7 +275,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const { civicSuggestion, readyGovernment, emptySlot, suggestion, currentAdvice, doAdvice, renderAdvice } = createAdvice(g);
   const { renderAttention } = createAttention(g);
   const { oddsPanel, promotionPanel, renderUnitCard } = createUnitCard(g);
-  const { faithBuys, canBuildHere, mood, buildingList, renderCityDrawer } = createCityDrawer(g);
+  const { faithBuys, canBuildHere, mood, buildingList, renderCityDrawer, setCityTab } = createCityDrawer(g);
   const { showCaptureDialog, frontData, sideName, showBattleCard, openBattle, showEventDialog } = createDialogs(g);
   const { openTrees, openDiplomacy, openEmpire, openJournal, nameOf, openVictory, exportInto, openMenu, showEnd } = createOverlays(g);
 
@@ -475,7 +475,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (u) mapView.ensureVisible(u.tile);
   }
 
-  function openCityDrawer(id, { centre = false } = {}) {
+  function openCityDrawer(id, { centre = false, keepTab = false } = {}) {
+    if (!keepTab) setCityTab('production');
     setSheet(true);
     selected = null;
     openCity = id;
@@ -1039,6 +1040,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       y: () => toggleYields(),
       g: () => toggleGrid(),
       '?': () => openHelp(),
+      // Previous and next city while a city is open (graphics overhaul G8).
+      '[': () => (theCity() ? root.querySelector('[data-action="city-prev"]')?.click() : false),
+      ']': () => (theCity() ? root.querySelector('[data-action="city-next"]')?.click() : false),
       f: () => act('fortify'),
       s: () => (selectedUnit() ? act('skip') : false),
       z: () => act('sleep'),
