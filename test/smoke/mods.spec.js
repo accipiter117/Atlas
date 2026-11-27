@@ -17,7 +17,7 @@ test('Mods screen: lists mods, reports a missing base game, reorders, matches No
   await page.goto('/');
   await press(page, info, page.getByRole('button', { name: 'Mods', exact: true }));
   const rows = page.locator('.mod-row');
-  await expect(rows).toHaveCount(9);
+  await expect(rows).toHaveCount(10);
   for (const name of ['Ancient world', 'The Witcher: Northern Wars', 'Killzone: The Front', 'Lock to one era', 'No religious victory']) await expect(page.locator('.mod-list')).toContainText(name);
   await expect(page.locator('[data-field="status"]')).toHaveText(/Ready to play/);
 

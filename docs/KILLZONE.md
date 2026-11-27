@@ -333,6 +333,8 @@ Prove nothing changed for one-world games: replay the base-ancient and witcher f
 
 ### K2: The star map, fleets and landings
 
+**Progress.** K2 is done: Killzone: Extrasolar War is a conversion of its own on top of Killzone, with the star map rules, the star map screen and placeholder maps (see CHANGELOG.md and the K2 entries in docs/DECISIONS.md). Left for later phases: fleet AI (K5), supply, landing bays and anti-air batteries (K3), capturing worlds and victory (K3, K4). K3 is next.
+
 **Check on your laptop.** The Killzone game opens on a star map with the 8 territories; you can build ships, move a fleet along lanes, win a space battle, take orbit, land an army group on a world, call an orbital strike and blockade a world; the long jump takes 3 turns.
 
 ```text

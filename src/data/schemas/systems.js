@@ -99,6 +99,8 @@ export const worlds = entryType('worlds', {
   map: req(obj({ preset: ref('mapPresets'), size: ref('mapSizes'), type: ref('mapTypes') })),
   // K2: fleets in this world's orbit at the start, by side (ships are units with domain space).
   fleets: list(obj({ side: req(int(0, 1)), ships: req(list(ref('units'), { min: 1 })) })),
+  // K2: where the world sits on the star map, in percent of its width and height.
+  pos: obj({ x: req(int(0, 100)), y: req(int(0, 100)) }),
 });
 
 // K2: the star map's lanes between worlds. turns: how many system turns the jump takes;

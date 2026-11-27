@@ -148,9 +148,10 @@ def main():
         ('midway', 'station', 6, 'kw_midway', False, []),
         ('kerberos', 'asteroid', 7, 'kw_kerberos', False, []),
     ]
+    pos = {'vekta': (9, 50), 'bastion': (28, 26), 'halcyon': (28, 74), 'midway': (50, 22), 'kerberos': (50, 78), 'ardent': (72, 26), 'morrow': (72, 74), 'helghan': (91, 50)}
     world_entries = []
     for wid, kind, order, pre, start, fleets in worlds:
-        e = {'id': wid, 'nameKey': f'world.{wid}.name', 'descriptionKey': f'world.{wid}.text', 'kind': kind, 'order': order, 'map': {'preset': pre}}
+        e = {'id': wid, 'nameKey': f'world.{wid}.name', 'descriptionKey': f'world.{wid}.text', 'kind': kind, 'order': order, 'map': {'preset': pre}, 'pos': {'x': pos[wid][0], 'y': pos[wid][1]}}
         if start:
             e['start'] = True
         if fleets:
@@ -219,11 +220,17 @@ def main():
     write('scenarios.json', 'scenarios', [{'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}}])
     with open(os.path.join(ROOT, 'text', 'en-GB.json'), 'w') as f:
         f.write(json.dumps({'contentType': 'text', 'strings': names}, indent=2, ensure_ascii=False) + '\n')
+    # The star map's planets are drawn in code; these are their colours, by art id, through the skin.
+    os.makedirs(os.path.join(ROOT, 'skin'), exist_ok=True)
+    with open(os.path.join(ROOT, 'skin', 'skin.json'), 'w') as f:
+        f.write(json.dumps({'contentType': 'skin', 'values': {'placeholders': {'world': {
+            'vekta': '#4f8a5b', 'helghan': '#9a4a2c', 'halcyon': '#9a9a94', 'morrow': '#7d6a58',
+            'bastion': '#8fa3b8', 'ardent': '#b0653a', 'midway': '#a8a49a', 'kerberos': '#8a7a62', 'space': '#0b0e17', 'lane': '#5a6478'}}}}, indent=2) + '\n')
     manifest = {
         'id': 'killzone-war', 'name': 'Killzone: Extrasolar War', 'version': '0.1.0', 'type': 'conversion', 'engine': '>=0.1.0',
         'description': 'The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, and the star map rules only (Killzone Extrasolar War, phase K2).',
         'dependsOn': ['killzone'], 'loadAfter': [], 'incompatibleWith': [], 'options': [],
-        'files': ['unitClasses.json', 'units.json', 'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json'],
+        'files': ['unitClasses.json', 'units.json', 'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
         'credits': 'Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games.',
     }
     with open(os.path.join(ROOT, 'mod.json'), 'w') as f:

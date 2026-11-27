@@ -124,6 +124,9 @@ export const ICONS = {
   menu: (k) => k.rect(2, 3, 12, 2, C.cream).rect(2, 7, 12, 2, C.cream).rect(2, 11, 12, 2, C.cream),
   empire: (k) => k.poly([[2, 13], [2, 5], [5, 8], [8, 3], [11, 8], [14, 5], [14, 13]], C.gold).rect(2, 11, 12, 2, C.goldD).set(8, 6, C.red),
   diplomacy: (k) => scroll(k),
+  // Killzone Extrasolar War K2: the star map (a ringed planet) and a fleet (a ship's arrowhead).
+  starmap: (k) => k.disc(8, 8, 4.5, C.blue).disc(6.5, 6.5, 1.5, C.blueL).line(1, 11, 15, 5, C.goldL).line(1, 12, 15, 6, C.goldD).set(13, 2, C.white).set(2, 3, C.white),
+  fleet: (k) => k.poly([[2, 13], [8, 2], [14, 13], [8, 10]], C.steel).line(8, 3, 8, 10, C.steelD).rect(7, 12, 3, 2, C.goldL),
   victory: (k) => k.poly([[4, 2], [12, 2], [11, 8], [5, 8]], C.gold).rect(7, 8, 2, 3, C.goldD).rect(4, 11, 8, 2, C.goldD).rect(2, 3, 2, 3, C.goldD).rect(12, 3, 2, 3, C.goldD),
   journal: (k) => book(k),
   help: (k) => k.disc(8, 8, 6, C.blueD).rect(6, 4, 4, 1, C.white).rect(9, 5, 1, 2, C.white).rect(7, 7, 2, 2, C.white).rect(7, 11, 2, 2, C.white),

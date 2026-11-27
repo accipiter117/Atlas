@@ -6,7 +6,7 @@
 // so the screen cannot show what your units and cities cannot see. Every
 // change goes through applyCommand.
 
-import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp, scoreOf } from '../sim/index.js';
+import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp, scoreOf, sideOf, tileDistance } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 
 import { el, knownWorld } from './hud/shared.js';
@@ -28,6 +28,7 @@ import { unitIconName } from './hud/icons.js';
 import { religionName } from './religionTab.js';
 
 import { createMapView } from '../render/canvas.js';
+import { createStarMapScreen } from './hud/starMap.js';
 import { attachMapInput } from './input.js';
 import { t, formatText } from '../data/text.js';
 
@@ -182,6 +183,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get netGold() { return netGold; },
     get empireTotals() { return empireTotals; },
     get waitingWorld() { return waitingWorld; },
+    get viewWorld() { return viewWorld; },
+    // The star map (K2).
+    sideOf: (id) => sideOf(state, ruleset, id),
+    viewOf: (w) => (w === viewWorld ? v : view(state, human, ruleset, { world: w })),
+    hexDistance: (wv, a, b) => tileDistance(wv.map, a, b),
+    setSpaceTarget: (t) => setSpaceTarget(t),
     get switchWorld() { return switchWorld; },
     get worldName() { return worldName; },
     get next() { return next; },
@@ -291,6 +298,18 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const { faithBuys, canBuildHere, mood, buildingList, renderCityDrawer, setCityTab } = createCityDrawer(g);
   const { showCaptureDialog, frontData, sideName, showBattleCard, openBattle, showEventDialog } = createDialogs(g);
   const { openTrees, openDiplomacy, openEmpire, openJournal, nameOf, openVictory, exportInto, openMenu, showEnd } = createOverlays(g);
+  // K2: the star map (M, or the top bar's button) and the order waiting for a hex on a world's map.
+  const starMap = createStarMapScreen(g);
+  let spaceTarget = null;
+  function setSpaceTarget(t) {
+    spaceTarget = t;
+    root.classList.toggle('space-target', Boolean(t));
+    if (t) toast(tt(`starmap.pickHex.${t.kind}`));
+  }
+  {
+    const btn = $('[data-action="starmap"]');
+    if (btn) { btn.hidden = !v.space; btn.onclick = () => starMap.open(); }
+  }
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, civs: Object.fromEntries(v.factions.map((f) => [f.id, f.civ])), sheets });
   const { refreshMinimap, updateInsets, toggleYields, toggleGrid, hexHover, hexLeave, hexContent, openHelp } = createMapHud(g);
@@ -562,6 +581,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     mapView.setCityExtras(cityExtras(world));
     refreshMinimap();
     render();
+    if (starMap?.isOpen()) starMap.render();
   }
 
   // Raiders keep a conversion's own name for them (tuning.raiders.nameKey: Monsters in the Witcher);
@@ -987,6 +1007,14 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     hexLeave();
     const tile = mapView.tileAt(sx, sy);
     if (tile < 0) return;
+    // K2: a star map order waiting for its hex (a landing, an orbital strike, a supply drop).
+    if (spaceTarget) {
+      const t = spaceTarget;
+      setSpaceTarget(null);
+      const type = { land: 'landArmy', strike: 'orbitalStrike', drop: 'supplyDrop' }[t.kind];
+      run({ type, faction: human, fleet: t.fleet, tile, world: t.world, ...(t.kind === 'land' ? { group: t.group } : {}) });
+      return;
+    }
     if (shootingCity) {
       const c = shootingCity;
       shootingCity = null;
@@ -1164,7 +1192,13 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     if (!host) return;
     host.hidden = !state.worlds;
     if (!state.worlds) return;
-    host.replaceChildren(...state.worldOrder.map((id) => el(doc, 'button', {
+    // With many worlds (the star map, K2), only those where you have bases or troops, and the one on screen.
+    const shown = state.worldOrder.length <= 3 ? state.worldOrder : state.worldOrder.filter((id) => {
+      if (id === viewWorld) return true;
+      const wv = id === viewWorld ? v : view(state, human, ruleset, { world: id });
+      return wv.cities.some((c) => c.faction === human) || wv.units.some((u) => u.faction === human);
+    });
+    host.replaceChildren(...shown.map((id) => el(doc, 'button', {
       type: 'button', class: 'world-btn', dataset: { world: id }, 'aria-pressed': String(id === viewWorld),
       title: tt('game.worldShow', { world: worldName(id) }), onclick: () => switchWorld(id),
     }, worldName(id))));
@@ -1210,6 +1244,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       v: () => openVictory(),
       y: () => toggleYields(),
       g: () => toggleGrid(),
+      m: () => (v.space ? (starMap.isOpen() ? starMap.close() : starMap.open()) : false),
       w: () => {
         if (!state.worlds) return false;
         const order = state.worldOrder;
@@ -1226,6 +1261,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       // Escape closes whatever is open, the top-most first: a sheet, the faction card, then the selection.
       Escape: () => {
         hideTooltip();
+        if (spaceTarget) { setSpaceTarget(null); return true; }
         if (mapMenu) { closeMapMenu(); return true; }
         if (!panel.hidden) { panel.hidden = true; return true; }
         if (!overlay.hidden) { overlay.hidden = true; return true; }

@@ -1,0 +1,19 @@
+{
+  "contentType": "skin",
+  "values": {
+    "placeholders": {
+      "world": {
+        "vekta": "#4f8a5b",
+        "helghan": "#9a4a2c",
+        "halcyon": "#9a9a94",
+        "morrow": "#7d6a58",
+        "bastion": "#8fa3b8",
+        "ardent": "#b0653a",
+        "midway": "#a8a49a",
+        "kerberos": "#8a7a62",
+        "space": "#0b0e17",
+        "lane": "#5a6478"
+      }
+    }
+  }
+}

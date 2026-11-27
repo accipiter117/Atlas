@@ -1,5 +1,17 @@
 # Changelog
 
+## Killzone Extrasolar War K2: the star map, fleets and landings
+
+A new conversion, Killzone: Extrasolar War, takes the Killzone war across eight worlds linked by space lanes. Killzone: The Front is unchanged.
+
+What you can try: in New game, choose "Killzone: Extrasolar War" and play the ISA or the Helghast. Press M (or the ringed planet in the top bar) for the star map: Vekta and Helghan at either end, a moon and a station each, and Midway Relay and the Kerberos Belt neutral in between. Click a world for its card and fleets, click your fleet for its orders. Move it along a lane (one a turn; Vekta to Helghan is a three-turn jump for cruisers only, and the enemy sees it coming); where enemy warships wait, you see the odds first and the battle is fought out at once. Embark up to four units standing at or beside your bases, fly them somewhere you hold the orbit, and land them at one of your bases or, with dropships, on open ground (the map switches to that world: click the hex). Cruisers can strike an enemy hex from orbit or drop supplies (each once a turn), and a fleet can blockade a world to cut its credits. Bases on home worlds and stations build ships, which join the fleet in orbit.
+
+- Placeholder maps for all eight worlds (real ones come in K4), drawn by `tools/gen/killzone-war.py`.
+- The world switcher lists only worlds where you have bases or troops once a game has more than three.
+- Fixed: the fog of war drew a darker band along the seams between map chunks (from G9).
+- Not yet: the computer does not use fleets (K5); supply, landing bays and anti-air batteries come with K3; capturing a whole world and victory with K3 and K4.
+- Tests: every star map order and refusal, odds that never touch the game, the long jump, blockade costs, ship building, a scripted 60-turn invasion of Morrow that replays exactly from its log, 40 computer turns across six worlds with no refused orders, and a browser test (embark, move, land by clicking a hex). Screenshots in `docs/shots/K2/`.
+
 ## Killzone Extrasolar War K1b: the world switcher and a two-world Killzone game
 
 You can now play a Killzone war on two worlds at once and move between them.

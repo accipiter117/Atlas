@@ -18,7 +18,8 @@
     "worlds.json",
     "lanes.json",
     "scenarios.json",
-    "text/en-GB.json"
+    "text/en-GB.json",
+    "skin/skin.json"
   ],
   "credits": "Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games."
 }

@@ -392,6 +392,9 @@ export function createTerrainLayer(doc, initialMap, ruleset, registry) {
         else if (er > es) r = -q - rs;
         const c = q + Math.floor(r / 2);
         if (r < 0 || r >= H || c < 0 || c >= W) continue;
+        // Only this chunk's own hexes: neighbouring chunks overlap by a column and a row, and
+        // fog is see-through, so drawing a hex twice would darken it (a band at every seam).
+        if (c < cx * CHUNK || c >= (cx + 1) * CHUNK || r < cy * CHUNK || r >= (cy + 1) * CHUNK) continue;
         const i = r * W + c;
         if (fog[i] === 0 || map.terrain[i] < 0) continue;
         const own = fog[i] === 1;
