@@ -9,6 +9,10 @@ Run: python3 tools/gen/killzone-war.py
 import json
 import os
 import random
+import sys
+
+sys.path.insert(0, os.path.dirname(__file__))
+import killzone_war_k4 as k4mod  # noqa: E402
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..', 'rules', 'killzone-war')
 LEGEND = {
@@ -16,7 +20,16 @@ LEGEND = {
     'h': {'terrain': 'plains', 'hills': True}, 'g': {'terrain': 'grassland', 'hills': True}, 'd': {'terrain': 'desert', 'hills': True},
     't': {'terrain': 'tundra', 'hills': True}, 'f': {'terrain': 'grassland', 'feature': 'forest'}, 'F': {'terrain': 'plains', 'feature': 'forest'},
     'm': {'terrain': 'plains', 'feature': 'marsh'}, '^': {'terrain': 'mountain'}, '~': {'terrain': 'coast'}, 'o': {'terrain': 'ocean'}, 'l': {'terrain': 'lake'},
+    'P': {'terrain': 'desert', 'resource': 'petrusite'}, 'U': {'terrain': 'plains', 'resource': 'fuel'},
 }
+
+
+def put(rows, c, r, ch):
+    """Set one map letter (resources next to a base, so its borders take them in)."""
+    cc, rr = nearest_land(rows, c, r)
+    row = list(rows[rr])
+    row[cc] = ch
+    rows[rr] = ''.join(row)
 
 
 def blob(w, h, rng, land, sea='o', edge='~', fill=0.62, scatter=()):
@@ -140,42 +153,52 @@ def main():
     presets = []
     # Vekta: temperate fields and forests, ISA home.
     v = blob(36, 24, rng, '.', scatter=[('f', 0.16), (',', 0.18), ('g', 0.08), ('l', 0.02)])
+    put(v, 11, 10, 'U')
+    put(v, 21, 15, 'U')
     presets.append(preset('kw_vekta', v, 'side0',
-                          place(v, [(12, 11, {'pop': 4}), (22, 7, {'pop': 3}), (20, 16, {'pop': 3})], 0),
-                          place(v, [(13, 11, {'type': 'warrior'}), (21, 7, {'type': 'archer'}), (19, 16, {'type': 'spearman'}), (12, 12, {'type': 'warrior'})], 0)))
+                          place(v, [(12, 11, {'pop': 4, 'civ': 'isa'}), (22, 7, {'pop': 3, 'civ': 'home_guard'}), (20, 16, {'pop': 3, 'civ': 'isa_fleet'})], 0),
+                          place(v, [(13, 11, {'type': 'rifle_squad', 'civ': 'isa'}), (21, 7, {'type': 'home_guard_militia', 'civ': 'home_guard'}), (19, 16, {'type': 'rifle_squad', 'civ': 'isa_fleet'}),
+                                    (12, 12, {'type': 'combat_engineers', 'civ': 'isa'}), (22, 8, {'type': 'rifle_squad', 'civ': 'home_guard'}), (20, 17, {'type': 'recon_team', 'civ': 'isa_fleet'})], 0)))
     # Helghan: ash plains, dust and storms, Helghast home.
     hgl = blob(36, 24, rng, ':', scatter=[(';', 0.2), ('d', 0.12), ('t', 0.06), ('^', 0.05), (',', 0.1)])
+    put(hgl, 24, 11, 'P')
+    put(hgl, 12, 7, 'P')
+    put(hgl, 16, 16, 'P')
     presets.append(preset('kw_helghan', hgl, 'side1',
-                          place(hgl, [(23, 12, {'pop': 4}), (13, 7, {'pop': 3}), (15, 17, {'pop': 3})], 1),
-                          place(hgl, [(22, 12, {'type': 'warrior'}), (14, 7, {'type': 'archer'}), (16, 17, {'type': 'spearman'}), (23, 13, {'type': 'warrior'})], 1)))
+                          place(hgl, [(23, 12, {'pop': 4, 'civ': 'helghast'}), (13, 7, {'pop': 3, 'civ': 'stahl'}), (15, 17, {'pop': 3, 'civ': 'helghast_navy'})], 1),
+                          place(hgl, [(22, 12, {'type': 'assault_trooper', 'civ': 'helghast'}), (14, 7, {'type': 'assault_trooper', 'civ': 'stahl'}), (16, 17, {'type': 'assault_trooper', 'civ': 'helghast_navy'}),
+                                    (23, 13, {'type': 'pioneer_squad', 'civ': 'helghast'}), (13, 8, {'type': 'pioneer_squad', 'civ': 'stahl'}), (15, 18, {'type': 'scout_sniper', 'civ': 'helghast_navy'})], 1)))
     # Halcyon: a grey moon of craters, ISA mining outposts.
     hal = blob(24, 18, rng, ';', sea='o', edge='o', fill=0.7, scatter=[('t', 0.25), (':', 0.1)])
-    presets.append(preset('kw_halcyon', hal, 'side0', place(hal, [(12, 9, {'pop': 2})], 0), place(hal, [(13, 9, {'type': 'warrior'})], 0)))
+    put(hal, 11, 9, 'U')
+    presets.append(preset('kw_halcyon', hal, 'side0', place(hal, [(12, 9, {'pop': 2, 'civ': 'home_guard'})], 0), place(hal, [(13, 9, {'type': 'rifle_squad', 'civ': 'home_guard'})], 0)))
     # Morrow: penal mines on thin-aired plains, Helghast labour camps.
     mor = blob(24, 18, rng, ',', sea='o', edge='o', fill=0.7, scatter=[('h', 0.2), (':', 0.12), ('^', 0.04)])
-    presets.append(preset('kw_morrow', mor, 'side1', place(mor, [(11, 9, {'pop': 2})], 1), place(mor, [(12, 9, {'type': 'warrior'})], 1)))
+    presets.append(preset('kw_morrow', mor, 'side1', place(mor, [(11, 9, {'pop': 2, 'civ': 'helghast'})], 1), place(mor, [(12, 9, {'type': 'assault_trooper', 'civ': 'helghast'})], 1)))
     # Bastion Station and Ardent Platform: decks.
     def reactor(rows, c, r):
         cc, rr = nearest_land(rows, c, r)
         return [{'site': 'reactor', 'col': cc, 'row': rr}]
     bas = decks(16, 12, rng)
-    presets.append(preset('kw_bastion', bas, 'side0', place(bas, [(7, 6, {'pop': 1})], 0), place(bas, [(8, 6, {'type': 'warrior'})], 0), reactor(bas, 11, 5)))
+    presets.append(preset('kw_bastion', bas, 'side0', place(bas, [(7, 6, {'pop': 1, 'civ': 'isa_fleet'})], 0), place(bas, [(8, 6, {'type': 'rifle_squad', 'civ': 'isa_fleet'})], 0), reactor(bas, 11, 5)))
     ard = decks(16, 12, rng)
-    presets.append(preset('kw_ardent', ard, 'side1', place(ard, [(8, 6, {'pop': 1})], 1), place(ard, [(9, 6, {'type': 'warrior'})], 1), reactor(ard, 4, 5)))
+    presets.append(preset('kw_ardent', ard, 'side1', place(ard, [(8, 6, {'pop': 1, 'civ': 'helghast_navy'})], 1), place(ard, [(9, 6, {'type': 'assault_trooper', 'civ': 'helghast_navy'})], 1), reactor(ard, 4, 5)))
     # Midway Relay: neutral decks round a reactor. Kerberos Belt: neutral rocks with a refinery to claim.
     mid = decks(14, 10, rng)
     presets.append(preset('kw_midway', mid, 'neutral', [], [], reactor(mid, 7, 5)))
     ker = rocks(18, 12, rng)
+    for (c, r) in [(3, 3), (9, 2), (14, 4), (4, 8)]:
+        put(ker, c, r, 'P')
     kc, kr = nearest_land(ker, 10, 8)
     presets.append(preset('kw_kerberos', ker, 'neutral', [], [], [{'site': 'refinery', 'col': kc, 'row': kr}]))
 
     worlds = [
-        ('vekta', 'homeworld', 0, 'kw_vekta', True, [{'side': 0, 'ships': ['isa_cruiser', 'isa_destroyer', 'isa_intruder', 'isa_transport']}]),
-        ('helghan', 'homeworld', 1, 'kw_helghan', False, [{'side': 1, 'ships': ['helghast_cruiser', 'helghast_destroyer', 'helghast_dropship', 'helghast_transport']}]),
+        ('vekta', 'homeworld', 0, 'kw_vekta', True, [{'side': 0, 'faction': 'isa_fleet', 'ships': ['isa_cruiser', 'isa_destroyer', 'isa_intruder', 'isa_transport']}]),
+        ('helghan', 'homeworld', 1, 'kw_helghan', False, [{'side': 1, 'faction': 'helghast_navy', 'ships': ['helghast_cruiser', 'helghast_destroyer', 'helghast_dropship', 'helghast_transport']}]),
         ('halcyon', 'moon', 2, 'kw_halcyon', False, []),
         ('morrow', 'moon', 3, 'kw_morrow', False, []),
-        ('bastion', 'station', 4, 'kw_bastion', False, [{'side': 0, 'ships': ['isa_destroyer']}]),
-        ('ardent', 'station', 5, 'kw_ardent', False, [{'side': 1, 'ships': ['helghast_destroyer']}]),
+        ('bastion', 'station', 4, 'kw_bastion', False, [{'side': 0, 'faction': 'isa_fleet', 'ships': ['isa_destroyer']}]),
+        ('ardent', 'station', 5, 'kw_ardent', False, [{'side': 1, 'faction': 'helghast_navy', 'ships': ['helghast_destroyer']}]),
         ('midway', 'station', 6, 'kw_midway', False, []),
         ('kerberos', 'asteroid', 7, 'kw_kerberos', False, []),
     ]
@@ -217,9 +240,15 @@ def main():
              'validTerrain': ['grassland', 'plains', 'desert', 'tundra', 'snow'], 'validFeatures': FEATURES, 'war': war}
         if defence:
             e['defence'] = defence
+        if k4mod.WORK_TECH.get(wid_):
+            e['requires'] = {'tech': k4mod.WORK_TECH[wid_]}
         improvement_entries.append(e)
+    # K4: the extractor works petrusite and fuel (inside a base's borders, so the base can use it).
+    improvement_entries.append({'id': 'extractor', 'nameKey': 'improvement.extractor.name', 'descriptionKey': 'improvement.extractor.text', 'turns': 3, 'charges': 1,
+                                'needsResource': True, 'yields': {'production': 1}, 'requires': {'tech': 'deep_core_extraction'}})
+    improvement_entries.insert(0, k4mod.wipe(keep=['farm']))
     unit_entries = [{'id': s['id'], 'nameKey': f"unit.{s['id']}.name", 'descriptionKey': f"unit.{s['id']}.text", 'class': s['cls'], 'domain': 'space', 'strength': s['strength'],
-                     'moves': 1, 'cost': s['cost'], 'upkeep': 2, 'requires': {'faction': s['faction']}, 'space': s['space'], 'tags': ['ship']} for s in ships]
+                     'moves': 1, 'cost': s['cost'], 'upkeep': 2, 'requires': {'faction': s['faction']}, 'space': s['space'], 'tags': ['ship', 'dropship'] if s['cls'] == 'dropship' else ['ship']} for s in ships]
 
     names = {
         'world.vekta.name': 'Vekta', 'world.vekta.text': 'The ISA home world: temperate fields, cities and coast.',
@@ -244,11 +273,20 @@ def main():
     for p in presets:
         wid = p['id'][3:]
         names[f"mapPreset.{p['id']}.name"] = names[f'world.{wid}.name'] + ' (placeholder)'
-        names[f"mapPreset.{p['id']}.text"] = 'A stand-in map until K4 draws this world.'
+        names[f"mapPreset.{p['id']}.text"] = 'This world\'s map: generated from a fixed seed by tools/gen/killzone-war.py.'
+        names[f"mapPreset.{p['id']}.name"] = names[f'world.{wid}.name']
 
     for wid_, turns, defence, war, name, text in WORKS:
         names[f'improvement.{wid_}.name'] = name
         names[f'improvement.{wid_}.text'] = text
+    names['improvement.extractor.name'] = 'Extractor'
+    names['improvement.extractor.text'] = 'Works petrusite or fuel inside a base\'s borders, so the base can use it. +1 industry.'
+    k4files, k4art = k4mod.k4({}, None, names)
+    k4units = k4files.pop('units.json')[1]
+    # Units: clear the ancient ones (keeping the ships), add the ships, then the war's own and the ships' requirements.
+    unit_entries = [k4units[0]] + unit_entries + k4units[1:]
+    names.update(k4mod.ERA_NAMES)
+    names.update(k4mod.YIELD_NAMES)
     names['site.reactor.name'] = 'Reactor'
     names['site.reactor.text'] = 'The heart of a station: whoever holds it holds the station.'
     os.makedirs(os.path.join(ROOT, 'text'), exist_ok=True)
@@ -262,10 +300,13 @@ def main():
     write('lanes.json', 'lanes', lane_entries)
     write('unitClasses.json', 'unitClasses', classes)
     write('units.json', 'units', unit_entries)
+    for fname, (ctype, entries) in k4files.items():
+        write(fname, ctype, entries)
     write('improvements.json', 'improvements', improvement_entries)
     write('sites.json', 'sites', [{'id': 'reactor', 'nameKey': 'site.reactor.name', 'descriptionKey': 'site.reactor.text', 'icon': 'site.power_plant', 'effects': [{'effect': 'yieldBonus', 'yield': 'production', 'amount': 1}]}])
     with open(os.path.join(ROOT, 'tuning.json'), 'w') as f:
-        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True}}, indent=2) + '\n')
+        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'setup.maxAis': 5,
+                                                             'raiders.units': [{'fromTurn': 0, 'unit': 'scout_sniper'}]}}, indent=2) + '\n')
     write('scenarios.json', 'scenarios', [{'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}}])
     with open(os.path.join(ROOT, 'text', 'en-GB.json'), 'w') as f:
         f.write(json.dumps({'contentType': 'text', 'strings': names}, indent=2, ensure_ascii=False) + '\n')
@@ -274,12 +315,17 @@ def main():
     with open(os.path.join(ROOT, 'skin', 'skin.json'), 'w') as f:
         f.write(json.dumps({'contentType': 'skin', 'values': {'placeholders': {'world': {
             'vekta': '#4f8a5b', 'helghan': '#9a4a2c', 'halcyon': '#9a9a94', 'morrow': '#7d6a58',
-            'bastion': '#8fa3b8', 'ardent': '#b0653a', 'midway': '#a8a49a', 'kerberos': '#8a7a62', 'space': '#0b0e17', 'lane': '#5a6478'}}}}, indent=2) + '\n')
+            'bastion': '#8fa3b8', 'ardent': '#b0653a', 'midway': '#a8a49a', 'kerberos': '#8a7a62', 'space': '#0b0e17', 'lane': '#5a6478'}},
+            # K4: every unit of every faction wears its side's sprite.
+            'art': k4art}}, indent=2) + '\n')
     manifest = {
         'id': 'killzone-war', 'name': 'Killzone: Extrasolar War', 'version': '0.1.0', 'type': 'conversion', 'engine': '>=0.1.0',
-        'description': 'The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, the star map, supply, war infrastructure and theatre rules (Killzone Extrasolar War, phases K2 and K3).',
+        'description': 'The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Six splinter factions, the war\'s own units, bases, projects, research and doctrines (Killzone Extrasolar War, phases K2 to K4).',
         'dependsOn': ['killzone'], 'loadAfter': [], 'incompatibleWith': [], 'options': [],
-        'files': ['tuning.json', 'sites.json', 'improvements.json', 'unitClasses.json', 'units.json', 'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
+        # Order matters: the ancient trees go first (cascading what needs them), then the war's own content.
+        'files': ['tuning.json', 'sites.json', 'techs.json', 'civics.json', 'governments.json', 'policies.json', 'improvements.json', 'resources.json',
+                  'buildings.json', 'wonders.json', 'unitClasses.json', 'units.json', 'beliefs.json', 'factions.json', 'leaders.json', 'cityNames.json',
+                  'mapPresets.json', 'worlds.json', 'lanes.json', 'scenarios.json', 'text/en-GB.json', 'skin/skin.json'],
         'credits': 'Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games.',
     }
     with open(os.path.join(ROOT, 'mod.json'), 'w') as f:

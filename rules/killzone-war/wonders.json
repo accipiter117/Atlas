@@ -1,0 +1,10 @@
+{
+  "contentType": "wonders",
+  "entries": [
+    {"id": "arc_cannon_array", "nameKey": "wonder.arc_cannon_array.name", "descriptionKey": "wonder.arc_cannon_array.text", "era": "medieval", "cost": 600, "upkeep": 0, "icon": "wonder.arc_cannon_array", "project": true, "requires": {"tech": "orbital_defences", "side": 1}, "orbitalGuns": 40, "builtAt": ["homeworld"]},
+    {"id": "orbital_defence_grid", "nameKey": "wonder.orbital_defence_grid.name", "descriptionKey": "wonder.orbital_defence_grid.text", "era": "medieval", "cost": 600, "upkeep": 0, "icon": "wonder.orbital_defence_grid", "project": true, "requires": {"tech": "orbital_defences", "side": 0}, "orbitalGuns": 40, "builtAt": ["homeworld"]},
+    {"id": "new_sun_project", "nameKey": "wonder.new_sun_project.name", "descriptionKey": "wonder.new_sun_project.text", "era": "medieval", "cost": 700, "upkeep": 0, "icon": "wonder.new_sun_project", "project": true, "requires": {"tech": "capital_ship_design", "side": 0}, "effects": [{"effect": "freeUnit", "unit": "new_sun_cruiser", "count": 1}], "builtAt": ["homeworld", "station"]},
+    {"id": "stahl_dreadnought_project", "nameKey": "wonder.stahl_dreadnought_project.name", "descriptionKey": "wonder.stahl_dreadnought_project.text", "era": "medieval", "cost": 700, "upkeep": 0, "icon": "wonder.stahl_dreadnought_project", "project": true, "requires": {"tech": "capital_ship_design", "side": 1}, "effects": [{"effect": "freeUnit", "unit": "stahl_dreadnought", "count": 1}], "builtAt": ["homeworld", "station"]},
+    {"id": "total_mobilisation", "nameKey": "wonder.total_mobilisation.name", "descriptionKey": "wonder.total_mobilisation.text", "era": "medieval", "cost": 500, "upkeep": 0, "icon": "wonder.total_mobilisation", "project": true, "requires": {"tech": "mass_production"}, "effects": [{"effect": "costPercent", "target": "militia", "amount": -50, "scope": "everyCity"}]}
+  ]
+}

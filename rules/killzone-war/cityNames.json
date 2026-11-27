@@ -1,0 +1,9 @@
+{
+  "contentType": "cityNames",
+  "entries": [
+    {"id": "k_home_guard", "names": ["Kessler Ridge", "Fort Tarsus", "Highlands Post", "Rook Valley", "Brennan Fields", "Old Port", "Cedar Line", "Mercy Hill", "Lantern Bay", "Greywater"], "tags": ["killzone"]},
+    {"id": "k_isa_fleet", "names": ["Cobalt Bay", "Tether Point", "Skyhook", "Beacon Station", "Drydock Nine", "Signal Rock", "Farwatch", "Anchor Yard", "Long Reach", "Halo Pier"], "tags": ["killzone"]},
+    {"id": "k_stahl", "names": ["Stahl Foundry", "Arc Works", "Cinder Mill", "Smelter Row", "Ironvale", "Coil Yard", "Slag Heights", "Forge Delta", "Petra Shaft", "Anvil Point"], "tags": ["killzone"]},
+    {"id": "k_helghast_navy", "names": ["Orlock Yards", "Black Dock", "Gantry Six", "Riven Spire", "Void Gate", "Ashen Moor", "Hull Point", "Storm Mast", "Dark Hangar", "Grey Tide"], "tags": ["killzone"]}
+  ]
+}

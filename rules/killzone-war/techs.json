@@ -1,0 +1,31 @@
+{
+  "contentType": "techs",
+  "entries": [
+    {"op": "remove", "where": {"id": {"notIn": ["__none__"]}}, "cascade": true},
+    {"id": "field_logistics", "nameKey": "tech.field_logistics.name", "era": "ancient", "cost": 25, "requires": [], "treePos": {"col": 0, "row": 0}, "unlocks": {"buildings": ["med_centre"], "improvements": ["field_hospital"]}},
+    {"id": "ballistic_optics", "nameKey": "tech.ballistic_optics.name", "era": "ancient", "cost": 25, "requires": [], "treePos": {"col": 0, "row": 1}, "unlocks": {"units": ["support_gunners", "helghast_heavy", "isa_sniper"]}},
+    {"id": "combat_engineering", "nameKey": "tech.combat_engineering.name", "era": "ancient", "cost": 25, "requires": [], "treePos": {"col": 0, "row": 2}, "unlocks": {"buildings": ["bunker_complex"], "improvements": ["minefield"]}},
+    {"id": "encrypted_comms", "nameKey": "tech.encrypted_comms.name", "era": "ancient", "cost": 25, "requires": [], "treePos": {"col": 0, "row": 3}, "unlocks": {"buildings": ["comms_centre"], "improvements": ["comms_relay"]}},
+    {"id": "hydroponics", "nameKey": "tech.hydroponics.name", "era": "ancient", "cost": 25, "requires": [], "treePos": {"col": 0, "row": 4}},
+    {"id": "crawler_drives", "nameKey": "tech.crawler_drives.name", "era": "ancient", "cost": 35, "requires": ["field_logistics"], "treePos": {"col": 1, "row": 0}, "unlocks": {"units": ["apc", "armoured_walker"], "buildings": ["vehicle_depot"]}},
+    {"id": "rocketry", "nameKey": "tech.rocketry.name", "era": "ancient", "cost": 35, "requires": ["ballistic_optics"], "treePos": {"col": 1, "row": 1}, "unlocks": {"units": ["rocket_team", "arc_trooper"]}},
+    {"id": "prefab_fortifications", "nameKey": "tech.prefab_fortifications.name", "era": "ancient", "cost": 35, "requires": ["combat_engineering"], "treePos": {"col": 1, "row": 2}, "unlocks": {"improvements": ["mg_nest", "bunker"]}},
+    {"id": "propaganda_broadcasts", "nameKey": "tech.propaganda_broadcasts.name", "era": "ancient", "cost": 35, "requires": ["encrypted_comms"], "treePos": {"col": 1, "row": 3}, "unlocks": {"buildings": ["propaganda_office"]}},
+    {"id": "deep_core_extraction", "nameKey": "tech.deep_core_extraction.name", "era": "ancient", "cost": 35, "requires": ["hydroponics"], "treePos": {"col": 1, "row": 4}, "unlocks": {"buildings": ["petrusite_refinery", "fuel_depot"], "improvements": ["extractor"]}},
+    {"id": "powered_armour", "nameKey": "tech.powered_armour.name", "era": "classical", "cost": 85, "requires": ["crawler_drives", "rocketry"], "treePos": {"col": 2, "row": 0}, "unlocks": {"buildings": ["armoury"]}},
+    {"id": "fire_control", "nameKey": "tech.fire_control.name", "era": "classical", "cost": 85, "requires": ["rocketry"], "treePos": {"col": 2, "row": 1}, "unlocks": {"units": ["field_artillery", "arc_artillery"], "improvements": ["artillery_battery"]}},
+    {"id": "orbital_drop", "nameKey": "tech.orbital_drop.name", "era": "classical", "cost": 85, "requires": ["prefab_fortifications"], "treePos": {"col": 2, "row": 2}, "unlocks": {"buildings": ["dropship_pad"], "improvements": ["landing_bay"], "units": ["isa_intruder", "helghast_dropship"]}},
+    {"id": "logistics_networks", "nameKey": "tech.logistics_networks.name", "era": "classical", "cost": 85, "requires": ["propaganda_broadcasts", "field_logistics"], "treePos": {"col": 2, "row": 3}, "unlocks": {"buildings": ["logistics_hub"], "improvements": ["supply_depot", "command_post"]}},
+    {"id": "cruiser_yards", "nameKey": "tech.cruiser_yards.name", "era": "classical", "cost": 85, "requires": ["deep_core_extraction"], "treePos": {"col": 2, "row": 4}, "unlocks": {"buildings": ["shipyard"], "units": ["isa_cruiser", "helghast_cruiser", "isa_destroyer", "helghast_destroyer"]}},
+    {"id": "heavy_armour", "nameKey": "tech.heavy_armour.name", "era": "classical", "cost": 95, "requires": ["powered_armour", "fire_control"], "treePos": {"col": 3, "row": 0}, "unlocks": {"units": ["tank_platoon", "stahl_battle_suit"]}},
+    {"id": "jump_packs", "nameKey": "tech.jump_packs.name", "era": "classical", "cost": 95, "requires": ["powered_armour"], "treePos": {"col": 3, "row": 1}, "unlocks": {"units": ["jetpack_trooper"]}},
+    {"id": "anti_air_systems", "nameKey": "tech.anti_air_systems.name", "era": "classical", "cost": 95, "requires": ["orbital_drop"], "treePos": {"col": 3, "row": 2}, "unlocks": {"buildings": ["orbital_defence_gun"], "improvements": ["anti_air_battery"]}},
+    {"id": "industrial_combines", "nameKey": "tech.industrial_combines.name", "era": "classical", "cost": 95, "requires": ["logistics_networks"], "treePos": {"col": 3, "row": 3}, "unlocks": {"buildings": ["factory", "power_plant"]}},
+    {"id": "officer_academies", "nameKey": "tech.officer_academies.name", "era": "classical", "cost": 95, "requires": ["logistics_networks"], "treePos": {"col": 3, "row": 4}, "unlocks": {"buildings": ["field_academy"]}},
+    {"id": "arc_weaponry", "nameKey": "tech.arc_weaponry.name", "era": "medieval", "cost": 170, "requires": ["heavy_armour"], "treePos": {"col": 4, "row": 0}, "unlocks": {"improvements": ["arc_tower"]}},
+    {"id": "covert_operations", "nameKey": "tech.covert_operations.name", "era": "medieval", "cost": 170, "requires": ["jump_packs", "encrypted_comms"], "treePos": {"col": 4, "row": 1}, "unlocks": {"units": ["shadow_marshals", "intelligence_cell"]}},
+    {"id": "orbital_defences", "nameKey": "tech.orbital_defences.name", "era": "medieval", "cost": 170, "requires": ["anti_air_systems"], "treePos": {"col": 4, "row": 2}, "unlocks": {"wonders": ["arc_cannon_array", "orbital_defence_grid"]}},
+    {"id": "mass_production", "nameKey": "tech.mass_production.name", "era": "medieval", "cost": 170, "requires": ["industrial_combines"], "treePos": {"col": 4, "row": 3}, "unlocks": {"wonders": ["total_mobilisation"]}},
+    {"id": "capital_ship_design", "nameKey": "tech.capital_ship_design.name", "era": "medieval", "cost": 180, "requires": ["orbital_defences", "cruiser_yards"], "treePos": {"col": 5, "row": 3}, "unlocks": {"wonders": ["new_sun_project", "stahl_dreadnought_project"]}}
+  ]
+}

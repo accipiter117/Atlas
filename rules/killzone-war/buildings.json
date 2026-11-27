@@ -1,0 +1,22 @@
+{
+  "contentType": "buildings",
+  "entries": [
+    {"op": "remove", "where": {"id": {"notIn": ["palace"]}}, "cascade": true},
+    {"id": "barracks", "nameKey": "building.barracks.name", "descriptionKey": "building.barracks.text", "cost": 55, "upkeep": 1, "icon": "building.barracks", "yields": {"production": 1}, "effects": [{"effect": "costPercent", "target": "infantry", "amount": -15}]},
+    {"id": "vehicle_depot", "nameKey": "building.vehicle_depot.name", "descriptionKey": "building.vehicle_depot.text", "cost": 90, "upkeep": 1, "icon": "building.vehicle_depot", "effects": [{"effect": "costPercent", "target": "vehicle", "amount": -15}], "requires": {"tech": "crawler_drives"}},
+    {"id": "armoury", "nameKey": "building.armoury.name", "descriptionKey": "building.armoury.text", "cost": 110, "upkeep": 2, "icon": "building.armoury", "yields": {"production": 1}, "effects": [{"effect": "healBonus", "amount": 5}], "requires": {"tech": "powered_armour"}},
+    {"id": "factory", "nameKey": "building.factory.name", "descriptionKey": "building.factory.text", "cost": 150, "upkeep": 2, "icon": "building.factory", "yields": {"production": 3}, "requires": {"tech": "industrial_combines"}},
+    {"id": "petrusite_refinery", "nameKey": "building.petrusite_refinery.name", "descriptionKey": "building.petrusite_refinery.text", "cost": 120, "upkeep": 1, "icon": "building.petrusite_refinery", "yields": {"production": 2, "gold": 1}, "requires": {"tech": "deep_core_extraction"}},
+    {"id": "fuel_depot", "nameKey": "building.fuel_depot.name", "descriptionKey": "building.fuel_depot.text", "cost": 100, "upkeep": 1, "icon": "building.fuel_depot", "yields": {"gold": 2}, "requires": {"tech": "deep_core_extraction"}},
+    {"id": "power_plant", "nameKey": "building.power_plant.name", "descriptionKey": "building.power_plant.text", "cost": 130, "upkeep": 2, "icon": "building.power_plant", "yields": {"production": 2, "science": 1}, "requires": {"tech": "industrial_combines"}},
+    {"id": "comms_centre", "nameKey": "building.comms_centre.name", "descriptionKey": "building.comms_centre.text", "cost": 80, "upkeep": 1, "icon": "building.comms_centre", "yields": {"science": 3}, "requires": {"tech": "encrypted_comms"}},
+    {"id": "propaganda_office", "nameKey": "building.propaganda_office.name", "descriptionKey": "building.propaganda_office.text", "cost": 80, "upkeep": 1, "icon": "building.propaganda_office", "yields": {"faith": 2, "culture": 1}, "requires": {"tech": "propaganda_broadcasts"}},
+    {"id": "field_academy", "nameKey": "building.field_academy.name", "descriptionKey": "building.field_academy.text", "cost": 120, "upkeep": 2, "icon": "building.field_academy", "yields": {"culture": 2, "science": 1}, "requires": {"tech": "officer_academies"}},
+    {"id": "med_centre", "nameKey": "building.med_centre.name", "descriptionKey": "building.med_centre.text", "cost": 70, "upkeep": 1, "icon": "building.med_centre", "effects": [{"effect": "healBonus", "amount": 10}], "requires": {"tech": "field_logistics"}},
+    {"id": "logistics_hub", "nameKey": "building.logistics_hub.name", "descriptionKey": "building.logistics_hub.text", "cost": 110, "upkeep": 1, "icon": "building.logistics_hub", "supplyRange": 2, "yields": {"food": 1}, "requires": {"tech": "logistics_networks"}},
+    {"id": "shipyard", "nameKey": "building.shipyard.name", "descriptionKey": "building.shipyard.text", "cost": 140, "upkeep": 2, "icon": "building.shipyard", "builtAt": ["homeworld", "station"], "yields": {"production": 1}, "requires": {"tech": "cruiser_yards"}},
+    {"id": "dropship_pad", "nameKey": "building.dropship_pad.name", "descriptionKey": "building.dropship_pad.text", "cost": 90, "upkeep": 1, "icon": "building.dropship_pad", "effects": [{"effect": "costPercent", "target": "dropship", "amount": -25}], "requires": {"tech": "orbital_drop"}},
+    {"id": "orbital_defence_gun", "nameKey": "building.orbital_defence_gun.name", "descriptionKey": "building.orbital_defence_gun.text", "cost": 160, "upkeep": 2, "icon": "building.orbital_defence_gun", "orbitalGuns": 15, "requires": {"tech": "anti_air_systems"}},
+    {"id": "bunker_complex", "nameKey": "building.bunker_complex.name", "descriptionKey": "building.bunker_complex.text", "cost": 100, "upkeep": 1, "icon": "building.bunker_complex", "defence": 10, "requires": {"tech": "combat_engineering"}}
+  ]
+}

@@ -38,7 +38,7 @@ test('supply: your bases supply the ground your side holds; deep in enemy ground
   const s = on('morrow');
   const enemyBase = Object.values(s.cities).find((c) => c.faction === 'f1');
   const t = land(s, enemyBase.tile);
-  const u = createUnit(s, rs, 'warrior', 'f0', t);
+  const u = createUnit(s, rs, 'rifle_squad', 'f0', t);
   assert.ok(!suppliedTiles(s, rs, 'f0').has(t), 'ISA has no supply on Helghast ground');
   assert.ok(suppliedTiles(s, rs, 'f1').has(t), 'the Helghast do');
   u.hp = 80;
@@ -48,7 +48,7 @@ test('supply: your bases supply the ground your side holds; deep in enemy ground
   assert.equal(u.hp, 80 - rs.tuning.supply.attrition);
   assert.ok(events.some((e) => e.type === 'outOfSupply'));
   // Cut off units fight weaker.
-  const g = createUnit(s, rs, 'warrior', 'f1', nbs(s, t).find((j) => !Object.values(s.units).some((x) => x.tile === j) && !Object.values(s.cities).some((c) => c.tile === j)));
+  const g = createUnit(s, rs, 'rifle_squad', 'f1', nbs(s, t).find((j) => !Object.values(s.units).some((x) => x.tile === j) && !Object.values(s.cities).some((c) => c.tile === j)));
   const spec = buildSpec(s, rs, u, g.tile);
   assert.ok(spec.modifiers.attacker.some((m) => m.source === 'outOfSupply' && m.amount === -rs.tuning.supply.penalty));
   // After too many turns cut off, it surrenders.
@@ -61,7 +61,7 @@ test('supply: a cut off unit does not heal; a supply drop or a depot puts it bac
   const s = as(on('morrow'), 'f0');
   const enemyBase = Object.values(s.cities).find((c) => c.faction === 'f1');
   const t = land(s, enemyBase.tile, []);
-  const u = createUnit(s, rs, 'warrior', 'f0', t);
+  const u = createUnit(s, rs, 'rifle_squad', 'f0', t);
   u.hp = 50;
   u.cut = 1;
   const r = applyCommand(s, { type: 'endTurn', faction: 'f0' }, rs).state;
@@ -91,7 +91,7 @@ test('works: engineers build where their side holds, over several turns; moving 
   const s = as(on('vekta'), 'f0');
   const myBase = Object.values(s.cities).find((c) => c.faction === 'f0');
   const t = land(s, myBase.tile);
-  const eng = createUnit(s, rs, 'builder', 'f0', t);
+  const eng = createUnit(s, rs, 'combat_engineers', 'f0', t);
   const r = applyCommand(s, { type: 'buildImprovement', faction: 'f0', unit: eng.id, improvement: 'trench', world: 'vekta' }, rs);
   assert.ok(r.ok, r.error?.message);
   assert.deepEqual(r.state.units[eng.id].building, { improvement: 'trench', tile: t, left: 1 });
@@ -103,11 +103,12 @@ test('works: engineers build where their side holds, over several turns; moving 
   assert.equal(t2.map.works[t].faction, 'f0');
   // Helghast cannot build on ISA ground, and the ISA cannot build arc towers.
   const h = on('vekta');
-  const he = createUnit(h, rs, 'builder', 'f1', t);
+  const he = createUnit(h, rs, 'combat_engineers', 'f1', t);
   as(h, 'f1');
   assert.equal(applyCommand(h, { type: 'buildImprovement', faction: 'f1', unit: he.id, improvement: 'wire' }, rs).error.code, 'notHeld');
   const i = as(on('vekta'), 'f0');
-  const ie = createUnit(i, rs, 'builder', 'f0', t);
+  i.factions.find((f) => f.id === 'f0').research.known.push('arc_weaponry');
+  const ie = createUnit(i, rs, 'combat_engineers', 'f0', t);
   assert.equal(applyCommand(i, { type: 'buildImprovement', faction: 'f0', unit: ie.id, improvement: 'arc_tower' }, rs).error.code, 'notYourFaction');
   // Walking away cancels a job in progress.
   const m = cloneState(r.state);
@@ -122,7 +123,7 @@ test('works: trenches and wire stop the enemy, mines go off and are hidden, comm
   const myBase = Object.values(s.cities).find((c) => c.faction === 'f0');
   const a = land(s, myBase.tile);
   const path = [a, ...nbs(s, a).filter((j) => !Object.values(s.units).some((u) => u.tile === j) && !Object.values(s.cities).some((c) => c.tile === j))].slice(0, 3);
-  const enemy = createUnit(s, rs, 'warrior', 'f1', path[1]);
+  const enemy = createUnit(s, rs, 'rifle_squad', 'f1', path[1]);
   enemy.moves = 3;
   placeImprovement(s, rs, 'minefield', a, 'f0');
   // Hidden from the Helghast, seen by the ISA.
@@ -142,14 +143,14 @@ test('works: trenches and wire stop the enemy, mines go off and are hidden, comm
   assert.ok(!hurt || hurt.hp === 100 - rs.improvements.minefield.war.mineDamage);
   // Wire: walking in costs every move left.
   const w = as(on('vekta'), 'f1');
-  const e2 = createUnit(w, rs, 'warrior', 'f1', path[1]);
+  const e2 = createUnit(w, rs, 'rifle_squad', 'f1', path[1]);
   e2.moves = 3;
   placeImprovement(w, rs, 'wire', a, 'f0');
   const rw = applyCommand(w, { type: 'moveUnit', faction: 'f1', unit: e2.id, to: a }, rs);
   assert.equal(rw.state.units[e2.id].moves, 0);
   // A trench stops the enemy beside it, even empty.
   const tr = as(on('vekta'), 'f1');
-  const e3 = createUnit(tr, rs, 'warrior', 'f1', path[1]);
+  const e3 = createUnit(tr, rs, 'rifle_squad', 'f1', path[1]);
   e3.moves = 3;
   placeImprovement(tr, rs, 'trench', a, 'f0');
   const beside = nbs(tr, a).find((j) => j !== path[1] && !Object.values(tr.units).some((u) => u.tile === j) && !Object.values(tr.cities).some((c) => c.tile === j));
@@ -167,9 +168,9 @@ test('works: a machine gun nest fires once a turn; bunkers soften strikes; batte
   placeImprovement(s, rs, 'mg_nest', nest, 'f0');
   const free = nbs(s, nest).filter((j) => !Object.values(s.units).some((u) => u.tile === j) && !Object.values(s.cities).some((c) => c.tile === j));
   const start = land(s, free[0], [nest, ...free]);
-  const e1 = createUnit(s, rs, 'warrior', 'f1', free[1] ?? start);
+  const e1 = createUnit(s, rs, 'rifle_squad', 'f1', free[1] ?? start);
   e1.moves = 0;
-  const e2 = createUnit(s, rs, 'scout', 'f1', start);
+  const e2 = createUnit(s, rs, 'recon_team', 'f1', start);
   e2.moves = 5;
   const r = applyCommand(s, { type: 'moveUnit', faction: 'f1', unit: e2.id, to: free[0] }, rs);
   assert.ok(r.ok, r.error?.message);
@@ -182,11 +183,11 @@ test('works: a machine gun nest fires once a turn; bunkers soften strikes; batte
   const b = on('vekta');
   const bt = land(b, myBase.tile);
   placeImprovement(b, rs, 'artillery_battery', bt, 'f0');
-  const target = createUnit(b, rs, 'warrior', 'f1', land(b, bt, [bt]));
+  const target = createUnit(b, rs, 'rifle_squad', 'f1', land(b, bt, [bt]));
   let ev = [];
   warTurn(b, rs, 'f0', ev, finishImprovement);
   assert.ok(!ev.some((e) => e.type === 'batteryFire'), 'no crew, no fire');
-  createUnit(b, rs, 'warrior', 'f0', bt);
+  createUnit(b, rs, 'rifle_squad', 'f0', bt);
   ev = [];
   warTurn(b, rs, 'f0', ev, finishImprovement);
   assert.ok(ev.some((e) => e.type === 'batteryFire'));
@@ -196,7 +197,7 @@ test('works: a machine gun nest fires once a turn; bunkers soften strikes; batte
   const hb = Object.values(a.cities).find((c) => c.faction === 'f1');
   const at = land(a, hb.tile);
   placeImprovement(a, rs, 'arc_tower', at, 'f1');
-  const victim = createUnit(a, rs, 'warrior', 'f0', nbs(a, at).find((j) => !Object.values(a.units).some((u) => u.tile === j) && !Object.values(a.cities).some((c) => c.tile === j)));
+  const victim = createUnit(a, rs, 'rifle_squad', 'f0', nbs(a, at).find((j) => !Object.values(a.units).some((u) => u.tile === j) && !Object.values(a.cities).some((c) => c.tile === j)));
   warTurn(a, rs, 'f1', [], finishImprovement);
   assert.equal(a.units[victim.id].hp, 100 - rs.improvements.arc_tower.war.arcDamage);
 });
@@ -229,7 +230,7 @@ test('works: landing bays take army groups without dropships; anti-air batteries
   const h = on('vekta');
   const ht = land(h, myBase.tile);
   placeImprovement(h, rs, 'field_hospital', ht, 'f0');
-  const p = createUnit(h, rs, 'warrior', 'f0', ht);
+  const p = createUnit(h, rs, 'rifle_squad', 'f0', ht);
   p.hp = 40;
   warTurn(h, rs, 'f0', [], finishImprovement);
   assert.equal(p.hp, 60);
@@ -240,7 +241,7 @@ test('theatre: Helghan storms ground orbital strikes and shorten sight; its ash 
   let turn = 1;
   while (!stormNow({ turn }, rs, 'helghan')) turn += 1;
   s.turn = turn;
-  const u = createUnit(s, rs, 'warrior', 'f0', land(s, Object.values(s.cities)[0].tile));
+  const u = createUnit(s, rs, 'rifle_squad', 'f0', land(s, Object.values(s.cities)[0].tile));
   const calm = cloneState(s);
   calm.turn = turn + 1;
   assert.equal(sightRange(s, rs, u), sightRange(calm, rs, calm.units[u.id]) + rs.worlds.helghan.theatre.storm.sight);
@@ -253,28 +254,28 @@ test('theatre: Helghan storms ground orbital strikes and shorten sight; its ash 
   // Toxic ash (desert): the ISA trooper standing on it loses health, a Helghast one does not.
   const ash = cloneState(calm);
   const desert = ash.map.terrain.findIndex((t, i) => ash.map.terrainIds[t] === 'desert' && !Object.values(ash.units).some((x) => x.tile === i) && !Object.values(ash.cities).some((c) => c.tile === i));
-  const isa = createUnit(ash, rs, 'warrior', 'f0', desert);
+  const isa = createUnit(ash, rs, 'rifle_squad', 'f0', desert);
   warTurn(ash, rs, 'f0', [], finishImprovement);
   assert.equal(isa.hp, 100 - rs.worlds.helghan.theatre.toxic.damage);
   const hel = cloneState(calm);
-  const hu = createUnit(hel, rs, 'warrior', 'f1', desert);
+  const hu = createUnit(hel, rs, 'rifle_squad', 'f1', desert);
   warTurn(hel, rs, 'f1', [], finishImprovement);
   assert.equal(hu.hp, 100);
 });
 
 test('theatre: low gravity speeds jump troops on the moons; stations have no room for vehicles', () => {
   const tagged = JSON.parse(JSON.stringify(rs));
-  tagged.units.scout.tags = [...(tagged.units.scout.tags ?? []), 'jump'];
-  tagged.units.warrior.tags = [...(tagged.units.warrior.tags ?? []), 'vehicle'];
+  tagged.units.recon_team.tags = [...(tagged.units.recon_team.tags ?? []), 'jump'];
+  tagged.units.rifle_squad.tags = [...(tagged.units.rifle_squad.tags ?? []), 'vehicle'];
   const moon = on('halcyon');
-  const j = createUnit(moon, tagged, 'scout', 'f0', land(moon, Object.values(moon.cities)[0].tile));
+  const j = createUnit(moon, tagged, 'recon_team', 'f0', land(moon, Object.values(moon.cities)[0].tile));
   const plain = on('vekta');
-  const p = createUnit(plain, tagged, 'scout', 'f0', land(plain, Object.values(plain.cities)[0].tile));
+  const p = createUnit(plain, tagged, 'recon_team', 'f0', land(plain, Object.values(plain.cities)[0].tile));
   assert.equal(maxMoves(tagged, j, moon), maxMoves(tagged, p, plain) + 1);
   const st = on('bastion');
   const spot = land(st, Object.values(st.cities)[0].tile);
-  assert.equal(canStand(st, tagged, 'warrior', 'f0', spot), false, 'no vehicles on a station');
-  assert.equal(canStand(st, tagged, 'scout', 'f0', spot), true);
+  assert.equal(canStand(st, tagged, 'rifle_squad', 'f0', spot), false, 'no vehicles on a station');
+  assert.equal(canStand(st, tagged, 'recon_team', 'f0', spot), true);
 });
 
 test('capturing a world: hold its reactor with no enemy left, and the star map says so', () => {
@@ -285,7 +286,7 @@ test('capturing a world: hold its reactor with no enemy left, and the star map s
   const events = [];
   captureRound(s, rs, events);
   assert.equal(s.holders?.midway ?? null, null, 'neutral at the start');
-  createUnit(s, rs, 'warrior', 'f0', land(s, reactor.tile));
+  createUnit(s, rs, 'rifle_squad', 'f0', land(s, reactor.tile));
   reactor.owner = 0;
   captureRound(s, rs, events);
   assert.equal(s.holders.midway, 0);
@@ -293,8 +294,8 @@ test('capturing a world: hold its reactor with no enemy left, and the star map s
   assert.equal(view(s, 'f0', rs).space.worlds.find((w) => w.id === 'midway').holder, 0);
   // With an enemy still on it, nobody takes it.
   const c = on('midway');
-  createUnit(c, rs, 'warrior', 'f0', land(c, reactor.tile));
-  createUnit(c, rs, 'warrior', 'f1', land(c, reactor.tile, [land(c, reactor.tile)]));
+  createUnit(c, rs, 'rifle_squad', 'f0', land(c, reactor.tile));
+  createUnit(c, rs, 'rifle_squad', 'f1', land(c, reactor.tile, [land(c, reactor.tile)]));
   c.frontline.sites[reactor.tile].owner = 0;
   captureRound(c, rs, []);
   assert.equal(c.holders?.midway ?? null, null);

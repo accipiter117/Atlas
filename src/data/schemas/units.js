@@ -27,7 +27,11 @@ export const units = entryType('units', {
     resource: ref('resources'),
     faction: ref('factions'),
     building: ref('buildings'),
+    // K4: only factions on this front-line side may train it.
+    side: int(0, 1),
   }),
+  // K4: never trained, only given (a project's flagship).
+  unique: bool(),
   replaces: ref('units', { cascade: 'clear' }),
   upgradesTo: ref('units', { cascade: 'clear' }),
   abilities: effects(),

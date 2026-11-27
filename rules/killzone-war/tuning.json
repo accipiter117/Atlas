@@ -1,6 +1,13 @@
 {
   "contentType": "tuning",
   "set": {
-    "supply.enabled": true
+    "supply.enabled": true,
+    "setup.maxAis": 5,
+    "raiders.units": [
+      {
+        "fromTurn": 0,
+        "unit": "scout_sniper"
+      }
+    ]
   }
 }

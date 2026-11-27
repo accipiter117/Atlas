@@ -6,7 +6,7 @@
 //   { id, name, faction, tile, capital, founded, pop, food, culture,
 //     tilesClaimed, focus, locks, worked, specialists, queue, progress, buildings }
 
-import { frontlineOn } from './frontline.js';
+import { frontlineOn, sideOf } from './frontline.js';
 import { nextId } from '../core/ids.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
@@ -167,11 +167,12 @@ export function hasResource(state, ruleset, factionId, resourceId) {
 export function canBuild(state, ruleset, city, item) {
   if (item.kind === 'unit') {
     const def = ruleset.units[item.id];
-    if (!def || def.faithOnly || def.raiderOnly) return false;
+    if (!def || def.faithOnly || def.raiderOnly || def.unique) return false;
     // Front-line wars (phase 19) found no new cities.
     if (frontlineOn(ruleset) && (def.tags ?? []).includes('founder')) return false;
     const f = state.factions.find((x) => x.id === city.faction);
     if (def.requires?.faction && def.requires.faction !== f?.civ) return false;
+    if (def.requires?.side !== undefined && sideOf(state, ruleset, city.faction) !== def.requires.side) return false;
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) return false;
     if (def.requires?.civic && !knows(state, city.faction, def.requires.civic, 'civics')) return false;
     if (def.requires?.building && !city.buildings.includes(def.requires.building)) return false;
@@ -231,6 +232,13 @@ export function completeItem(state, ruleset, city, item) {
   const events = [];
   if (item.kind === 'wonder' && ruleset.wonders[item.id]?.project) {
     claimProject(state, city, item.id, events);
+    // K4: a project that does something (a flagship, orbital guns, cheaper militia) stands in the base
+    // like a building, so its effects reach; one with no effects (a science victory part) does not.
+    const def = ruleset.wonders[item.id];
+    if (def.effects?.length || def.orbitalGuns || def.supplyRange) {
+      city.buildings.push(item.id);
+      events.push(...runHook('onBuilt', state, ruleset, effectsFor(state, ruleset, city.faction), { city, built: item.id }));
+    }
     return events;
   }
   const before = cityHpMax(ruleset, city);

@@ -12,7 +12,8 @@ test('K2: the star map, embarking, moving a fleet and landing', async ({ page },
   await page.getByRole('button', { name: 'New game' }).click();
   await page.locator('select[name="conversion"]').selectOption('killzone-war');
   await page.locator('[data-tab="players"]').click();
-  await page.locator('select[name="faction"]').selectOption('isa');
+  // The fleets belong to the ISA Fleet (K4).
+  await page.locator('select[name="faction"]').selectOption('isa_fleet');
   await page.locator('[data-action="start-game"]').click();
   await page.waitForFunction(() => window.__atlasGame && !window.__atlasGame.busy, null, { timeout: 60_000 });
 
@@ -40,13 +41,13 @@ test('K2: the star map, embarking, moving a fleet and landing', async ({ page },
   expect(await page.evaluate((id) => window.__atlasGame.state.space.fleets[id].at, fleet.id)).toBe('halcyon');
   await page.screenshot({ path: `test-results/k2-fleet-${info.project.name}.png` });
 
-  // Land group 1: the star map closes, Halcyon shows, and a click on the base lands them.
+  // Land group 1: the star map closes, Halcyon shows, and a click on the Home Guard's base there (an ally's) lands them.
   await page.locator('[data-action="land-0"]').click();
   await expect(page.locator('.panel-overlay')).toBeHidden();
   expect(await page.evaluate(() => window.__atlasGame.viewWorld)).toBe('halcyon');
   const at = await page.evaluate(() => {
     const g = window.__atlasGame;
-    const base = g.view.cities.find((c) => c.faction === g.human);
+    const base = g.view.cities[0];
     const p = g.mapView.tileToScreen(base.tile);
     const r = document.querySelector('#game-map').getBoundingClientRect();
     return { x: r.left + p.x, y: r.top + p.y };

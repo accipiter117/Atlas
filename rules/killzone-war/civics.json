@@ -1,0 +1,16 @@
+{
+  "contentType": "civics",
+  "entries": [
+    {"op": "remove", "where": {"id": {"notIn": ["__none__"]}}, "cascade": true},
+    {"id": "conscription", "nameKey": "civic.conscription.name", "era": "ancient", "cost": 20, "requires": [], "treePos": {"col": 0, "row": 0}, "unlocks": {"governments": ["martial_law"], "policies": ["drill_sergeants", "ration_discipline"]}},
+    {"id": "war_economy", "nameKey": "civic.war_economy.name", "era": "ancient", "cost": 20, "requires": [], "treePos": {"col": 0, "row": 1}, "unlocks": {"policies": ["war_bonds", "factory_shifts"]}},
+    {"id": "propaganda_ministry", "nameKey": "civic.propaganda_ministry.name", "era": "ancient", "cost": 20, "requires": [], "treePos": {"col": 0, "row": 2}, "unlocks": {"policies": ["state_broadcasts", "volunteer_drives"]}},
+    {"id": "defence_in_depth", "nameKey": "civic.defence_in_depth.name", "era": "classical", "cost": 50, "requires": ["conscription"], "treePos": {"col": 1, "row": 0}, "unlocks": {"policies": ["dig_in"]}},
+    {"id": "blitz_assault", "nameKey": "civic.blitz_assault.name", "era": "classical", "cost": 50, "requires": ["conscription"], "treePos": {"col": 1, "row": 1}, "unlocks": {"policies": ["shock_troops"]}},
+    {"id": "corporate_charter_doctrine", "nameKey": "civic.corporate_charter_doctrine.name", "era": "classical", "cost": 50, "requires": ["war_economy"], "treePos": {"col": 1, "row": 2}, "unlocks": {"governments": ["corporate_charter"], "policies": ["arms_contracts"]}},
+    {"id": "fleet_doctrine", "nameKey": "civic.fleet_doctrine.name", "era": "classical", "cost": 50, "requires": ["war_economy"], "treePos": {"col": 1, "row": 3}, "unlocks": {"governments": ["fleet_command"], "policies": ["orbital_supremacy"]}},
+    {"id": "home_defence_doctrine", "nameKey": "civic.home_defence_doctrine.name", "era": "classical", "cost": 50, "requires": ["propaganda_ministry"], "treePos": {"col": 1, "row": 4}, "unlocks": {"governments": ["home_defence"], "policies": ["partisan_warfare"]}},
+    {"id": "combined_arms", "nameKey": "civic.combined_arms.name", "era": "medieval", "cost": 110, "requires": ["defence_in_depth", "blitz_assault"], "treePos": {"col": 2, "row": 1}, "unlocks": {"policies": ["combined_arms_card"]}},
+    {"id": "total_war_doctrine", "nameKey": "civic.total_war_doctrine.name", "era": "medieval", "cost": 110, "requires": ["corporate_charter_doctrine", "propaganda_ministry"], "treePos": {"col": 2, "row": 2}, "unlocks": {"policies": ["total_war_card"]}}
+  ]
+}

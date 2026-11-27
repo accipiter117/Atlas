@@ -1,0 +1,8 @@
+{
+  "contentType": "resources",
+  "entries": [
+    {"op": "remove", "where": {"id": {"notIn": ["__none__"]}}, "cascade": true},
+    {"id": "petrusite", "nameKey": "resource.petrusite.name", "class": "strategic", "yields": {"production": 1}, "validTerrain": ["desert", "tundra"], "frequency": 0.0, "improvement": "extractor", "improvedYields": {"production": 1}, "art": "resource.iron"},
+    {"id": "fuel", "nameKey": "resource.fuel.name", "class": "strategic", "yields": {"production": 1}, "validTerrain": ["plains", "grassland"], "frequency": 0.0, "improvement": "extractor", "improvedYields": {"production": 1}, "art": "resource.iron"}
+  ]
+}

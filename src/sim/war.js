@@ -155,7 +155,9 @@ export function suppliedTiles(state, ruleset, faction) {
   const held = (tile) => (side === 0 ? control[tile] > threshold : control[tile] < -threshold);
   const friend = (f) => f === faction || (f && !atWar(state, faction, f) && sideOf(state, ruleset, f) === side);
   const sources = [];
-  for (const c of Object.values(state.cities ?? {})) if (friend(c.faction)) sources.push([c.tile, t.cityRange ?? 4]);
+  // K4: a base's buildings may reach further (a logistics hub's supplyRange).
+  const extra = (c) => c.buildings.reduce((n, b) => n + (ruleset.buildings?.[b]?.supplyRange ?? ruleset.wonders?.[b]?.supplyRange ?? 0), 0);
+  for (const c of Object.values(state.cities ?? {})) if (friend(c.faction)) sources.push([c.tile, (t.cityRange ?? 4) + extra(c)]);
   for (const k of Object.keys(state.map.works ?? {})) {
     const w = workAt(state, ruleset, Number(k));
     if (w?.war.supply && friend(w.faction)) sources.push([Number(k), w.war.supply]);

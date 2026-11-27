@@ -359,6 +359,8 @@ Add an optional supply system (sources, ranges and attrition all in data): suppl
 
 ### K4: Factions, content, war support and victory
 
+**Progress.** K4a (the content half) is done: six factions, units, buildings, projects, research, doctrines, war footings, resources and the yields renamed (see CHANGELOG.md and DECISIONS.md). K4b (war support, glory, victory, the council, arms deals and the scenarios) is next.
+
 **Suggested change to K4.** This is the largest phase by a distance (six factions, every unit, building and project, research, doctrines, eight maps, war support, glory, victory, the council, arms deals and scenarios), too much to finish and check in one session. Split it: K4a for the content (factions, units, buildings, projects, research, maps) and K4b for war support, glory, victory, the council, arms deals and scenarios.
 
 **Check on your laptop.** All six factions are playable with their traits, units and ambitions; bases build barracks and armouries rather than granaries; the tech tree, doctrines and war footing are all Killzone; war support and glory show and change; each victory type and scenario works.

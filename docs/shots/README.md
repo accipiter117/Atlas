@@ -16,3 +16,4 @@ Each folder holds the same set of screenshots (G8 and G9 also have a page showin
 | K1b | [K1b](K1b/) | Killzone Extrasolar War: a two-world Killzone game with the world switcher in the top bar, on Vekta and on Helghan (a stand-in map). |
 | K2 | [K2](K2/) | Killzone: Extrasolar War: the star map (eight worlds, lanes, fleets, status cards), a fleet's orders, and an army landed on Halcyon. |
 | K3 | [K3](K3/) | Killzone: Extrasolar War: war infrastructure round Vekta Landing (placeholder art), a unit cut off from supply, and the star map. |
+| K4 | [K4](K4/) | Killzone: Extrasolar War: six factions in setup, the Home Guard on Vekta, the war's research tree, and a base's build list. |

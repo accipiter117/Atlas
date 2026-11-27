@@ -288,82 +288,67 @@ code placeholder until a skin gives it real art, so the game is always playable.
 
 ## base-ancient + killzone + killzone-war
 
-75 art ids: 24 with art, 51 on placeholders.
+60 art ids: 2 with art, 58 on placeholders.
 
 | Art id | Status |
 | --- | --- |
-| `building.amphitheatre` | placeholder |
-| `building.aqueduct` | placeholder |
-| `building.arena` | placeholder |
-| `building.bank` | placeholder |
+| `building.armoury` | placeholder |
 | `building.barracks` | placeholder |
-| `building.caravanserai` | placeholder |
-| `building.castle` | placeholder |
-| `building.courthouse` | placeholder |
-| `building.forge` | placeholder |
-| `building.granary` | placeholder |
-| `building.guildhall` | placeholder |
-| `building.harbour` | placeholder |
-| `building.herbalist` | placeholder |
-| `building.library` | placeholder |
-| `building.lighthouse` | placeholder |
-| `building.market` | placeholder |
-| `building.mint` | placeholder |
-| `building.monument` | placeholder |
-| `building.observatory` | placeholder |
+| `building.bunker_complex` | placeholder |
+| `building.comms_centre` | placeholder |
+| `building.dropship_pad` | placeholder |
+| `building.factory` | placeholder |
+| `building.field_academy` | placeholder |
+| `building.fuel_depot` | placeholder |
+| `building.logistics_hub` | placeholder |
+| `building.med_centre` | placeholder |
+| `building.orbital_defence_gun` | placeholder |
 | `building.palace` | placeholder |
-| `building.sawmill` | placeholder |
-| `building.scriptorium` | placeholder |
-| `building.shrine` | placeholder |
-| `building.stable` | placeholder |
-| `building.temple` | placeholder |
-| `building.university` | placeholder |
-| `building.walls` | placeholder |
-| `building.watchtower` | placeholder |
-| `building.water_mill` | placeholder |
-| `building.workshop` | placeholder |
+| `building.petrusite_refinery` | placeholder |
+| `building.power_plant` | placeholder |
+| `building.propaganda_office` | placeholder |
+| `building.shipyard` | placeholder |
+| `building.vehicle_depot` | placeholder |
+| `leader.kerr` | placeholder |
+| `leader.orlock` | placeholder |
+| `leader.stahl` | placeholder |
 | `leader.templar` | real art |
+| `leader.varga` | placeholder |
 | `leader.visari` | real art |
-| `unit.archer` | real art |
-| `unit.bombard` | real art |
-| `unit.builder` | real art |
-| `unit.caravel` | real art |
-| `unit.catapult` | real art |
-| `unit.chariot` | real art |
+| `unit.apc` | placeholder |
+| `unit.arc_artillery` | placeholder |
+| `unit.arc_trooper` | placeholder |
+| `unit.armoured_walker` | placeholder |
+| `unit.assault_trooper` | placeholder |
+| `unit.combat_engineers` | placeholder |
+| `unit.conscripts` | placeholder |
+| `unit.field_artillery` | placeholder |
 | `unit.helghast_cruiser` | placeholder |
 | `unit.helghast_destroyer` | placeholder |
 | `unit.helghast_dropship` | placeholder |
 | `unit.helghast_heavy` | placeholder |
 | `unit.helghast_transport` | placeholder |
-| `unit.horseman` | real art |
+| `unit.home_guard_militia` | placeholder |
+| `unit.intelligence_cell` | placeholder |
 | `unit.isa_cruiser` | placeholder |
 | `unit.isa_destroyer` | placeholder |
 | `unit.isa_intruder` | placeholder |
 | `unit.isa_sniper` | placeholder |
 | `unit.isa_transport` | placeholder |
-| `unit.knight` | real art |
-| `unit.man_at_arms` | real art |
-| `unit.missionary` | real art |
-| `unit.musketman` | real art |
-| `unit.pikeman` | real art |
-| `unit.scout` | real art |
-| `unit.settler` | real art |
-| `unit.slinger` | real art |
-| `unit.spearman` | real art |
-| `unit.spy` | real art |
-| `unit.swordsman` | real art |
-| `unit.trader` | real art |
-| `unit.trebuchet` | real art |
-| `unit.trireme` | real art |
-| `unit.warrior` | real art |
-| `wonder.atlas_of_the_world` | placeholder |
-| `wonder.colossus` | placeholder |
-| `wonder.great_library` | placeholder |
-| `wonder.great_lighthouse` | placeholder |
-| `wonder.great_observatory` | placeholder |
-| `wonder.hanging_gardens` | placeholder |
-| `wonder.oracle` | placeholder |
-| `wonder.pyramids` | placeholder |
-| `wonder.stonehenge` | placeholder |
-| `wonder.temple_of_artemis` | placeholder |
-| `wonder.voyage_beyond` | placeholder |
+| `unit.jetpack_trooper` | placeholder |
+| `unit.new_sun_cruiser` | placeholder |
+| `unit.pioneer_squad` | placeholder |
+| `unit.recon_team` | placeholder |
+| `unit.rifle_squad` | placeholder |
+| `unit.rocket_team` | placeholder |
+| `unit.scout_sniper` | placeholder |
+| `unit.shadow_marshals` | placeholder |
+| `unit.stahl_battle_suit` | placeholder |
+| `unit.stahl_dreadnought` | placeholder |
+| `unit.support_gunners` | placeholder |
+| `unit.tank_platoon` | placeholder |
+| `wonder.arc_cannon_array` | placeholder |
+| `wonder.new_sun_project` | placeholder |
+| `wonder.orbital_defence_grid` | placeholder |
+| `wonder.stahl_dreadnought_project` | placeholder |
+| `wonder.total_mobilisation` | placeholder |

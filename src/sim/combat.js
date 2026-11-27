@@ -15,6 +15,7 @@
 //   and promotions (with vs and when filters)
 
 import { supplyModifiers } from './war.js';
+import { sideOf } from './frontline.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
 import { unitsAt, slotOf, isEnemy, unitDef } from './units.js';
@@ -82,6 +83,7 @@ export function cityStrength(state, ruleset, city) {
   for (const def of Object.values(ruleset.units)) {
     if (ruleset.unitClasses[def.class]?.combat !== 'melee') continue;
     if (def.requires?.faction && def.requires.faction !== state.factions.find((f) => f.id === city.faction)?.civ) continue;
+    if (def.unique || (def.requires?.side !== undefined && sideOf(state, ruleset, city.faction) !== def.requires.side)) continue;
     if (def.requires?.tech && !knows(state, city.faction, def.requires.tech)) continue;
     if (def.requires?.civic || def.requires?.resource) continue;
     best = Math.max(best, def.strength);

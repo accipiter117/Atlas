@@ -13,6 +13,8 @@ import { buildingDef, hasBuilding } from './effects/index.js';
 import { canStand, createUnit, domainOf } from './units.js';
 import { spawnShip } from './space.js';
 import { knows } from './progression.js';
+import { sideOf } from './frontline.js';
+import { activeWorld } from './worlds.js';
 
 /** The building this faction actually gets for a base building id (its unique version, if any). */
 export function factionVersionOf(state, ruleset, factionId, id) {
@@ -38,6 +40,9 @@ export function buildingProblem(state, ruleset, city, id, kind) {
   const civ = state.factions.find((f) => f.id === city.faction)?.civ;
   const req = def.requires ?? {};
   if (req.faction && req.faction !== civ) return 'otherFaction';
+  // K4: a side's own buildings, and buildings only some kinds of world allow.
+  if (req.side !== undefined && sideOf(state, ruleset, city.faction) !== req.side) return 'otherFaction';
+  if (def.builtAt && !def.builtAt.includes(ruleset.worlds?.[activeWorld(state)]?.kind)) return 'wrongWorld';
   if (kind === 'building' && factionVersionOf(state, ruleset, city.faction, id) !== id) return 'replaced';
   if (kind === 'building' && def.replaces && hasBuilding(ruleset, city, def.replaces)) return 'built';
   if (req.capital && !city.capital) return 'notCapital';

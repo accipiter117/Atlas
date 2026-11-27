@@ -1,0 +1,9 @@
+{
+  "contentType": "governments",
+  "entries": [
+    {"id": "martial_law", "nameKey": "government.martial_law.name", "descriptionKey": "government.martial_law.text", "slots": {"military": 2, "economic": 1}, "effects": [{"effect": "healBonus", "amount": 5}], "requires": {"civic": "conscription"}},
+    {"id": "corporate_charter", "nameKey": "government.corporate_charter.name", "descriptionKey": "government.corporate_charter.text", "slots": {"military": 1, "economic": 2, "wildcard": 1}, "effects": [{"effect": "yieldPercent", "yield": "gold", "amount": 10}], "requires": {"civic": "corporate_charter_doctrine"}},
+    {"id": "fleet_command", "nameKey": "government.fleet_command.name", "descriptionKey": "government.fleet_command.text", "slots": {"military": 2, "economic": 1, "diplomatic": 1}, "effects": [{"effect": "costPercent", "target": "ship", "amount": -10}], "requires": {"civic": "fleet_doctrine"}},
+    {"id": "home_defence", "nameKey": "government.home_defence.name", "descriptionKey": "government.home_defence.text", "slots": {"military": 2, "economic": 1, "diplomatic": 1}, "effects": [{"effect": "costPercent", "target": "militia", "amount": -20}], "requires": {"civic": "home_defence_doctrine"}}
+  ]
+}

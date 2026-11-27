@@ -1,0 +1,18 @@
+{
+  "contentType": "policies",
+  "entries": [
+    {"id": "drill_sergeants", "nameKey": "policy.drill_sergeants.name", "descriptionKey": "policy.drill_sergeants.text", "slot": "military", "effects": [{"effect": "healBonus", "amount": 10}], "requires": {"civic": "conscription"}},
+    {"id": "ration_discipline", "nameKey": "policy.ration_discipline.name", "descriptionKey": "policy.ration_discipline.text", "slot": "economic", "effects": [{"effect": "growthPercent", "amount": 15}], "requires": {"civic": "conscription"}},
+    {"id": "war_bonds", "nameKey": "policy.war_bonds.name", "descriptionKey": "policy.war_bonds.text", "slot": "economic", "effects": [{"effect": "yieldPercent", "yield": "gold", "amount": 15}], "requires": {"civic": "war_economy"}},
+    {"id": "factory_shifts", "nameKey": "policy.factory_shifts.name", "descriptionKey": "policy.factory_shifts.text", "slot": "economic", "effects": [{"effect": "yieldPercent", "yield": "production", "amount": 10}], "requires": {"civic": "war_economy"}},
+    {"id": "state_broadcasts", "nameKey": "policy.state_broadcasts.name", "descriptionKey": "policy.state_broadcasts.text", "slot": "diplomatic", "effects": [{"effect": "yieldBonus", "yield": "faith", "amount": 1}], "requires": {"civic": "propaganda_ministry"}},
+    {"id": "volunteer_drives", "nameKey": "policy.volunteer_drives.name", "descriptionKey": "policy.volunteer_drives.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "militia", "amount": -30}], "requires": {"civic": "propaganda_ministry"}},
+    {"id": "dig_in", "nameKey": "policy.dig_in.name", "descriptionKey": "policy.dig_in.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "worker", "amount": -30}], "requires": {"civic": "defence_in_depth"}},
+    {"id": "shock_troops", "nameKey": "policy.shock_troops.name", "descriptionKey": "policy.shock_troops.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "vehicle", "amount": -15}], "requires": {"civic": "blitz_assault"}},
+    {"id": "arms_contracts", "nameKey": "policy.arms_contracts.name", "descriptionKey": "policy.arms_contracts.text", "slot": "economic", "effects": [{"effect": "yieldBonus", "yield": "gold", "amount": 2, "scope": "capital"}], "requires": {"civic": "corporate_charter_doctrine"}},
+    {"id": "orbital_supremacy", "nameKey": "policy.orbital_supremacy.name", "descriptionKey": "policy.orbital_supremacy.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "ship", "amount": -20}], "requires": {"civic": "fleet_doctrine"}},
+    {"id": "partisan_warfare", "nameKey": "policy.partisan_warfare.name", "descriptionKey": "policy.partisan_warfare.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "militia", "amount": -40}], "requires": {"civic": "home_defence_doctrine"}},
+    {"id": "combined_arms_card", "nameKey": "policy.combined_arms_card.name", "descriptionKey": "policy.combined_arms_card.text", "slot": "military", "effects": [{"effect": "costPercent", "target": "units", "amount": -10}], "requires": {"civic": "combined_arms"}},
+    {"id": "total_war_card", "nameKey": "policy.total_war_card.name", "descriptionKey": "policy.total_war_card.text", "slot": "economic", "effects": [{"effect": "yieldPercent", "yield": "production", "amount": 15}], "requires": {"civic": "total_war_doctrine"}}
+  ]
+}

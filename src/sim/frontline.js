@@ -53,7 +53,8 @@ export function buildPresetMap(ruleset, presetId) {
       map.terrain.push(Math.max(0, terrainIds.indexOf(cell.terrain)));
       map.hills.push(cell.hills ? 1 : 0);
       map.feature.push(cell.feature ? featureIds.indexOf(cell.feature) : -1);
-      map.resource.push(-1);
+      // K4: a legend letter may carry a resource (petrusite, fuel).
+      map.resource.push(cell.resource ? Math.max(-1, map.resourceIds.indexOf(cell.resource)) : -1);
       map.river.push(0);
     }
   }
@@ -80,15 +81,17 @@ export function setUpFrontline(state, ruleset, presetId, { foundCity, createUnit
   const w = state.map.width;
   const bySide = [0, 1].map((side) => state.factions.filter((f) => sideOf(state, ruleset, f.id) === side));
   const firstOf = (side) => bySide[side][0]?.id ?? null;
+  // K4: a preset may give a base or unit to a named faction (civ); without that faction in the game, its side's first.
+  const ownerOf = (x) => (x.civ ? state.factions.find((f) => f.civ === x.civ)?.id : null) ?? firstOf(x.side);
   for (const c of p.cities) {
-    const owner = firstOf(c.side);
+    const owner = ownerOf(c);
     if (!owner) continue;
     const { city } = foundCity(state, ruleset, owner, c.row * w + c.col);
     if (c.nameKey && ruleset.text?.[c.nameKey]) city.name = ruleset.text[c.nameKey];
     if (c.pop) { city.pop = c.pop; assignCitizens(state, ruleset, city); }
   }
   for (const u of p.units ?? []) {
-    const owner = firstOf(u.side);
+    const owner = ownerOf(u);
     if (owner && ruleset.units[u.type]) createUnit(state, ruleset, u.type, owner, u.row * w + u.col);
   }
   // Control starts split at the front column, softened over a few tiles.

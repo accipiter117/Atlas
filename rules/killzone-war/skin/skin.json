@@ -14,6 +14,404 @@
         "space": "#0b0e17",
         "lane": "#5a6478"
       }
+    },
+    "art": {
+      "unit.rifle_squad.isa": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.rifle_squad.home_guard": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.rifle_squad.isa_fleet": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.rifle_squad.helghast": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.rifle_squad.stahl": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.rifle_squad.helghast_navy": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.assault_trooper.isa": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.assault_trooper.home_guard": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.assault_trooper.isa_fleet": {
+        "sheet": "assets/sprites/killzone/warrior.isa.json"
+      },
+      "unit.assault_trooper.helghast": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.assault_trooper.stahl": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.assault_trooper.helghast_navy": {
+        "sheet": "assets/sprites/killzone/warrior.helghast.json"
+      },
+      "unit.support_gunners.isa": {
+        "sheet": "assets/sprites/killzone/man_at_arms.isa.json"
+      },
+      "unit.support_gunners.home_guard": {
+        "sheet": "assets/sprites/killzone/man_at_arms.isa.json"
+      },
+      "unit.support_gunners.isa_fleet": {
+        "sheet": "assets/sprites/killzone/man_at_arms.isa.json"
+      },
+      "unit.support_gunners.helghast": {
+        "sheet": "assets/sprites/killzone/man_at_arms.helghast.json"
+      },
+      "unit.support_gunners.stahl": {
+        "sheet": "assets/sprites/killzone/man_at_arms.helghast.json"
+      },
+      "unit.support_gunners.helghast_navy": {
+        "sheet": "assets/sprites/killzone/man_at_arms.helghast.json"
+      },
+      "unit.helghast_heavy.isa": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.isa.json"
+      },
+      "unit.helghast_heavy.home_guard": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.isa.json"
+      },
+      "unit.helghast_heavy.isa_fleet": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.isa.json"
+      },
+      "unit.helghast_heavy.helghast": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.helghast.json"
+      },
+      "unit.helghast_heavy.stahl": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.helghast.json"
+      },
+      "unit.helghast_heavy.helghast_navy": {
+        "sheet": "assets/sprites/killzone/helghast_heavy.helghast.json"
+      },
+      "unit.rocket_team.isa": {
+        "sheet": "assets/sprites/killzone/spearman.isa.json"
+      },
+      "unit.rocket_team.home_guard": {
+        "sheet": "assets/sprites/killzone/spearman.isa.json"
+      },
+      "unit.rocket_team.isa_fleet": {
+        "sheet": "assets/sprites/killzone/spearman.isa.json"
+      },
+      "unit.rocket_team.helghast": {
+        "sheet": "assets/sprites/killzone/spearman.helghast.json"
+      },
+      "unit.rocket_team.stahl": {
+        "sheet": "assets/sprites/killzone/spearman.helghast.json"
+      },
+      "unit.rocket_team.helghast_navy": {
+        "sheet": "assets/sprites/killzone/spearman.helghast.json"
+      },
+      "unit.arc_trooper.isa": {
+        "sheet": "assets/sprites/killzone/crossbowman.isa.json"
+      },
+      "unit.arc_trooper.home_guard": {
+        "sheet": "assets/sprites/killzone/crossbowman.isa.json"
+      },
+      "unit.arc_trooper.isa_fleet": {
+        "sheet": "assets/sprites/killzone/crossbowman.isa.json"
+      },
+      "unit.arc_trooper.helghast": {
+        "sheet": "assets/sprites/killzone/crossbowman.helghast.json"
+      },
+      "unit.arc_trooper.stahl": {
+        "sheet": "assets/sprites/killzone/crossbowman.helghast.json"
+      },
+      "unit.arc_trooper.helghast_navy": {
+        "sheet": "assets/sprites/killzone/crossbowman.helghast.json"
+      },
+      "unit.recon_team.isa": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.recon_team.home_guard": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.recon_team.isa_fleet": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.recon_team.helghast": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.recon_team.stahl": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.recon_team.helghast_navy": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.scout_sniper.isa": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.scout_sniper.home_guard": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.scout_sniper.isa_fleet": {
+        "sheet": "assets/sprites/killzone/scout.isa.json"
+      },
+      "unit.scout_sniper.helghast": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.scout_sniper.stahl": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.scout_sniper.helghast_navy": {
+        "sheet": "assets/sprites/killzone/scout.helghast.json"
+      },
+      "unit.isa_sniper.isa": {
+        "sheet": "assets/sprites/killzone/isa_sniper.isa.json"
+      },
+      "unit.isa_sniper.home_guard": {
+        "sheet": "assets/sprites/killzone/isa_sniper.isa.json"
+      },
+      "unit.isa_sniper.isa_fleet": {
+        "sheet": "assets/sprites/killzone/isa_sniper.isa.json"
+      },
+      "unit.isa_sniper.helghast": {
+        "sheet": "assets/sprites/killzone/isa_sniper.helghast.json"
+      },
+      "unit.isa_sniper.stahl": {
+        "sheet": "assets/sprites/killzone/isa_sniper.helghast.json"
+      },
+      "unit.isa_sniper.helghast_navy": {
+        "sheet": "assets/sprites/killzone/isa_sniper.helghast.json"
+      },
+      "unit.combat_engineers.isa": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.combat_engineers.home_guard": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.combat_engineers.isa_fleet": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.combat_engineers.helghast": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.combat_engineers.stahl": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.combat_engineers.helghast_navy": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.pioneer_squad.isa": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.pioneer_squad.home_guard": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.pioneer_squad.isa_fleet": {
+        "sheet": "assets/sprites/killzone/builder.isa.json"
+      },
+      "unit.pioneer_squad.helghast": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.pioneer_squad.stahl": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.pioneer_squad.helghast_navy": {
+        "sheet": "assets/sprites/killzone/builder.helghast.json"
+      },
+      "unit.jetpack_trooper.isa": {
+        "sheet": "assets/sprites/killzone/woad_raider.isa.json"
+      },
+      "unit.jetpack_trooper.home_guard": {
+        "sheet": "assets/sprites/killzone/woad_raider.isa.json"
+      },
+      "unit.jetpack_trooper.isa_fleet": {
+        "sheet": "assets/sprites/killzone/woad_raider.isa.json"
+      },
+      "unit.jetpack_trooper.helghast": {
+        "sheet": "assets/sprites/killzone/woad_raider.helghast.json"
+      },
+      "unit.jetpack_trooper.stahl": {
+        "sheet": "assets/sprites/killzone/woad_raider.helghast.json"
+      },
+      "unit.jetpack_trooper.helghast_navy": {
+        "sheet": "assets/sprites/killzone/woad_raider.helghast.json"
+      },
+      "unit.shadow_marshals.isa": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.shadow_marshals.home_guard": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.shadow_marshals.isa_fleet": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.shadow_marshals.helghast": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.shadow_marshals.stahl": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.shadow_marshals.helghast_navy": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.intelligence_cell.isa": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.intelligence_cell.home_guard": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.intelligence_cell.isa_fleet": {
+        "sheet": "assets/sprites/killzone/spy.isa.json"
+      },
+      "unit.intelligence_cell.helghast": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.intelligence_cell.stahl": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.intelligence_cell.helghast_navy": {
+        "sheet": "assets/sprites/killzone/spy.helghast.json"
+      },
+      "unit.home_guard_militia.isa": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.home_guard_militia.home_guard": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.home_guard_militia.isa_fleet": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.home_guard_militia.helghast": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.home_guard_militia.stahl": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.home_guard_militia.helghast_navy": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.conscripts.isa": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.conscripts.home_guard": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.conscripts.isa_fleet": {
+        "sheet": "assets/sprites/killzone/slinger.isa.json"
+      },
+      "unit.conscripts.helghast": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.conscripts.stahl": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.conscripts.helghast_navy": {
+        "sheet": "assets/sprites/killzone/slinger.helghast.json"
+      },
+      "unit.apc.isa": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.apc.home_guard": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.apc.isa_fleet": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.apc.helghast": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.apc.stahl": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.apc.helghast_navy": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.armoured_walker.isa": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.armoured_walker.home_guard": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.armoured_walker.isa_fleet": {
+        "sheet": "assets/sprites/killzone/chariot.isa.json"
+      },
+      "unit.armoured_walker.helghast": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.armoured_walker.stahl": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.armoured_walker.helghast_navy": {
+        "sheet": "assets/sprites/killzone/chariot.helghast.json"
+      },
+      "unit.tank_platoon.isa": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.tank_platoon.home_guard": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.tank_platoon.isa_fleet": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.tank_platoon.helghast": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.tank_platoon.stahl": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.tank_platoon.helghast_navy": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.stahl_battle_suit.isa": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.stahl_battle_suit.home_guard": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.stahl_battle_suit.isa_fleet": {
+        "sheet": "assets/sprites/killzone/knight.isa.json"
+      },
+      "unit.stahl_battle_suit.helghast": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.stahl_battle_suit.stahl": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.stahl_battle_suit.helghast_navy": {
+        "sheet": "assets/sprites/killzone/knight.helghast.json"
+      },
+      "unit.field_artillery.isa": {
+        "sheet": "assets/sprites/killzone/catapult.isa.json"
+      },
+      "unit.field_artillery.home_guard": {
+        "sheet": "assets/sprites/killzone/catapult.isa.json"
+      },
+      "unit.field_artillery.isa_fleet": {
+        "sheet": "assets/sprites/killzone/catapult.isa.json"
+      },
+      "unit.field_artillery.helghast": {
+        "sheet": "assets/sprites/killzone/catapult.helghast.json"
+      },
+      "unit.field_artillery.stahl": {
+        "sheet": "assets/sprites/killzone/catapult.helghast.json"
+      },
+      "unit.field_artillery.helghast_navy": {
+        "sheet": "assets/sprites/killzone/catapult.helghast.json"
+      },
+      "unit.arc_artillery.isa": {
+        "sheet": "assets/sprites/killzone/trebuchet.isa.json"
+      },
+      "unit.arc_artillery.home_guard": {
+        "sheet": "assets/sprites/killzone/trebuchet.isa.json"
+      },
+      "unit.arc_artillery.isa_fleet": {
+        "sheet": "assets/sprites/killzone/trebuchet.isa.json"
+      },
+      "unit.arc_artillery.helghast": {
+        "sheet": "assets/sprites/killzone/trebuchet.helghast.json"
+      },
+      "unit.arc_artillery.stahl": {
+        "sheet": "assets/sprites/killzone/trebuchet.helghast.json"
+      },
+      "unit.arc_artillery.helghast_navy": {
+        "sheet": "assets/sprites/killzone/trebuchet.helghast.json"
+      }
     }
   }
 }

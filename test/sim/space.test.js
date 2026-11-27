@@ -221,6 +221,7 @@ test('supply drops heal nearby troops; blockades need the orbit and warships, an
 
 test('ships are built at bases on home worlds and stations, and join the fleet in orbit', () => {
   const s = as(fresh(), 'f0');
+  for (const f of s.factions) f.research.known.push('cruiser_yards');
   const vekta = Object.values(s.cities).find((c) => c.faction === 'f0');
   assert.ok(buildOptions(s, rs, vekta).some((o) => o.kind === 'unit' && o.id === 'isa_destroyer'));
   assert.ok(!buildOptions(s, rs, vekta).some((o) => o.id === 'helghast_destroyer'), 'each side its own ships');

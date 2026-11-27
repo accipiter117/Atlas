@@ -23,8 +23,16 @@ const buildingFields = {
     nearTerrain: ref('terrain'),
     river: bool(),
     capital: bool(),
+    // K4: only factions on this front-line side may build it (all three of a side share their kit).
+    side: int(0, 1),
   }),
   replaces: ref('buildings', { cascade: 'clear' }),
+  // K4: only on these kinds of world (a shipyard on home worlds and stations).
+  builtAt: list(oneOf(['homeworld', 'moon', 'asteroid', 'station', 'world'])),
+  // K4: fires each round at enemy ships in this world's orbit (orbital defence guns).
+  orbitalGuns: int(0, 100),
+  // K4: the base supplies this many hexes further (logistics hubs).
+  supplyRange: int(0, 6),
   // Phase 16: influence a turn towards a culture victory (wonders also get tuning.culture.influencePerWonder).
   influence: num(0, 100),
   yields: yields(),

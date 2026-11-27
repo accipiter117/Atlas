@@ -161,7 +161,8 @@ export function setUpSpace(state, ruleset, sideOf) {
   state.space = { fleets: {} };
   for (const id of state.worldOrder) {
     for (const spec of ruleset.worlds[id].fleets ?? []) {
-      const owner = state.factions.find((f) => sideOf(state, ruleset, f.id) === spec.side);
+      // K4: a fleet may belong to a named faction (civ); without it in the game, its side's first.
+      const owner = (spec.faction ? state.factions.find((f) => f.civ === spec.faction) : null) ?? state.factions.find((f) => sideOf(state, ruleset, f.id) === spec.side);
       if (!owner) continue;
       const fleet = newFleet(state, owner.id, id);
       for (const type of spec.ships) if (ruleset.units[type]) fleet.ships.push({ id: nextId(state, 's'), type, hp: 100 });
@@ -179,8 +180,22 @@ export function startSpaceTurn(state, ruleset, factionId) {
   }
 }
 
-/** Space at the end of each round: fleets on long jumps come closer, and arrive. */
+/** Space at the end of each round: fleets on long jumps come closer, and arrive; orbital guns fire. */
 export function spaceRound(state, ruleset, events) {
+  // K4: bases with orbital guns (a building's or project's orbitalGuns) hit enemy ships in their world's orbit.
+  for (const w of state.worldOrder ?? []) {
+    for (const c of Object.values(worldData(state, w)?.cities ?? {})) {
+      const guns = c.buildings.reduce((n, b) => n + (ruleset.buildings?.[b]?.orbitalGuns ?? ruleset.wonders?.[b]?.orbitalGuns ?? 0), 0);
+      if (!guns) continue;
+      for (const f of fleetsAt(state, w).filter((x) => atWar(state, c.faction, x.faction))) {
+        for (const s of f.ships) s.hp -= guns;
+        const lost = f.ships.filter((s) => s.hp <= 0).length;
+        f.ships = f.ships.filter((s) => s.hp > 0);
+        events.push({ type: 'orbitalGuns', world: w, city: c.id, faction: c.faction, fleet: f.id, damage: guns, lost, global: true });
+        if (!f.ships.length) delete state.space.fleets[f.id];
+      }
+    }
+  }
   for (const f of Object.values(state.space?.fleets ?? {}).sort((a, b) => (a.id < b.id ? -1 : 1))) {
     if (!f.transit || !state.space.fleets[f.id]) continue;
     f.transit.left -= 1;
@@ -299,8 +314,9 @@ export const landArmy = {
     if (!holdsOrbit(state, ruleset, cmd.faction, fleet.at)) return err('noOrbit', 'You need to hold the orbit to land');
     const t = cmd.tile;
     if (!Number.isInteger(t) || t < 0 || t >= state.map.terrain.length) return err('badTile', 'Choose a hex on this world');
+    // An ally's base takes your army groups like your own (K4: a side shares its landing grounds).
     const base = Object.values(state.cities ?? {}).find((c) => c.tile === t);
-    if (base && base.faction !== cmd.faction) return err('enemyBase', 'You cannot land in an enemy base');
+    if (base && atWar(state, cmd.faction, base.faction)) return err('enemyBase', 'You cannot land in an enemy base');
     if (unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction))) return err('occupied', 'The enemy holds that hex');
     if (!canStand(state, ruleset, group[0].type, cmd.faction, t) && !base) return err('badTile', 'Troops cannot land there');
     // K3: your landing bays take army groups from orbit like your bases do.

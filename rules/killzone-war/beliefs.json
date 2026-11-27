@@ -1,0 +1,6 @@
+{
+  "contentType": "beliefs",
+  "entries": [
+    {"op": "remove", "where": {"id": {"notIn": ["__none__"]}}, "cascade": true}
+  ]
+}
