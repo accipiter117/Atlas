@@ -8,7 +8,10 @@
 import { ENGINE_VERSION } from '../sim/index.js';
 import { loadRuleset } from '../data/loader.js';
 import { t } from '../data/text.js';
-import { createGameScreen } from './game.js';
+// The game screen (and the map renderer under it) loads when a game starts, not with the
+// title screen, keeping the first page load small (graphics overhaul: docs/OVERHAUL.md 7).
+let gameModule = null;
+const loadGameScreen = () => (gameModule ??= import('./game.js'));
 import { showFactionPicker } from './factionCards.js';
 import { createModManager } from './modManager.js';
 import { renderSetup, defaultSetup, toSetup, selectionOf, optionsOf } from './setup.js';
@@ -177,7 +180,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   async function startGame({ setup = null, resume = null, selection = ['base-ancient'], options = {}, quick = null }) {
     const loaded = await rulesFor(selection, options);
     if (loaded.error) { say(loaded.error); return; }
-    const sheets = await loadSheets(loaded.ruleset.skin.art);
+    const [{ createGameScreen }, sheets] = await Promise.all([loadGameScreen(), loadSheets(loaded.ruleset.skin.art)]);
     game?.destroy();
     show(doc, 'game');
     if (loaded.ruleset.skin?.id && loaded.ruleset.skin.id !== 'ancient') doc.documentElement.dataset.skin = loaded.ruleset.skin.id;
@@ -362,6 +365,10 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       show(doc, 'title');
     },
   };
+
+  // Fetch the game screen while the player reads the title screen, so starting a game does not wait.
+  const idle = doc.defaultView.requestIdleCallback ?? ((fn) => doc.defaultView.setTimeout(fn, 1500));
+  idle(() => { loadGameScreen().catch(() => { gameModule = null; }); });
 
   doc.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');

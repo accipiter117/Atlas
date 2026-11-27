@@ -297,6 +297,7 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G5: units in a city stand to its sides.** Combat units to the right, civilians to the left, so the town stays visible; name plates are drawn after units so they always read.
 - **G5: resources are tokens drawn each frame**, not baked into chunks, so their icons stay sharp at every zoom and the terrain chunks need no rebuild when the icon atlas finishes loading. A resource's icon is `res-<id>` in assets/icons.svg; anything without one falls back to a gem in its class colour.
 - **G5: production smoke is cosmetic.** Your cities smoke while they are building something; rivals' smoke once they reach population 4. Both stop with reduced motion.
+- **The game screen loads lazily (brought forward from G8).** `src/ui/app.js` imports `src/ui/game.js` with `import()` when a game starts and prefetches it when the title screen is idle, so the first load (index.html, CSS and the scripts the title and the AI worker need) fell from 936 KB to 651 KB.
 
 ## Later
 

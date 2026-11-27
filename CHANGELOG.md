@@ -1,5 +1,9 @@
 # Changelog
 
+## Faster first load
+
+The title screen now opens without downloading the game screen and map renderer; they load quietly in the background while you read the title, or when you start a game. The first page load drops from about 936 KB to 651 KB (the budget is 1,000 KB), which leaves room for the rest of the overhaul. This was planned for G8 (docs/OVERHAUL.md section 7) and is done now because G6 adds more code.
+
 ## Graphics overhaul G5: cities, resources and improvements
 
 Cities now visibly grow and look like their culture, resources are icons you can tell apart, and the name plates say what each of your cities is building.
