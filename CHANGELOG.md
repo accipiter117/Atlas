@@ -1,5 +1,18 @@
 # Changelog
 
+## Killzone Extrasolar War K1b: the world switcher and a two-world Killzone game
+
+You can now play a Killzone war on two worlds at once and move between them.
+
+What you can try: open Settings and tick Developer mode. In New game, choose Killzone, then tick "Test: Killzone on two worlds" under the rules and start. The top bar shows Vekta and Helghan; click one, or press W (Shift+W goes back), to change world. The map, the minimap, the panels and the notifications all switch, and your orders go to the world on screen. Helghan is a stand-in for now (the Corinth front mirrored, in ash and dust). The computer plays both worlds every turn.
+
+- The top bar's yields are your whole empire's, across every world.
+- When the world on screen has nothing left to do but another does, Next says "Go to Helghan" (or Vekta) and the notifications list it first, so a turn never ends with a world waiting. Auto end turn waits for every world too.
+- City names never repeat across worlds, and a faction has one capital: its first city on any world.
+- Your saves keep which world each order was for, so a two-world game saves, loads and replays exactly.
+- Screenshots in `docs/shots/K1b/`.
+- Tests: a browser test of the switcher (map and minimap change, nothing in the game changes, an order on Helghan lands there, the notifications point at the waiting world, the computer moves on both worlds), and a Node test that a two-world game packs, unpacks and replays exactly with unique city names and one capital each.
+
 ## Killzone Extrasolar War K1a: several worlds in one game (engine only)
 
 The engine can now hold several worlds in one game, each with its own map, borders, fog of war, units, cities, front line and raider camps. Nothing changes on screen yet: this is the foundation the star map (K2) is built on, and the world switcher and two-world Killzone game come next, in K1b.

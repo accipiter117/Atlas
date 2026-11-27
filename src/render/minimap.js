@@ -47,7 +47,7 @@ export function createMinimap(canvas, { map, ruleset, colours = {}, onJump = () 
   const win = doc.defaultView;
   const ctx = canvas.getContext('2d');
   const registry = createRegistry(ruleset.skin);
-  const world = worldSize(map);
+  let world = worldSize(map);
   const terrainColour = map.terrainIds.map((id) => toHex(doc, placeholderColour(registry, 'terrain', id)));
   let state = { map, fog: null, cities: [], cityFaction: new Map() };
   let camera = null;
@@ -155,6 +155,8 @@ export function createMinimap(canvas, { map, ruleset, colours = {}, onJump = () 
   return {
     /** Your view of the world changed: { map, fog, cities }. */
     setWorld({ map: m, fog, cities }) {
+      // Another world (K1b) may be a different size.
+      if (m && (m.width !== state.map.width || m.height !== state.map.height)) world = worldSize(m);
       state = { map: m ?? state.map, fog: fog ?? state.fog, cities: cities ?? state.cities, cityFaction: new Map((cities ?? state.cities).map((c) => [c.id, c.faction])) };
       base = null;
       draw();

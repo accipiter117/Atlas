@@ -319,7 +319,7 @@ The one big engine change is letting a game hold several maps at once, linked by
 
 ### K1: Several worlds in one game
 
-**Progress.** K1a is done (engine only, nothing visible): see CHANGELOG.md and the K1a entries in docs/DECISIONS.md. The world field and save migration in the prompt below were replaced by parking inactive worlds, and the tuning switch by listing worlds. K1b (the world switcher, drawing one world at a time, and the two-world Killzone test game in the browser) is next.
+**Progress.** K1a is done (engine only, nothing visible): see CHANGELOG.md and the K1a entries in docs/DECISIONS.md. The world field and save migration in the prompt below were replaced by parking inactive worlds, and the tuning switch by listing worlds. K1b is done too: the world switcher, drawing one world at a time, the computer playing every world, and the two-world Killzone test game (Developer mode, New game, Killzone, "Test: Killzone on two worlds"). K1 is complete; K2 (the star map) is next.
 
 **Check on your laptop.** A test Killzone game opens with two worlds (Vekta and Helghan, placeholder maps); a world switcher moves between them; base-ancient and Witcher games look and play exactly as before.
 

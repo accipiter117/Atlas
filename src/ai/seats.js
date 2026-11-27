@@ -43,7 +43,19 @@ export function createSeatRunner(ruleset, factionIds, { memories = {}, aiRules =
         const me = currentFactionId(state);
         if (me === stopAt || !ais[me]) break;
         const before = ais[me].refusals.length;
-        runAiTurn(ais[me], () => view(state, me, ruleset), apply);
+        if (state.worlds) {
+          // Several worlds (K1b): the seat plays each world in turn, its orders tagged with that
+          // world; only the last world's end of turn really ends it.
+          const order = state.worldOrder;
+          for (const w of order) {
+            const last = w === order[order.length - 1];
+            runAiTurn(ais[me], () => view(state, me, ruleset, { world: w }), (cmd) => {
+              if (cmd.type === 'endTurn') return last ? apply(cmd) : { ok: true, state, events: [] };
+              return apply({ ...cmd, world: w });
+            });
+            if (state.winner || currentFactionId(state) !== me) break;
+          }
+        } else runAiTurn(ais[me], () => view(state, me, ruleset), apply);
         refusals.push(...ais[me].refusals.slice(before));
         if (!state.winner && currentFactionId(state) === me) apply({ type: 'endTurn', faction: me });
       }

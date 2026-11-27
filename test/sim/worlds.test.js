@@ -141,3 +141,22 @@ test('lookAt is read only', () => {
   assert.equal(activeWorld(s), 'alpha');
   assert.equal(lookAt(s, 'alpha'), s);
 });
+
+test('a two-world Killzone game saves, packs and replays exactly (orders keep their world)', async () => {
+  const { createSeatRunner } = await import('../../src/ai/index.js');
+  const { createSave, replay, packSave, unpackSave } = await import('../../src/save/save.js');
+  let s = createGame(kz, { seed: 12, players: [{ kind: 'ai' }, { kind: 'ai' }], map: { preset: 'corinth_front' }, mods: ['base-ancient', 'killzone', 'test-killzone-worlds'] });
+  const ids = s.factions.map((f) => f.id);
+  const runner = createSeatRunner(kz, ids, { recordOff: true });
+  const log = [];
+  while (s.turn <= 12 && !s.winner) { const r = runner.play(s, { maxSeats: ids.length }); s = r.state; log.push(...r.commands); }
+  assert.ok(log.some((c) => c.world === 'helghan') && log.some((c) => c.world === 'vekta'), 'orders on both worlds');
+  // Cities never share a name, and each faction has one capital across both worlds.
+  const cities = Object.values(allCities(s));
+  assert.equal(new Set(cities.map((c) => c.name)).size, cities.length);
+  for (const f of ids) assert.equal(cities.filter((c) => c.faction === f && c.capital).length, 1, `${f} has one capital`);
+  const save = createSave({ state: s, log, now: '2026-11-27T00:00:00Z' });
+  const back = await unpackSave((await packSave(save)).text);
+  assert.ok(back.log.some((c) => c.world === 'helghan'), 'the world survives packing');
+  assert.equal(replay(back, kz).ok, true);
+});

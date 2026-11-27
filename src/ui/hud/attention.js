@@ -24,6 +24,9 @@ export function createAttention(g) {
       ...(g.v.diplomacy?.deals ?? []).filter((d) => d.to === g.human).map((d) => ({ key: `deal${d.id}`, icon: 'diplomacy', label: g.tt('game.attention.offer', { faction: g.civName(d.from) }), go: () => g.openDiplomacy(d.from), urgent: true })),
       ...g.idle().map((u) => ({ key: u.id, icon: unitIconName(g.ruleset, u.type), label: g.tt('game.attention.idle', { unit: g.unitName(u) }), go: () => g.select(u.id, { centre: true }), unit: u.id })),
     ];
+    // Several worlds (K1b): another world waiting for orders comes first, one click away.
+    const elsewhere = g.waitingWorld?.();
+    if (elsewhere) all.unshift({ key: `world-${elsewhere}`, icon: 'turn', label: g.tt('game.attention.world', { world: g.worldName(elsewhere) }), go: () => g.switchWorld(elsewhere), urgent: true });
     const items = all.filter((it) => !dismissed.has(it.key));
     g.$('[data-field="attention-title"]').textContent = g.tt('game.attention', { n: items.length });
     g.$('[data-field="attention-count"]').textContent = String(items.length);

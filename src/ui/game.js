@@ -50,6 +50,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   const log = resume ? resume.log.slice() : [];
   /** The one way this screen changes the game: apply a command and log it. */
   function exec(cmd) {
+    // Several worlds (K1b): your orders are for the world on screen.
+    if (state.worlds && viewWorld && cmd.world === undefined && cmd.type !== 'endTurn') cmd = { ...cmd, world: viewWorld };
     const r = applyCommand(state, cmd, ruleset);
     if (r.ok) { state = r.state; log.push(cmd); }
     return r;
@@ -103,7 +105,11 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       worker.postMessage({ type: 'play', id, state: fromState, stopAt: human });
     });
   }
-  let v = view(state, human, ruleset);
+  // Several worlds (K1b): the world on screen (null in a one-world game). Views and your
+  // orders are for this world; the computer plays every world.
+  let viewWorld = state.worlds ? state.world : null;
+  const look = () => view(state, human, ruleset, viewWorld ? { world: viewWorld } : {});
+  let v = look();
   let selected = null;        // unit id
   let openCity = null;        // city id
   let pendingTarget = null;   // touch: first tap on a destination
@@ -174,6 +180,10 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get myUnits() { return myUnits; },
     get nameOfUnit() { return nameOfUnit; },
     get netGold() { return netGold; },
+    get empireTotals() { return empireTotals; },
+    get waitingWorld() { return waitingWorld; },
+    get switchWorld() { return switchWorld; },
+    get worldName() { return worldName; },
     get next() { return next; },
     get noProduction() { return noProduction; },
     get onCityTap() { return onCityTap; },
@@ -288,6 +298,12 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   doc.defaultView.addEventListener('resize', () => updateInsets());
   // What tests and the dev tools can see; published on window once the opening seats have played.
   const api = { get state() { return state; }, get view() { return v; }, get busy() { return busy; }, mapView, human, ruleset, get journals() { return journals; }, usesWorker: Boolean(worker),
+    /** Several worlds (K1b): the world on screen, and showing another (tests and the screenshot harness). */
+    get viewWorld() { return viewWorld; },
+    /** The command log so far (tests). */
+    get log() { return log; },
+    switchWorld: (id) => switchWorld(id),
+    waitingWorldNow: () => waitingWorld(),
     /** Open one of your cities' panels (the screenshot harness and tests). */
     openCity: (id) => openCityDrawer(id, { centre: true }),
     /** Select one of your units and centre on it (tests). */
@@ -530,7 +546,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   }
 
   function refresh() {
-    v = view(state, human, ruleset);
+    v = look();
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
     mapView.setHome(myCities().length ? myCities().map((c) => c.tile) : myUnits().map((u) => u.tile));
     if (religionLens) mapView.setReligionLens(lensData());
@@ -766,7 +782,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   let autoEndedTurn = -1;
   function maybeAutoEnd() {
     if (!settingOn('autoEndTurn') || busy || gameOver() || autoEndedTurn === state.turn || currentFactionId(state) !== human) return;
-    const nothingWaits = () => !idle().length && !noProduction().length && !v.pendingBattle && !v.pendingCapture && !v.pendingEvent && panel.hidden && overlay.hidden && !mapView.isAnimating();
+    const nothingWaits = () => !idle().length && !noProduction().length && !waitingWorld() && !v.pendingBattle && !v.pendingCapture && !v.pendingEvent && panel.hidden && overlay.hidden && !mapView.isAnimating();
     if (!nothingWaits()) return;
     doc.defaultView.setTimeout(() => {
       if (!settingOn('autoEndTurn') || busy || autoEndedTurn === state.turn || !nothingWaits()) return;
@@ -803,7 +819,26 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     else if (v.pendingEvent) showEventDialog();
     else if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
     else if (idle().length) selectNextIdle();
+    else if (waitingWorld()) { switchWorld(waitingWorld()); next(); }
     else endTurn();
+  }
+
+  /**
+   * Several worlds (K1b): the first other world where a city needs production or a unit
+   * needs orders (null if none, or in a one-world game), so Next never ends a turn while
+   * another world is waiting.
+   */
+  function waitingWorld() {
+    if (!state.worlds) return null;
+    const here = v;
+    try {
+      for (const w of state.worldOrder) {
+        if (w === viewWorld) continue;
+        v = view(state, human, ruleset, { world: w });
+        if (noProduction().length || idle().length) return w;
+      }
+      return null;
+    } finally { v = here; }
   }
 
   function act(type) {
@@ -1087,8 +1122,58 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   // ---------- Battles you fight yourself (phase 18) ----------
   let battleScreen = null;   // { host element, mounted module screen, battleId }
 
+  /**
+   * Your whole empire's yields across every world (K1b): { total: { food (surplus), production,
+   * gold, science, culture, faith }, netGold }. In a one-world game, the world on screen.
+   */
+  let empireCache = null;
+  function empireTotals() {
+    if (empireCache) return empireCache;
+    const views = state.worlds ? state.worldOrder.map((w) => (w === viewWorld ? v : view(state, human, ruleset, { world: w }))) : [v];
+    const total = { gold: 0, science: 0, culture: 0, faith: 0, production: 0, food: 0 };
+    let upkeep = 0;
+    for (const wv of views) {
+      const kw = knownWorld(wv);
+      for (const c of wv.cities.filter((x) => x.faction === human)) {
+        const r = cityYields(kw, ruleset, c);
+        for (const k of ['gold', 'science', 'culture', 'faith', 'production']) total[k] += r.total[k];
+        total.food += r.surplus;
+      }
+      upkeep += upkeepOf(kw, ruleset, human).total;
+    }
+    empireCache = { total, netGold: total.gold - upkeep };
+    return empireCache;
+  }
+
+  /** Show another world (K1b): the map, minimap and panels change to it; nothing in the game changes. */
+  function switchWorld(id) {
+    if (!state.worlds || id === viewWorld || !state.worldOrder.includes(id)) return;
+    select(null);
+    const leaving = viewWorld;
+    viewWorld = id;
+    v = look();
+    const mine = v.cities.find((c) => c.faction === human && c.capital) ?? v.cities.find((c) => c.faction === human) ?? v.units.find((u) => u.faction === human);
+    mapView.changeMap({ key: id, leaving, map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps, centre: mine?.tile ?? null });
+    refresh();
+  }
+  const worldName = (id) => ruleset.text[ruleset.worlds?.[id]?.nameKey] ?? id;
+
+  /** The world switcher in the top bar (only in a game with several worlds). */
+  function renderWorlds() {
+    const host = $('[data-field="worlds"]');
+    if (!host) return;
+    host.hidden = !state.worlds;
+    if (!state.worlds) return;
+    host.replaceChildren(...state.worldOrder.map((id) => el(doc, 'button', {
+      type: 'button', class: 'world-btn', dataset: { world: id }, 'aria-pressed': String(id === viewWorld),
+      title: tt('game.worldShow', { world: worldName(id) }), onclick: () => switchWorld(id),
+    }, worldName(id))));
+  }
+
   function render() {
+    empireCache = null;
     renderBar();
+    renderWorlds();
     renderAdvice();
     renderAttention();
     const c = theCity();
@@ -1102,8 +1187,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       $('[data-field="actions"]').replaceChildren();
       $('[data-field="hint"]').textContent = tt('game.hint.select');
     }
+    const elsewhere = noProduction().length || idle().length ? null : waitingWorld();
     $('[data-action="next"]').textContent = noProduction().length ? tt('game.nextChooseProduction')
-      : idle().length ? tt('game.nextUnit', { n: idle().length }) : tt('game.nextTurn');
+      : idle().length ? tt('game.nextUnit', { n: idle().length }) : elsewhere ? tt('game.nextWorld', { world: worldName(elsewhere) }) : tt('game.nextTurn');
     updateInsets();
     maybeAutoEnd();
   }
@@ -1124,6 +1210,11 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       v: () => openVictory(),
       y: () => toggleYields(),
       g: () => toggleGrid(),
+      w: () => {
+        if (!state.worlds) return false;
+        const order = state.worldOrder;
+        switchWorld(order[(order.indexOf(viewWorld) + (e.shiftKey ? order.length - 1 : 1)) % order.length]);
+      },
       '?': () => openHelp(),
       // Previous and next city while a city is open (graphics overhaul G8).
       '[': () => (theCity() ? root.querySelector('[data-action="city-prev"]')?.click() : false),

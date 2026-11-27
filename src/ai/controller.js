@@ -144,6 +144,12 @@ export function createAi(ruleset, factionId, memory = {}) {
         Object.entries(changed.scores).filter(([p]) => p !== changed.path).sort((a, b) => b[1] - a[1]).map(([p, s]) => ({ reasonKey: 'ai.reason.path', params: { path: p }, score: s })));
       memory.ctx = null;
     }
+    // Several worlds (K1b): the AI plays each world in turn; its picture of the map is per world.
+    if ((view.world ?? null) !== (memory.world ?? null)) {
+      memory.world = view.world ?? null;
+      memory.handled = {};
+      memory.ctx = null;
+    }
 
     // 1. A captured city waits for an answer: keep it.
     if (view.pendingCapture) {

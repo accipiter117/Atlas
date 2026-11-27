@@ -2,6 +2,8 @@
   "contentType": "text",
   "strings": {
     "world.vekta.name": "Vekta",
-    "world.helghan.name": "Helghan"
+    "world.helghan.name": "Helghan",
+    "mapPreset.helghan_front.name": "Helghan placeholder",
+    "mapPreset.helghan_front.text": "The Corinth front mirrored, in ash and dust: a stand-in until K4 draws Helghan."
   }
 }

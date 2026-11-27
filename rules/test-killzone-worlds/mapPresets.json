@@ -1,0 +1,208 @@
+{
+ "contentType": "mapPresets",
+ "entries": [
+  {
+   "id": "helghan_front",
+   "nameKey": "mapPreset.helghan_front.name",
+   "descriptionKey": "mapPreset.helghan_front.text",
+   "legend": {
+    ".": {
+     "terrain": "plains"
+    },
+    ",": {
+     "terrain": "desert"
+    },
+    ":": {
+     "terrain": "desert"
+    },
+    ";": {
+     "terrain": "tundra"
+    },
+    "h": {
+     "terrain": "desert",
+     "hills": true
+    },
+    "g": {
+     "terrain": "plains",
+     "hills": true
+    },
+    "f": {
+     "terrain": "tundra",
+     "feature": "forest"
+    },
+    "F": {
+     "terrain": "tundra",
+     "feature": "forest"
+    },
+    "m": {
+     "terrain": "plains",
+     "feature": "marsh"
+    },
+    "^": {
+     "terrain": "mountain"
+    },
+    "~": {
+     "terrain": "coast"
+    },
+    "o": {
+     "terrain": "ocean"
+    },
+    "l": {
+     "terrain": "lake"
+    }
+   },
+   "rows": [
+    "oooo~~~~~~~~~~~~~~~~~~~~~~~~~~~~oooo",
+    "oo~~;;::::;;;;,,,,h,,,....ff....~~oo",
+    "o~;;;::::;;;;;,,,hh,,,g...fff.....~o",
+    "o~;;;:::;;;;;;,,^h,,,,gg.......g..~o",
+    "~;;;;;;;;;;;;,,,,hh,,,,......ff....~",
+    "~;;;;;::;;;;,,,,,,,f,,,...l..f.....~",
+    "~;;;::::;;;,,,,,,,,Ff,,,,..........~",
+    "~;;;::::;;;,,,h,,,,FF,,,,.....gg...~",
+    "~;;;;;;;;;;,,,hh,,,,,,,,,..........~",
+    "~;;l;;;;;;,,,,,,,,,,,m,,,...ff.....~",
+    "~;;;;;;;;;,,,,,,,^^,,mm,,....f.....~",
+    "~;;;;;;;;,,,,,,,,^,,,,,,,..........~",
+    "~;;::::;;,,,,FF,,,,,,,,,,......l...~",
+    "~;:::::;;,,,,,F,,,,,hh,,,..........~",
+    "~;;;;;;;,,,,,,,,,,,,h,,,,....gg....~",
+    "~;;;;;;,,,,h,,,,,,,,,,,,,....g.....~",
+    "o~;;;;;;,,,hh,,,,m,,,,,,,...ff....~o",
+    "o~~;;;;;,,,,,,,,mm,,,,,,,........~~o",
+    "oo~~~;;;,,,,,,,,,,,,,,,,,,.....~~~oo",
+    "oooo~~~~~~~~~~~~~~~~~~~~~~~~~~~~oooo"
+   ],
+   "front": 17,
+   "cities": [
+    {
+     "side": 1,
+     "col": 31,
+     "row": 9,
+     "pop": 3
+    },
+    {
+     "side": 1,
+     "col": 28,
+     "row": 3,
+     "pop": 2
+    },
+    {
+     "side": 1,
+     "col": 27,
+     "row": 15,
+     "pop": 2
+    },
+    {
+     "side": 0,
+     "col": 4,
+     "row": 10,
+     "pop": 3
+    },
+    {
+     "side": 0,
+     "col": 7,
+     "row": 4,
+     "pop": 2
+    },
+    {
+     "side": 0,
+     "col": 7,
+     "row": 16,
+     "pop": 2
+    }
+   ],
+   "units": [
+    {
+     "side": 1,
+     "type": "warrior",
+     "col": 21,
+     "row": 6
+    },
+    {
+     "side": 1,
+     "type": "warrior",
+     "col": 21,
+     "row": 11
+    },
+    {
+     "side": 1,
+     "type": "archer",
+     "col": 22,
+     "row": 9
+    },
+    {
+     "side": 1,
+     "type": "spearman",
+     "col": 20,
+     "row": 14
+    },
+    {
+     "side": 1,
+     "type": "builder",
+     "col": 30,
+     "row": 10
+    },
+    {
+     "side": 1,
+     "type": "scout",
+     "col": 23,
+     "row": 3
+    },
+    {
+     "side": 0,
+     "type": "warrior",
+     "col": 13,
+     "row": 6
+    },
+    {
+     "side": 0,
+     "type": "warrior",
+     "col": 13,
+     "row": 11
+    },
+    {
+     "side": 0,
+     "type": "archer",
+     "col": 12,
+     "row": 9
+    },
+    {
+     "side": 0,
+     "type": "spearman",
+     "col": 14,
+     "row": 14
+    },
+    {
+     "side": 0,
+     "type": "builder",
+     "col": 5,
+     "row": 10
+    },
+    {
+     "side": 0,
+     "type": "scout",
+     "col": 11,
+     "row": 3
+    }
+   ],
+   "sites": [
+    {
+     "site": "factory",
+     "col": 23,
+     "row": 12
+    },
+    {
+     "site": "refinery",
+     "col": 10,
+     "row": 7
+    },
+    {
+     "site": "power_plant",
+     "col": 17,
+     "row": 8
+    }
+   ]
+  }
+ ]
+}

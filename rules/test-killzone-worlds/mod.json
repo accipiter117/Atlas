@@ -4,9 +4,15 @@
   "version": "1.0.0",
   "type": "tweak",
   "engine": ">=0.1.0",
-  "description": "Fights the Killzone front-line war on two worlds at once, Vekta and Helghan, both on the placeholder Corinth map. For testing the several-worlds system (Killzone Extrasolar War, phase K1a).",
-  "dependsOn": ["killzone"],
-  "files": ["worlds.json", "text/en-GB.json"],
+  "description": "Fights the Killzone front-line war on two worlds at once: Vekta on the Corinth map and Helghan on a placeholder (the Corinth map mirrored, in ash and dust). For testing the several-worlds system (Killzone Extrasolar War, phases K1a and K1b).",
+  "dependsOn": [
+    "killzone"
+  ],
+  "files": [
+    "worlds.json",
+    "mapPresets.json",
+    "text/en-GB.json"
+  ],
   "credits": "Original Atlas content, MIT licence. Fan work: setting names belong to their owners.",
   "dev": true
 }

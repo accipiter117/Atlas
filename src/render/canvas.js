@@ -27,7 +27,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
   host.replaceChildren(canvas);
   const ctx = canvas.getContext('2d');
   const registry = createRegistry(ruleset.skin);
-  const world = worldSize(map);
+  let world = worldSize(map);
   // The Settings choice wins over the device's own preference.
   const reducedMotion = () => {
     const setting = doc.documentElement?.dataset?.motion;
@@ -67,7 +67,9 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     lastFrameMs: 0,
   };
   const effects = createEffects();
-  const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, civs, reducedMotion });
+  let unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, civs, reducedMotion });
+  // Several worlds (K1b): each world's terrain chunks are kept, so switching back is instant.
+  const terrainByWorld = new Map();
   let size = { w: 0, h: 0 };
   // The parts of the canvas covered by floating panels (graphics overhaul G2): centring
   // aims at the middle of what is left, and ensureVisible keeps a hex out from under them.
@@ -326,7 +328,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
 
   const api = {
     canvas,
-    world,
+    get world() { return world; },
     stats: view,
     destroyed: false,
     get camera() { return view.cam; },
@@ -450,6 +452,35 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       if (newCities) view.cities = newCities;
       if (newCamps) view.camps = newCamps;
       view.owner = view.map.owner ?? null;
+      dirty = true;
+    },
+    /**
+     * Show another world (K1b): its map, with what the player knows of it. key names the
+     * world, so its terrain chunks are kept for when you come back; leaving: the one being
+     * left. The camera keeps its zoom and centres on `centre` (a tile) or the middle.
+     */
+    changeMap({ key, leaving, map: newMap, fog: newFog = null, units: newUnits = [], cities: newCities = [], camps: newCamps = [], centre = null }) {
+      if (leaving !== undefined) terrainByWorld.set(leaving, { terrain: view.terrain, map: view.map, fog: view.fog });
+      const kept = terrainByWorld.get(key);
+      view.map = newMap;
+      world = worldSize(newMap);
+      view.terrain = kept?.terrain ?? createTerrainLayer(doc, newMap, ruleset, registry);
+      if (kept) {
+        // Redraw what was explored, built or paved there while you were away.
+        const changed = [];
+        for (let i = 0; i < newMap.terrain.length; i += 1) {
+          if ((kept.fog?.[i] === 0) !== (newFog?.[i] === 0) || kept.map.improvement?.[i] !== newMap.improvement?.[i] || kept.map.road?.[i] !== newMap.road?.[i]) changed.push(i);
+        }
+        view.terrain.update(newMap, changed);
+      }
+      unitsLayer = createUnitsLayer({ map: newMap, ruleset, sheets, colours, civs, reducedMotion });
+      effects.clear();
+      Object.assign(view, { fog: newFog, units: newUnits, cities: newCities, camps: newCamps, owner: newMap.owner ?? null,
+        selected: null, selectedCity: null, cityOverlay: null, target: null, hover: null, path: null, pathFrom: null, markers: [], front: null, religionLens: null });
+      home = null;
+      measureKnown();
+      if (centre !== null && centre >= 0) api.centreOnTile(centre);
+      else api.centreOnWorld(world.width / 2, world.height / 2);
       dirty = true;
     },
     /** The open city's worked tiles, locks and tile prices (or null to clear). */

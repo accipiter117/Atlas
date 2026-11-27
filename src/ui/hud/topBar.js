@@ -27,12 +27,8 @@ export function createTopBar(g) {
   function renderBar() {
     g.$('[data-field="turn"]').textContent = g.tt('game.turn', { n: g.state.turn });
     g.$('[data-field="era"]').textContent = g.tt('game.era', { era: g.ruleset.text[g.ruleset.eras?.[eraOf(knownWorld(g.v), g.ruleset, g.human)]?.nameKey] ?? '' });
-    const total = { gold: 0, science: 0, culture: 0, faith: 0, production: 0, food: 0 };
-    for (const c of g.myCities()) {
-      const r = g.yieldsOf(c);
-      for (const k of ['gold', 'science', 'culture', 'faith', 'production']) total[k] += r.total[k];
-      total.food += r.surplus;
-    }
+    // Your whole empire, on every world (K1b).
+    const { total, netGold } = g.empireTotals();
     const s = g.v.stocks ?? { gold: 0, faith: 0 };
     const me = g.v.factions.find((f) => f.id === g.human);
     const chipBtn = g.$('[data-action="faction"]');
@@ -45,7 +41,7 @@ export function createTopBar(g) {
     g.$('[data-field="yields"]').replaceChildren(
       chip('food', { value: signed(total.food), label: g.tt('game.bar.food', { rate: signed(total.food) }) }),
       chip('production', { value: signed(total.production), label: g.tt('game.bar.production', { rate: signed(total.production) }) }),
-      chip('gold', { value: fmt(s.gold), rate: signed(g.netGold()), falling: g.netGold() < 0, label: g.tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(g.netGold()) }) }),
+      chip('gold', { value: fmt(s.gold), rate: signed(netGold), falling: netGold < 0, label: g.tt('game.bar.gold', { stock: fmt(s.gold), rate: signed(netGold) }) }),
       chip('science', { value: signed(total.science), action: 'trees', onclick: () => g.openTrees('techs'), label: science }),
       chip('culture', { value: signed(total.culture), action: g.ruleset.civics ? 'civics' : null, onclick: () => g.openTrees('civics'), label: culture }),
       chip('faith', { value: fmt(s.faith), rate: signed(total.faith), action: g.ruleset.beliefs ? 'religion' : null, onclick: () => g.openEmpire('religion'), label: faith }),

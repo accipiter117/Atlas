@@ -16,6 +16,7 @@ import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildin
 import { knows, speedMultiplier } from './progression.js';
 import { receivedResources, givenResources } from './diplomacy.js';
 import { spyCount, spyCap } from './espionage.js';
+import { allCities } from './worlds.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -43,7 +44,8 @@ export function nextCityName(state, ruleset, factionId) {
   const f = state.factions.find((x) => x.id === factionId);
   const civ = ruleset.factions?.[f?.civ];
   const list = ruleset.cityNames?.[civ?.cityNames]?.names ?? [];
-  const used = new Set(Object.values(state.cities).map((c) => c.name));
+  // Every world's cities (K1b): a name is never used twice in one game.
+  const used = new Set(Object.values(allCities(state)).map((c) => c.name));
   for (const name of list) if (!used.has(name)) return name;
   let n = used.size + 1;
   while (used.has(`${f?.name ?? 'City'} ${n}`)) n += 1;
@@ -53,7 +55,8 @@ export function nextCityName(state, ruleset, factionId) {
 /** Found a city (working copy). Returns { city, events } including anything effects give it. */
 export function foundCity(state, ruleset, factionId, tile) {
   const id = nextId(state, 'c');
-  const first = citiesOf(state, factionId).length === 0;
+  // A faction's first city on any world (K1b) is its capital: one capital, not one per world.
+  const first = !Object.values(allCities(state)).some((c) => c.faction === factionId);
   // Only a faction's very first city is its original capital (conquest victory counts these).
   const faction = state.factions.find((f) => f.id === factionId);
   const original = first && !faction?.foundedCapital;

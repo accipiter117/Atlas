@@ -295,7 +295,9 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const devIds = new Set(src.index.mods.filter((m) => m.dev).map((m) => m.id));
     // In rules/index.json order, whatever order the files arrived in.
     const listed = src.index.mods.map((m) => manifests[m.id]).filter(Boolean);
-    const mods = listed.filter((m) => m.type === 'tweak' && !devIds.has(m.id));
+    // Developer mode also offers the test mods (such as Killzone on two worlds, K1b).
+    const dev = readSettings().developer === true;
+    const mods = listed.filter((m) => m.type === 'tweak' && (dev || !devIds.has(m.id)));
     const conversions = listed.filter((m) => m.type === 'conversion' && !devIds.has(m.id));
     if (!setupCfg) {
       const previous = readLastSetup();
