@@ -35,8 +35,8 @@ export class SaveTooBigError extends Error {
 }
 
 /** Build a save object from a game. `now` is the creation time as an ISO string, supplied by the caller. */
-export function createSave({ state, log = [], label = '', now, journal = null }) {
-  return {
+export function createSave({ state, log = [], label = '', now, journal = null, meta = null }) {
+  const save = {
     format: SAVE_FORMAT,
     saveVersion: CURRENT_SAVE_VERSION,
     engineVersion: ENGINE_VERSION,
@@ -49,6 +49,10 @@ export function createSave({ state, log = [], label = '', now, journal = null })
     fingerprint: fingerprint(state),
     recorder: journal ? { included: true, journal } : { included: false },
   };
+  // For the Continue and Load cards (graphics overhaul G7): faction, leader portrait, colour and a
+  // tiny text map. Optional: older saves simply have none, and nothing in the game reads it.
+  if (meta) save.meta = meta;
+  return save;
 }
 
 /** Check a save's wrapper and bring it up to the current version. */
@@ -128,6 +132,7 @@ function summary(save, extra) {
     mods: save.setup?.mods ?? [],
     savedAt: save.createdAt,
     over: Boolean(state.winner),
+    ...(save.meta ? { meta: save.meta } : {}),
     ...extra,
   };
 }

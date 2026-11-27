@@ -17,19 +17,30 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 29 9.5v13L16 30 3 22.5v-13z' fill='%238a2b1d'/%3E%3C/svg%3E">
 </head>
 <body>
-  <main id="title" class="screen" aria-labelledby="title-heading">
-    <div class="card">
+  <main id="title" class="screen title-screen" aria-labelledby="title-heading">
+    <div class="title-world" data-field="title-world" aria-hidden="true"></div>
+    <div class="card title-card">
       <h1 id="title-heading" class="title">Atlas</h1>
       <p class="subtitle">Build an empire, one hex at a time.</p>
       <ul class="menu" role="list" data-menu>
-        <li><button class="btn" type="button" data-action="continue" disabled>Continue</button></li>
+        <li><button class="btn continue" type="button" data-action="continue" disabled><span class="continue-label">Continue</span><span class="continue-info" data-field="continue-info"></span></button></li>
         <li><button class="btn primary" type="button" data-action="new">New game</button></li>
-        <li><button class="btn" type="button" data-action="load">Load</button></li>
-        <li><button class="btn" type="button" data-action="import">Import code</button></li>
-        <li><button class="btn" type="button" data-action="mods">Mods</button></li>
-        <li><button class="btn" type="button" data-action="settings">Settings</button></li>
+        <li><button class="btn" type="button" data-action="quick-start" disabled title="Your last setup on a new world">Quick start</button></li>
+        <li class="menu-pair"><button class="btn" type="button" data-action="load">Load</button><button class="btn" type="button" data-action="import">Import code</button></li>
+        <li class="menu-pair"><button class="btn" type="button" data-action="mods">Mods</button><button class="btn" type="button" data-action="settings">Settings</button></li>
+        <li><button class="btn" type="button" data-action="title-help">Help</button></li>
       </ul>
-      <p class="footnote">Phase 21: play on your phone, even offline.<span data-dev-link hidden> Developer <a href="dev.html">map viewer</a>.</span></p>
+      <p class="footnote">Solo play against the computer, on your laptop or phone, even offline.<span data-dev-link hidden> Developer <a href="dev.html">map viewer</a>.</span></p>
+    </div>
+  </main>
+
+  <main id="help" class="screen" hidden aria-labelledby="help-heading">
+    <div class="card wide">
+      <div class="mods-head">
+        <h2 id="help-heading">Help</h2>
+        <button class="btn back" type="button" data-action="back">Back</button>
+      </div>
+      <div data-field="help-body"></div>
     </div>
   </main>
 

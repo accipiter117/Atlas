@@ -74,6 +74,7 @@ test('setup, autosave, Continue, export and import', async ({ page }, info) => {
   // Back to the title screen: Continue brings back the same turn.
   await page.locator('[data-action="game-menu"]').click();
   await expect(panel).toContainText('Save game');
+  await page.locator('[data-action="open-save"]').click();
   await page.locator('[data-action="save-game"]').click();
   await expect(panel.locator('[data-field="saved"]')).toBeVisible();
   await page.locator('[data-action="export-game"]').click();
@@ -89,7 +90,7 @@ test('setup, autosave, Continue, export and import', async ({ page }, info) => {
 
   // Closing the tab: a fresh page still offers Continue (the autosave).
   await page.reload();
-  await page.getByRole('button', { name: 'Load' }).click();
+  await page.getByRole('button', { name: 'Load', exact: true }).click();
   await expect(page.locator('.save-item')).toHaveCount(2);
   await page.screenshot({ path: `test-results/load-${info.project.name}.png` });
   await page.locator('#load [data-action="back"]').click();

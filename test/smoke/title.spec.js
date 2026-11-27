@@ -3,7 +3,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test('title screen: six buttons, no console errors, big enough to tap', async ({ page }, info) => {
+test('title screen: the menu, no console errors, big enough to tap', async ({ page }, info) => {
   const errors = [];
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(String(e)));
@@ -11,7 +11,8 @@ test('title screen: six buttons, no console errors, big enough to tap', async ({
   await page.goto('/');
   await expect(page).toHaveTitle('Atlas');
   const menu = page.locator('#title [data-menu] .btn');
-  await expect(menu).toHaveText(['Continue', 'New game', 'Load', 'Import code', 'Mods', 'Settings']);
+  await expect(menu).toHaveText(['Continue', 'New game', 'Quick start', 'Load', 'Import code', 'Mods', 'Settings', 'Help']);
+  await expect(page.getByRole('button', { name: 'Quick start' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
   await expect(page.locator('#game')).toBeHidden();
 

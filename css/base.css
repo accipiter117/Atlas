@@ -697,3 +697,29 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px soli
 .summary-item .icon { width: 16px; height: 16px; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .turn-ribbon.show, :root:not([data-motion="full"]) .progress-row.glow .ring { animation: none; } }
 :root[data-motion="reduce"] .turn-ribbon.show, :root[data-motion="reduce"] .progress-row.glow .ring { animation: none; }
+
+/* ---------- Graphics overhaul G7: title, Continue card, Load cards, menu ---------- */
+.title-screen { position: relative; overflow: hidden; }
+.title-world { position: absolute; inset: 0; z-index: 0; }
+.title-world canvas { display: block; }
+.title-card { position: relative; z-index: 1; background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: blur(2px); }
+.menu-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.btn.continue { flex-direction: column; gap: 4px; }
+.btn.continue:disabled .continue-info { display: none; }
+.continue-info:empty { display: none; }
+.continue-info, .save-card { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
+.save-face { width: 40px; height: 40px; image-rendering: pixelated; border: 2px solid var(--brass); border-radius: 6px; background: var(--parchment); }
+.save-what { display: grid; text-align: left; line-height: 1.2; }
+.save-thumb { width: 84px; height: auto; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; }
+.save-list { display: grid; gap: 8px; }
+.save-item { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.save-group { margin-top: 8px; font: 600 12px/1.2 var(--font-heading); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+.game-menu { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; align-items: start; }
+.menu-list { display: grid; gap: 8px; }
+.save-dialog { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 8px; }
+.save-dialog h3 { margin: 0; font: 600 18px/1.3 var(--font-heading); }
+.help-glossary { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.help-glossary dt { font-weight: 700; }
+.help-glossary dd { margin: 0; }
+@media (max-width: 899px) { .game-menu { grid-template-columns: 1fr; } .save-item { grid-template-columns: 1fr; } }
+.save-dialog[hidden] { display: none; }

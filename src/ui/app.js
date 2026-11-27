@@ -17,6 +17,8 @@ import { createModManager } from './modManager.js';
 import { renderSetup, defaultSetup, toSetup, selectionOf, optionsOf } from './setup.js';
 import { codeBox } from './gameMenu.js';
 import { setTooltipDelay } from './hud/tooltip.js';
+import { drawThumb } from './thumb.js';
+import { helpBody } from './helpContent.js';
 import { createAudio } from '../render/audio/index.js';
 import {
   createSave, saveToSlot, autosave, listSaves, latestSave, loadSave, deleteSave, exportCode, importCode, memoryStorage, modCheck, SaveTooBigError,
@@ -42,9 +44,10 @@ function toast(doc, message) {
 
 /** Tokens a skin set on the page (skin.json "tokens"), cleared when you leave the game. */
 let skinTokens = [];
-function show(doc, id) {
-  // A conversion's skin (its colour tokens in css/tokens.css) dresses the game screen only.
-  if (id !== 'game') {
+function show(doc, id, { keepSkin = false } = {}) {
+  // A conversion's skin (its colour tokens in css/tokens.css) dresses the game screen only
+  // (and the screens you open from inside a game, which keep it).
+  if (id !== 'game' && !keepSkin) {
     delete doc.documentElement.dataset.skin;
     for (const k of skinTokens) doc.documentElement.style.removeProperty(`--${k}`);
     skinTokens = [];
@@ -157,7 +160,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     return {
       async saveSlot(snap, label) {
         try {
-          const save = createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal });
+          const save = createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal, meta: snap.meta });
           await saveToSlot(storage, `s${Date.now().toString(36)}`, save);
           refreshTitle();
           return { ok: true };
@@ -167,17 +170,20 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       },
       async autosave(snap, label) {
         try {
-          await autosave(storage, createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal }));
+          await autosave(storage, createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal, meta: snap.meta }));
           refreshTitle();
         } catch (e) {
           say(e instanceof SaveTooBigError ? tt('save.autosaveTooBig') : tt('save.autosaveFailed'));
         }
       },
       exportCode(snap, label) {
-        return exportCode(createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString() }));
+        return exportCode(createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), meta: snap.meta }));
       },
       quit() { game?.destroy(); game = null; refreshTitle(); show(doc, 'title'); },
       newGame() { game?.destroy(); game = null; refreshTitle(); actions.new(); },
+      // From the in-game menu (graphics overhaul G7): Settings and Load, coming back to the game.
+      openSettings() { returnTo = 'game'; applySettings(); show(doc, 'settings', { keepSkin: true }); },
+      async openLoad() { returnTo = 'game'; await sources(); renderLoad(); show(doc, 'load', { keepSkin: true }); },
     };
   }
 
@@ -215,13 +221,34 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const latest = latestSave(storage);
     btn.disabled = !latest;
     btn.title = latest ? latest.label : '';
+    // The Continue card (graphics overhaul G7): faction, leader, turn and a map thumbnail.
+    const info = doc.querySelector('[data-field="continue-info"]');
+    info.replaceChildren(...(latest ? saveCard(latest) : []));
+    doc.querySelector('[data-action="quick-start"]').disabled = !readLastSetup();
+  }
+
+  /** The parts of a save's card: portrait, faction and turn, thumbnail (from its meta, when it has one). */
+  function saveCard(entry) {
+    const m = entry.meta ?? {};
+    const thumb = doc.createElement('canvas');
+    thumb.className = 'save-thumb';
+    const drawn = m.thumb ? drawThumb(thumb, m.thumb, m.colour) : false;
+    return [
+      m.portrait ? el(doc, 'img', { class: 'save-face', src: m.portrait, alt: '' }) : null,
+      el(doc, 'span', { class: 'save-what' },
+        el(doc, 'strong', {}, m.faction || entry.label || entry.id),
+        el(doc, 'span', { class: 'small' }, tt('load.turnOf', { n: entry.turn ?? '?' }))),
+      drawn ? thumb : null,
+    ].filter(Boolean);
   }
 
   function renderLoad() {
     const list = doc.querySelector('[data-field="save-list"]');
     const saves = listSaves(storage);
     if (!saves.length) { list.replaceChildren(el(doc, 'li', { class: 'muted' }, tt('load.none'))); return; }
-    list.replaceChildren(...saves.map((entry) => el(doc, 'li', { class: 'save-item', dataset: { save: entry.id } },
+    // Your saves first, then the autosaves, each newest first, as cards (graphics overhaul G7).
+    const card = (entry) => el(doc, 'li', { class: 'save-item', dataset: { save: entry.id } },
+      el(doc, 'div', { class: 'save-card' }, ...saveCard(entry)),
       el(doc, 'div', { class: 'save-info' },
         el(doc, 'strong', {}, entry.label || entry.id),
         el(doc, 'span', { class: 'small muted' }, tt(entry.kind === 'autosave' ? 'load.autosave' : 'load.saved', { when: new Date(entry.savedAt).toLocaleString(), kb: Math.ceil((entry.bytes ?? 0) / 1000) }))),
@@ -240,7 +267,12 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
           deleteSave(storage, entry);
           renderLoad();
           refreshTitle();
-        } }, tt('load.delete'))))));
+        } }, tt('load.delete'))));
+    const mine = saves.filter((e) => e.kind !== 'autosave');
+    const autos = saves.filter((e) => e.kind === 'autosave');
+    list.replaceChildren(
+      ...(mine.length ? [el(doc, 'li', { class: 'save-group' }, tt('load.yourSaves')), ...mine.map(card)] : []),
+      ...(autos.length ? [el(doc, 'li', { class: 'save-group' }, tt('load.autosaves')), ...autos.map(card)] : []));
   }
 
   const importStatus = (msg, cls = 'warn') => doc.querySelector('[data-field="import-status"]').replaceChildren(el(doc, 'p', { class: cls }, msg));
@@ -309,6 +341,23 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     await draw();
     show(doc, 'setup');
   }
+  /** Quick start: the last setup you played, on a new world. */
+  async function quickStart() {
+    const previous = readLastSetup();
+    if (!previous) { await openSetup(); return; }
+    const base = await rulesFor(['base-ancient']);
+    if (base.error) { say(base.error); return; }
+    const manifests = Object.fromEntries(Object.entries(base.src.available).map(([id, m]) => { try { return [id, JSON.parse(m.manifest)]; } catch { return [id, {}]; } }));
+    const cfg = defaultSetup(base.ruleset, { seed: newSeed(), previous });
+    if (cfg.conversion && cfg.conversion !== 'none' && !manifests[cfg.conversion]) cfg.conversion = 'none';
+    cfg.tweaks = (cfg.tweaks ?? []).filter((id) => manifests[id]);
+    const loaded = await rulesFor(selectionOf(cfg), optionsOf(cfg));
+    if (loaded.error) { say(loaded.error); return; }
+    if (cfg.faction && !loaded.ruleset.factions[cfg.faction]) cfg.faction = null;
+    const { setup, selection, options } = toSetup(loaded.ruleset, cfg, { manifests, text: loaded.text });
+    await startGame({ setup, selection, options });
+  }
+
   function readLastSetup() {
     try {
       const s = JSON.parse(storage.getItem('atlas:lastSetup') ?? 'null');
@@ -352,6 +401,11 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       await openSave(save);
     },
     settings() { applySettings(); show(doc, 'settings'); },
+    async 'quick-start'() { await sources(); await quickStart(); },
+    'title-help'() {
+      doc.querySelector('[data-field="help-body"]').replaceChildren(helpBody(doc, tt));
+      show(doc, 'help');
+    },
     async mods() {
       show(doc, 'mods');
       if (!modManager) {
@@ -366,6 +420,8 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     },
     back() {
       if (!doc.getElementById('pick').hidden && returnTo === 'setup') { returnTo = 'title'; show(doc, 'setup'); return; }
+      // Settings or Load opened from inside a game go back to it.
+      if (returnTo === 'game' && game) { returnTo = 'title'; show(doc, 'game'); gameScreen.querySelector('#game-map').focus({ preventScroll: true }); return; }
       show(doc, 'title');
     },
   };
@@ -390,7 +446,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       const next = buttons[(i + (e.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length];
       next.focus();
       e.preventDefault();
-    } else if (e.key === 'Escape' && ['mods', 'pick', 'load', 'import', 'settings'].some((id) => !doc.getElementById(id).hidden)) {
+    } else if (e.key === 'Escape' && ['mods', 'pick', 'load', 'import', 'settings', 'help'].some((id) => !doc.getElementById(id).hidden)) {
       actions.back();
     }
   });
@@ -398,4 +454,13 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   applySettings();
   refreshTitle();
   show(doc, 'title');
+  // The world behind the title, once the page is idle (cosmetic; never a game).
+  idle(async () => {
+    try {
+      const { ruleset } = await rulesFor(['base-ancient']);
+      if (!ruleset) return;
+      const { createTitleWorld } = await import('./titleWorld.js');
+      createTitleWorld(doc.querySelector('[data-field="title-world"]'), ruleset);
+    } catch { /* the title works without it */ }
+  });
 }

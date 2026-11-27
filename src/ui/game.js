@@ -15,6 +15,7 @@ import { createAdvice } from './hud/advice.js';
 import { createAttention } from './hud/attention.js';
 import { createMapHud } from './hud/mapHud.js';
 import { createPlayback } from './hud/playback.js';
+import { mapThumb } from './thumb.js';
 import { hideTooltip } from './hud/tooltip.js';
 import { createUnitCard } from './hud/unitCard.js';
 import { createCityDrawer } from './screens/cityDrawer.js';
@@ -217,6 +218,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get showClose() { return showClose; },
     get showEvents() { return showEvents; },
     get sound() { return sound; },
+    get openHelp() { return openHelp; },
     get snapshot() { return snapshot; },
     get startMemories() { return startMemories; },
     get startWorker() { return startWorker; },
@@ -624,7 +626,15 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   /** Everything a save needs right now. */
   function snapshot() {
-    return { state, log, journal: journals };
+    return { state, log, journal: journals, meta: saveMeta() };
+  }
+  /** What the Continue and Load cards show (graphics overhaul G7). */
+  function saveMeta() {
+    const civ = v.factions.find((f) => f.id === human)?.civ;
+    const leader = ruleset.factions?.[civ]?.leaders?.[0];
+    try {
+      return { faction: civName(human), leader: ruleset.text[ruleset.leaders?.[leader]?.nameKey] ?? '', portrait: sheets?.[`leader.${leader}`]?.src ?? null, colour: colours[human], thumb: mapThumb(v, ruleset, human) };
+    } catch { return null; }
   }
   function saveLabel() {
     const civ = v.factions.find((f) => f.id === human)?.civ;

@@ -114,7 +114,9 @@ export function createOverlays(g) {
         }
       },
       onExport: (out) => exportInto(out),
-      onVictory: openVictory,
+      onLoad: () => { g.panel.hidden = true; g.hooks.openLoad?.(); },
+      onSettings: () => { g.panel.hidden = true; g.hooks.openSettings?.(); },
+      onHelp: () => g.openHelp(),
       onTitle: () => { g.panel.hidden = true; g.hooks.quit?.(); },
       onClose: () => { g.panel.hidden = true; },
     });

@@ -9,17 +9,10 @@ import { createMinimap } from '../../render/minimap.js';
 import { showTooltipAt, hideTooltip, tooltipDelay } from './tooltip.js';
 import { unitIconName } from './icons.js';
 import { el, knownWorld, fmt } from './shared.js';
+import { helpBody } from '../helpContent.js';
 
 const YIELDS = ['food', 'production', 'gold', 'science', 'culture', 'faith'];
 const RESOURCE_ICONS = new Set(['wheat', 'rice', 'cattle', 'deer', 'fish', 'stone', 'wine', 'silk', 'incense', 'horses', 'iron']);
-// The keyboard shortcuts the Help sheet lists (the keys themselves live in src/ui/game.js and src/ui/input.js).
-const SHORTCUTS = [
-  ['Space', 'help.key.nextUnit'], ['Enter', 'help.key.next'], ['B', 'help.key.found'], ['F', 'help.key.fortify'], ['S', 'help.key.skip'],
-  ['Z', 'help.key.sleep'], ['Del', 'help.key.disband'], ['R', 'help.key.techs'], ['C', 'help.key.civics'], ['E', 'help.key.empire'],
-  ['D', 'help.key.diplomacy'], ['V', 'help.key.victory'], ['J', 'help.key.journal'], ['L', 'help.key.lens'], ['Y', 'help.key.yields'],
-  ['G', 'help.key.grid'], ['?', 'help.key.help'], ['Esc', 'help.key.escape'], ['W A S', 'help.key.pan'], ['+ -', 'help.key.zoom'],
-];
-
 export function createMapHud(g) {
   let yieldIcons = false;
   let grid = false;
@@ -140,12 +133,7 @@ export function createMapHud(g) {
     body.replaceChildren(
       el(g.doc, 'div', { class: 'tree-head' }, el(g.doc, 'h2', {}, g.tt('help.title')),
         el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-help' }, onclick: () => { g.panel.hidden = true; } }, g.tt('help.close'))),
-      el(g.doc, 'div', { class: 'help-body' },
-        el(g.doc, 'section', {}, el(g.doc, 'h3', {}, g.tt('help.basics')),
-          ...['help.basic.select', 'help.basic.move', 'help.basic.attack', 'help.basic.city', 'help.basic.attention', 'help.basic.end', 'help.basic.minimap']
-            .map((k) => el(g.doc, 'p', {}, g.tt(k)))),
-        el(g.doc, 'section', {}, el(g.doc, 'h3', {}, g.tt('help.keys')),
-          el(g.doc, 'dl', { class: 'help-keys' }, ...SHORTCUTS.flatMap(([key, text]) => [el(g.doc, 'dt', {}, el(g.doc, 'kbd', {}, key)), el(g.doc, 'dd', {}, g.tt(text))])))));
+      helpBody(g.doc, g.tt));
     g.panel.hidden = false;
     g.panel.querySelector('[data-action="close-help"]').focus();
   }
