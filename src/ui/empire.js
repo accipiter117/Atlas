@@ -6,6 +6,7 @@
 
 import { t } from '../data/text.js';
 import { slotsOf, governmentAvailable, policyAvailable, workingGovernment, SLOT_KINDS } from '../sim/index.js';
+import { icon } from './hud/icons.js';
 
 function el(doc, tag, props = {}, ...children) {
   const node = doc.createElement(tag);
@@ -24,7 +25,12 @@ function el(doc, tag, props = {}, ...children) {
  * pick: the slot being chosen for, { kind, index } or null.
  * onGovernment(id), onPolicy(kind, index, policyId|null), onPick(slot|null), onClose().
  */
-export function renderEmpire(doc, host, { world, view, ruleset, text, pick = null, onGovernment, onPolicy, onPick, onClose, tab = 'government', onTab = null, religionTab = null, tradeTab = null, spiesTab = null }) {
+/** The emblem for each kind of card slot, from the icon sprite. */
+function slotEmblem(doc, kind) {
+  return icon(doc, { military: 'strength', economic: 'gold', diplomatic: 'diplomacy', wildcard: 'victory' }[kind] ?? 'empire', { size: 16 });
+}
+
+export function renderEmpire(doc, host, { world, view, ruleset, text, pick = null, onGovernment, onPolicy, onPick, onClose, tab = 'government', onTab = null, religionTab = null, tradeTab = null, spiesTab = null, citiesTab = null }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key, fallback = '') => ruleset.text[key] ?? fallback;
   const me = view.me;
@@ -63,6 +69,8 @@ export function renderEmpire(doc, host, { world, view, ruleset, text, pick = nul
       const id = work.policies?.[kind]?.[i] ?? null;
       const chosen = pick && pick.kind === kind && pick.index === i;
       return el(doc, 'button', { type: 'button', class: `slot${id ? ' filled' : ''}${chosen ? ' picking' : ''}`, dataset: { slot: kind, index: String(i) }, onclick: () => onPick(chosen ? null : { kind, index: i }) },
+        // An illustrated card (graphics overhaul G8): a band in the slot's colour with its emblem.
+        el(doc, 'span', { class: 'card-band', 'aria-hidden': 'true' }, slotEmblem(doc, kind)),
         el(doc, 'strong', {}, id ? polName(id) : tt('empire.empty')),
         id ? el(doc, 'span', { class: 'small' }, polText(id)) : null);
     }))) : [el(doc, 'p', { class: 'muted' }, tt('empire.needGovernment'))];
@@ -86,11 +94,13 @@ export function renderEmpire(doc, host, { world, view, ruleset, text, pick = nul
       el(doc, 'h2', {}, tt('empire.title')),
       el(doc, 'div', { class: 'tabs', role: 'tablist' },
         el(doc, 'button', { type: 'button', class: `btn small${tab === 'government' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'government'), dataset: { tab: 'government' }, onclick: () => onTab?.('government') }, tt('empire.tab.government')),
+        citiesTab ? el(doc, 'button', { type: 'button', class: `btn small${tab === 'cities' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'cities'), dataset: { tab: 'cities' }, onclick: () => onTab?.('cities') }, tt('empire.tab.cities')) : null,
         religionTab ? el(doc, 'button', { type: 'button', class: `btn small${tab === 'religion' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'religion'), dataset: { tab: 'religion' }, onclick: () => onTab?.('religion') }, tt('empire.tab.religion')) : null,
         tradeTab ? el(doc, 'button', { type: 'button', class: `btn small${tab === 'trade' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'trade'), dataset: { tab: 'trade' }, onclick: () => onTab?.('trade') }, tt('empire.tab.trade')) : null,
         spiesTab ? el(doc, 'button', { type: 'button', class: `btn small${tab === 'spies' ? ' primary' : ''}`, role: 'tab', 'aria-selected': String(tab === 'spies'), dataset: { tab: 'spies' }, onclick: () => onTab?.('spies') }, tt('empire.tab.spies')) : null),
       el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-empire' }, onclick: onClose }, tt('tree.close'))),
-    tab === 'religion' && religionTab ? el(doc, 'div', { class: 'empire-body single' }, religionTab())
+    tab === 'cities' && citiesTab ? el(doc, 'div', { class: 'empire-body single' }, citiesTab())
+      : tab === 'religion' && religionTab ? el(doc, 'div', { class: 'empire-body single' }, religionTab())
       : tab === 'trade' && tradeTab ? el(doc, 'div', { class: 'empire-body single' }, tradeTab())
         : tab === 'spies' && spiesTab ? el(doc, 'div', { class: 'empire-body single' }, spiesTab()) : el(doc, 'div', { class: 'empire-body' },
       el(doc, 'section', { class: 'empire-left' }, ...status, el(doc, 'h3', {}, tt('empire.cards')), el(doc, 'div', { class: 'slot-groups' }, ...slotGroups), list),

@@ -35,7 +35,7 @@ function scoreChart(doc, tt, state, history, name, colours, human) {
   if (!history || history.length < 2) return el(doc, 'p', { class: 'small muted', dataset: { field: 'score-chart' } }, tt('victory.chartSoon'));
   const W = 640;
   const H = 150;
-  const pad = { l: 34, r: 8, t: 8, b: 20 };
+  const pad = { l: 4, r: 4, t: 6, b: 4 };
   const turns = history.map((h) => h[0]);
   const t0 = Math.min(...turns);
   const t1 = Math.max(...turns);
@@ -48,11 +48,12 @@ function scoreChart(doc, tt, state, history, name, colours, human) {
   }).join('');
   const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${tt('victory.chartLabel')}" preserveAspectRatio="none">`
     + `<line x1="${pad.l}" y1="${H - pad.b}" x2="${W - pad.r}" y2="${H - pad.b}" class="axis"/><line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}" class="axis"/>`
-    + `<text x="${pad.l - 4}" y="${pad.t + 8}" text-anchor="end" class="tick">${top}</text><text x="${pad.l - 4}" y="${H - pad.b}" text-anchor="end" class="tick">0</text>`
-    + `<text x="${pad.l}" y="${H - 4}" class="tick">${tt('victory.turnN', { n: t0 })}</text><text x="${W - pad.r}" y="${H - 4}" text-anchor="end" class="tick">${tt('victory.turnN', { n: t1 })}</text>`
     + `${lines}</svg>`;
-  const box = el(doc, 'div', { class: 'score-chart', dataset: { field: 'score-chart' } });
-  box.innerHTML = svg;
+  // The labels sit outside the SVG, which stretches to fit, so the text never distorts.
+  const box = el(doc, 'div', { class: 'score-chart', dataset: { field: 'score-chart' } },
+    el(doc, 'span', { class: 'tick top' }, String(top)), el(doc, 'span', { class: 'tick zero' }, '0'));
+  box.insertAdjacentHTML('beforeend', svg);
+  box.append(el(doc, 'div', { class: 'ticks-x' }, el(doc, 'span', { class: 'tick' }, tt('victory.turnN', { n: t0 })), el(doc, 'span', { class: 'tick' }, tt('victory.turnN', { n: t1 }))));
   const legend = el(doc, 'ul', { class: 'chart-legend' }, ...state.factions.map((f) => el(doc, 'li', {}, el(doc, 'span', { class: 'swatch', style: `background:${colours[f.id] ?? '#888'}` }), name(f.id))));
   return el(doc, 'section', { class: 'victory-chart' }, el(doc, 'h3', {}, tt('victory.chartTitle')), box, legend);
 }

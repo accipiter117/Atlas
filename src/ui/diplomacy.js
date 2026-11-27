@@ -154,6 +154,14 @@ export function renderDiplomacy(doc, host, { world, view, ruleset, text, name, l
       el(doc, 'h3', {}, tt('dip.leaderTitle', { faction: name(sel.id), leader: leaderName(sel.id) })),
       el(doc, 'p', { class: 'dip-status' }, statusText(sel.id)),
       el(doc, 'p', {}, tt('dip.opinion', { n: signed(theirs.total) })),
+      // The opinion meter (graphics overhaul G8): hostile on the left, friendly on the right.
+      (() => {
+        const share = Math.max(-1, Math.min(1, theirs.total / 50));
+        const meter = el(doc, 'div', { class: 'opinion-meter', role: 'meter', 'aria-valuemin': '-50', 'aria-valuemax': '50', 'aria-valuenow': String(theirs.total), 'aria-label': tt('dip.opinion', { n: signed(theirs.total) }), dataset: { field: 'opinion-meter' } },
+          el(doc, 'span', { class: `fill ${share >= 0 ? 'good' : 'bad'}` }));
+        meter.firstChild.style.cssText = share >= 0 ? `left:50%;width:${(share * 50).toFixed(1)}%` : `right:50%;width:${(-share * 50).toFixed(1)}%`;
+        return meter;
+      })(),
       el(doc, 'ul', { class: 'dip-reasons', dataset: { field: 'reasons' } }, ...(reasons.length ? reasons : [el(doc, 'li', { class: 'muted' }, tt('dip.noReasons'))])),
       agenda ? el(doc, 'p', { class: 'small' }, tt('dip.agenda', { name: say(agenda.nameKey), text: say(agenda.descriptionKey) }), ' ',
         el(doc, 'strong', {}, tt(agendaReason?.id === 'agendaLike' ? 'dip.agendaYes' : agendaReason?.id === 'agendaHate' ? 'dip.agendaNo' : 'dip.agendaNeither'))) : null,

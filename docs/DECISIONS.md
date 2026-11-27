@@ -310,6 +310,11 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G7: the colour-blind safe palette is Okabe and Ito's**, assigned by seat, applied at once to the map, units, cities and minimap; switching back restores the faction colours.
 - **G7: setup keeps every option; only the layout changed.** Tabs (Rules, Map, Players, Victory, Advanced) and a summary card hold the same fields with the same names, so setups and saves are unchanged. Rival and team rows fold away unless opened.
 - **G7: the title's world is the game's own map view on a fixed seed**, imported after the title appears so the first load is unchanged; it pans only while the title shows and holds still under reduced motion.
+- **G8: the score chart samples the game rather than the game recording history.** The game screen notes every faction's score at the start of each of your turns and keeps the samples in the save's optional meta; the rules and the fingerprint are untouched, and a game loaded from an older save charts from that point on.
+- **G8: queue arrows needed two small commands** (moveQueueItem, removeQueueItem), validated like every other command and stored with short keys, so a game with them replays exactly.
+- **G8: the battlefield gets the units' sprites through the mount options.** Battle modules may only import their own code, so the game hands the tactical module a `sprite(type, side)` function; a module that ignores it still works.
+- **G8: a city opens on its Production tab**, because the usual reason to open one is to choose what it builds; stepping between cities with the arrows or [ and ] keeps the tab you are on.
+- **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## Later
 

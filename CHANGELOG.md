@@ -1,5 +1,17 @@
 # Changelog
 
+## Graphics overhaul G8: the full-screen screens
+
+The city screen, the trees, Empire, Victory, the journal, Diplomacy and the battle screens match the new look, and the odds and amenities read in plain English.
+
+What you can try: open the tech tree (R): eras are bands, lines join each tech to what it needs, the path to your current research glows gold, a badge marks techs with a boost, and you can drag it around, search for a tech by name, or see the whole tree at once. Open a city: it is a parchment panel beside the live map with previous and next city (the arrows or [ and ]), the city at a glance, and three tabs: Production (with gold and faith prices and a queue you can reorder or trim), Buildings (what is built and what you could build, with what each gives) and Citizens (focus, specialists, borders). Empire has illustrated policy cards and a Cities tab: every city in a table you can sort by any column, and a click on a name opens it. Victory charts every faction's score turn by turn. The AI journal filters by faction, recent turns and planner, with each rival's current strategy pinned at the top. Diplomacy shows an opinion meter. When you attack with "Ask each time", the card shows both sides face to face with their portraits and modifiers, and the battlefield is drawn with the units' own sprites on softer ground. The odds now say "You will probably win" (and so on) before the numbers, and a new city's amenities read "none needed yet" instead of "1 of 0 needed".
+
+- `src/ui/trees.js`, `src/ui/screens/cityDrawer.js`, `src/ui/cityTable.js`, `src/ui/empire.js`, `src/ui/victoryPanel.js`, `src/ui/journal.js`, `src/ui/diplomacy.js`, `src/ui/screens/dialogs.js`, `src/battles/tactical/render/draw.js`.
+- New city commands to move and remove queue items.
+- `docs/shots/README.md` lists what changed in each phase from G1 to G8.
+- Not done yet (recorded in docs/DECISIONS.md): Diplomacy's relationship timeline and a click-across deal table.
+- Tests: a browser test of the trees (lines, search, zoom out), the city screen (tabs, the queue arrows, the next-city key), Empire's Cities table, the Victory chart, the journal filter and the opinion meter; a unit test of the queue commands.
+
 ## Graphics overhaul G7: title, setup, load, menu, settings and help
 
 The menus now fit a laptop screen and get you into a game in two clicks.

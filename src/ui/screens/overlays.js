@@ -8,6 +8,7 @@ import { renderDiplomacy } from '../diplomacy.js';
 import { renderReligionTab } from '../religionTab.js';
 import { renderTradeTab } from '../tradeTab.js';
 import { renderSpiesTab } from '../spiesTab.js';
+import { renderCityTable } from '../cityTable.js';
 import { renderJournal } from '../journal.js';
 import { renderVictory, renderEnd } from '../victoryPanel.js';
 import { renderGameMenu, codeBox } from '../gameMenu.js';
@@ -55,6 +56,8 @@ export function createOverlays(g) {
     renderEmpire(g.doc, g.panel.querySelector('[data-field="panel-body"]'), {
       world, view: g.v, ruleset: g.ruleset, text: g.text, pick: g.pickSlot, tab,
       onTab: (t2) => { g.pickSlot = null; openEmpire(t2); },
+      citiesTab: () => renderCityTable(g.doc, { world, view: g.v, ruleset: g.ruleset, text: g.text, itemName: g.itemName,
+        onOpen: (id) => { g.panel.hidden = true; g.openCityDrawer(id, { centre: true }); }, onSort: () => openEmpire('cities') }),
       tradeTab: g.ruleset.trade ? () => renderTradeTab(g.doc, { world, view: g.v, ruleset: g.ruleset, text: g.text, name: g.civName }) : null,
       spiesTab: g.ruleset.espionage ? () => renderSpiesTab(g.doc, {
         world, view: g.v, ruleset: g.ruleset, text: g.text, name: g.civName,

@@ -834,3 +834,38 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .battle-faceoff .mods { margin: 2px 0 0; padding: 0; list-style: none; color: var(--ink-soft); }
 .battle-face { width: 72px; height: 72px; }
 .battle-verdict { font: 600 17px/1.3 var(--font-heading); margin: 4px 0; }
+/* Empire (graphics overhaul G8): illustrated policy cards and the Cities table. */
+.slot { position: relative; padding-top: 34px; overflow: hidden; }
+.card-band { position: absolute; inset: 0 0 auto 0; height: 26px; display: grid; place-items: center; color: #fff8e6; font-size: 15px; background: var(--line); }
+.slot-military .card-band { background: #a8452f; }
+.slot-economic .card-band { background: #c29a2b; }
+.slot-diplomatic .card-band { background: #2f6fbf; }
+.slot-wildcard .card-band { background: #6a4c9c; }
+.slot:not(.filled) .card-band { opacity: 0.45; }
+.city-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.city-table th, .city-table td { padding: 2px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+.city-table td.num { text-align: right; }
+.city-table .sort, .city-table .link-row { min-height: 44px; border: 0; background: transparent; color: var(--ink); font: 600 13px/1.2 var(--font-body); cursor: pointer; padding: 0; }
+.city-table .sort.on { color: var(--accent); }
+.city-table .link-row { font-weight: 700; }
+.city-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+/* Diplomacy's opinion meter and the journal's filters (graphics overhaul G8). */
+.opinion-meter { position: relative; height: 12px; margin: 2px 0 10px; border: 1px solid var(--line); border-radius: 6px; background: linear-gradient(90deg, color-mix(in srgb, var(--danger) 18%, transparent), transparent 50%, color-mix(in srgb, var(--y-food) 22%, transparent)); max-width: 420px; }
+.opinion-meter::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--ink-soft); }
+.opinion-meter .fill { position: absolute; top: 0; bottom: 0; border-radius: 5px; }
+.opinion-meter .fill.good { background: var(--y-food); }
+.opinion-meter .fill.bad { background: var(--danger); }
+.journal-filters { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; justify-content: flex-end; }
+.journal-filter { display: grid; gap: 2px; }
+.journal-filter select { min-height: 44px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; }
+.journal-pinned { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: var(--radius); padding: 6px 12px; margin: 8px 0; }
+.journal-pinned h3 { margin: 0 0 4px; font: 600 15px/1.2 var(--font-heading); }
+.journal-pinned ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.score-chart { position: relative; padding-left: 34px; }
+.score-chart .tick { color: var(--ink-soft); font-size: 11px; }
+.score-chart .tick.top, .score-chart .tick.zero { position: absolute; left: 0; width: 30px; text-align: right; }
+.score-chart .tick.top { top: 2px; }
+.score-chart .tick.zero { top: 136px; }
+.score-chart .ticks-x { display: flex; justify-content: space-between; }
+/* Polish (graphics overhaul G8): a sheet's Close button always sits at the right of its header. */
+.tree-head > [data-action^="close-"], .tree-head .tabs > [data-action^="close-"] { margin-left: auto; }

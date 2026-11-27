@@ -62,10 +62,42 @@ function grouped(ruleset, text, factionName, journal) {
   return out;
 }
 
+// Which planner made a decision, from the command it led to (graphics overhaul G8 filters).
+const PLANNER = {
+  strategy: 'strategy', setResearch: 'research', queueResearch: 'research', setProduction: 'production', queueProduction: 'production', buyItem: 'production',
+  setGovernment: 'government', setPolicy: 'government', declareWar: 'diplomacy', proposeDeal: 'diplomacy', answerDeal: 'diplomacy', denounce: 'diplomacy',
+  makePeace: 'diplomacy', choosePantheon: 'faith', foundReligion: 'faith', spreadReligion: 'faith', buyWithFaith: 'faith', startTradeRoute: 'economy',
+  buildImprovement: 'economy', setFocus: 'economy', buyTile: 'economy', assignSpy: 'spies', startMission: 'spies',
+};
+export const plannerOf = (entry) => PLANNER[entry.type] ?? (['moveUnit', 'attack', 'fortify', 'promote', 'cityAttack', 'sleep', 'skip', 'disband'].includes(entry.type) ? 'military' : 'other');
+const PLANNERS = ['strategy', 'research', 'production', 'military', 'economy', 'government', 'diplomacy', 'faith', 'spies'];
+const filters = { faction: 'all', turns: 'all', planner: 'all' };
+
 export function renderJournal(doc, host, { ais, factions, ruleset, text, factionName, onClose }) {
   const tt = (k, a) => t(text, k, a);
-  const sections = factions.filter((f) => ais[f.id]).map((f) => {
-    const journal = (ais[f.id].memory.journal ?? []).filter((e) => e.type !== 'endTurn').slice(-40).reverse();
+  const turnNow = Math.max(0, ...Object.values(ais).flatMap((a) => (a.memory.journal ?? []).map((e) => e.turn)));
+  const keep = (f, e) => (filters.faction === 'all' || filters.faction === f.id)
+    && (filters.turns === 'all' || e.turn > turnNow - Number(filters.turns))
+    && (filters.planner === 'all' || plannerOf(e) === filters.planner);
+  const rerender = () => renderJournal(doc, host, { ais, factions, ruleset, text, factionName, onClose });
+  const pick = (name, value, options) => el(doc, 'label', { class: 'journal-filter' }, el(doc, 'span', { class: 'small' }, tt(`journal.filter.${name}`)),
+    (() => {
+      const sel = el(doc, 'select', { name: `journal-${name}` }, ...options.map(([v, label]) => { const o = el(doc, 'option', { value: v }, label); if (v === value) o.selected = true; return o; }));
+      sel.addEventListener('change', () => { filters[name] = sel.value; rerender(); });
+      return sel;
+    })());
+  const known = factions.filter((f) => ais[f.id]);
+  const bar = el(doc, 'div', { class: 'journal-filters' },
+    pick('faction', filters.faction, [['all', tt('journal.all')], ...known.map((f) => [f.id, factionName(f.id)])]),
+    pick('turns', filters.turns, [['all', tt('journal.allTurns')], ['10', tt('journal.lastN', { n: 10 })], ['30', tt('journal.lastN', { n: 30 })]]),
+    pick('planner', filters.planner, [['all', tt('journal.all')], ...PLANNERS.map((p) => [p, tt(`journal.planner.${p}`)])]));
+  // Strategy changes, pinned above the rest: each faction's latest.
+  const pinned = known.filter((f) => filters.faction === 'all' || filters.faction === f.id).map((f) => {
+    const last = (ais[f.id].memory.journal ?? []).filter((e) => e.type === 'strategy').at(-1);
+    return last ? el(doc, 'li', {}, el(doc, 'strong', {}, `${factionName(f.id)}: `), sentence(ruleset, text, factionName, last), el(doc, 'span', { class: 'muted small' }, ` (${tt('journal.turn', { n: last.turn })})`)) : null;
+  }).filter(Boolean);
+  const sections = known.filter((f) => filters.faction === 'all' || filters.faction === f.id).map((f) => {
+    const journal = (ais[f.id].memory.journal ?? []).filter((e) => e.type !== 'endTurn' && keep(f, e)).slice(-40).reverse();
     return el(doc, 'section', { class: 'journal-faction', dataset: { faction: f.id } },
       el(doc, 'h3', {}, factionName(f.id)),
       journal.length ? el(doc, 'ol', {}, ...grouped(ruleset, text, factionName, journal).slice(0, 25).map((g) => el(doc, 'li', {},
@@ -76,6 +108,7 @@ export function renderJournal(doc, host, { ais, factions, ruleset, text, faction
         : el(doc, 'p', { class: 'muted' }, tt('journal.empty')));
   });
   host.replaceChildren(
-    el(doc, 'div', { class: 'tree-head' }, el(doc, 'h2', {}, tt('journal.title')), el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-journal' }, onclick: onClose }, tt('journal.close'))),
+    el(doc, 'div', { class: 'tree-head' }, el(doc, 'h2', {}, tt('journal.title')), bar, el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-journal' }, onclick: onClose }, tt('journal.close'))),
+    pinned.length ? el(doc, 'section', { class: 'journal-pinned', dataset: { field: 'journal-pinned' } }, el(doc, 'h3', {}, tt('journal.pinned')), el(doc, 'ul', {}, ...pinned)) : null,
     el(doc, 'div', { class: 'journal' }, ...sections));
 }
