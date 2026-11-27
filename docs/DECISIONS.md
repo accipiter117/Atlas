@@ -266,6 +266,14 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 
 - **Skipped for now** at Matthew's request: Atlas is being developed for solo play against the computer. Online play (Supabase) can be picked up later as written in docs/PLAN.md; nothing in the code depends on it.
 
+## Graphics and UI overhaul (docs/OVERHAUL.md)
+
+- **G1: new tokens beside the old ones.** The overhaul's palette uses new names (`--walnut`, `--brass`, `--parchment`, `--gold`, `--y-food` and so on) so the current look is untouched until G2 moves the HUD onto them. A skin overrides them through `skin.json` "tokens", applied on the game screen only.
+- **G1: UI scale by CSS zoom** on the panels, screens, overlays and tooltips, never on the map, so every layout keeps its pixel sizes and the map's tap maths is unchanged.
+- **G1: game.js split through a context object.** The moved functions reach the game screen's shared state through `g` (getters, and setters for what they change), so behaviour is identical; the whole browser suite passed unchanged after the split.
+- **G1: the screenshot saves** are played by the computer on every seat to turn 120 and stop at the start of your own turn, so they open ready to play.
+- **G1: the phone layout is frozen.** The overhaul targets screens 1280px wide and up. The phone Playwright tests stay in place but are skipped (a note points to docs/OVERHAUL.md); a phone pass comes after G8. The phone CSS stays as it is until then.
+
 ## Later
 
 - Nothing yet.

@@ -127,7 +127,10 @@ tuning = OD([('contentType', 'tuning'), ('set', OD([
 ]))])
 open(K + 'tuning.json', 'w').write(json.dumps(tuning, indent=2, ensure_ascii=False) + '\n')
 skin = OD([('contentType', 'skin'), ('values', OD([('id', 'killzone'), ('palette', OD([('ink', '#16181c'), ('paper', '#d9dcdf'), ('accent', '#b8321f'), ('water', '#2a3f4f'), ('land', '#6d6f5e')])),
-    ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])), ('art', {}), ('sounds', {}), ('factionColours', True), ('raiderColour', '#2b2b2b')]))])
+    ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])), ('art', {}), ('sounds', {}), ('factionColours', True),
+    # Graphics overhaul tokens: gunmetal panels, ISA blue edges, Helghast orange-red for alarms.
+    ('tokens', OD([('walnut', 'rgba(29, 34, 38, 0.95)'), ('walnut-solid', '#1d2226'), ('brass', '#5b7fa6'), ('brass-inner', '#2c3a48'), ('panel-ink', '#dfe6ec'), ('gold', '#e05a2a'), ('danger', '#e05a2a')])),
+    ('raiderColour', '#2b2b2b')]))])
 open(K + 'skin/skin.json', 'w').write(json.dumps(skin, indent=2, ensure_ascii=False) + '\n')
 text['mapType.inland_sea.text'] = 'Land all round a central sea.'
 open(K + 'text/en-GB.json', 'w').write(json.dumps(OD([('contentType', 'text'), ('strings', text)]), indent=2, ensure_ascii=False) + '\n')

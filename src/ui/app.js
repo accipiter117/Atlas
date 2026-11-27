@@ -13,6 +13,8 @@ import { showFactionPicker } from './factionCards.js';
 import { createModManager } from './modManager.js';
 import { renderSetup, defaultSetup, toSetup, selectionOf, optionsOf } from './setup.js';
 import { codeBox } from './gameMenu.js';
+import { setTooltipDelay } from './hud/tooltip.js';
+import { createAudio } from '../render/audio/index.js';
 import {
   createSave, saveToSlot, autosave, listSaves, latestSave, loadSave, deleteSave, exportCode, importCode, memoryStorage, modCheck, SaveTooBigError,
 } from '../save/save.js';
@@ -35,9 +37,15 @@ function toast(doc, message) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600 + 900 * (el.childElementCount - 1));
 }
 
+/** Tokens a skin set on the page (skin.json "tokens"), cleared when you leave the game. */
+let skinTokens = [];
 function show(doc, id) {
   // A conversion's skin (its colour tokens in css/tokens.css) dresses the game screen only.
-  if (id !== 'game') delete doc.documentElement.dataset.skin;
+  if (id !== 'game') {
+    delete doc.documentElement.dataset.skin;
+    for (const k of skinTokens) doc.documentElement.style.removeProperty(`--${k}`);
+    skinTokens = [];
+  }
   for (const screen of doc.querySelectorAll('.screen')) screen.hidden = screen.id !== id;
   const first = doc.querySelector(`#${id} .btn:not(:disabled)`);
   first?.focus({ preventScroll: true });
@@ -81,6 +89,8 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   const modsScreen = doc.getElementById('mods');
   const gameScreen = doc.getElementById('game');
   const params = new URLSearchParams(win.location.search);
+  // Sounds (graphics overhaul G1): synthesised, silent until you first click or press a key.
+  const audio = createAudio(win);
   let modManager = null;
   let game = null;
   let sourcesPromise = null;
@@ -95,16 +105,25 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   const say = (m) => toast(doc, m);
 
   // ---------- Settings (atlas:settings) ----------
+  const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70' };
   function readSettings() {
-    try { return { motion: 'device', developer: false, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { motion: 'device', developer: false }; }
+    try { return { ...SETTINGS_DEFAULTS, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { ...SETTINGS_DEFAULTS }; }
   }
   function applySettings() {
     const s = readSettings();
     doc.documentElement.dataset.motion = s.motion;
+    // Interface size (graphics overhaul G1): one CSS variable scales every panel and screen.
+    doc.documentElement.style.setProperty('--ui-scale', String(Number(s.uiScale) || 1));
+    doc.documentElement.dataset.tooltips = s.tooltipDelay;
+    setTooltipDelay(s.tooltipDelay);
+    audio.setVolumes({ master: Number(s.volumeMaster) / 100, effects: Number(s.volumeEffects) / 100, music: Number(s.volumeMusic) / 100 });
     for (const n of doc.querySelectorAll('[data-dev-link]')) n.hidden = !s.developer;
-    doc.querySelector('[data-setting="motion"]').value = s.motion;
-    doc.querySelector('[data-setting="developer"]').checked = s.developer;
+    for (const input of doc.querySelectorAll('[data-setting]')) {
+      const value = s[input.dataset.setting];
+      if (input.type === 'checkbox') input.checked = Boolean(value); else input.value = String(value);
+    }
   }
+  doc.querySelector('[data-action="test-sound"]')?.addEventListener('click', () => audio.play('techDone'));
   for (const input of doc.querySelectorAll('[data-setting]')) {
     input.addEventListener('change', () => {
       const s = readSettings();
@@ -162,6 +181,11 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     game?.destroy();
     show(doc, 'game');
     if (loaded.ruleset.skin?.id && loaded.ruleset.skin.id !== 'ancient') doc.documentElement.dataset.skin = loaded.ruleset.skin.id;
+    // A skin may restyle the overhaul's tokens (only tokens change, never layout).
+    for (const [k, v] of Object.entries(loaded.ruleset.skin?.tokens ?? {})) {
+      if (/^[a-z-]+$/.test(k) && typeof v === 'string') { doc.documentElement.style.setProperty(`--${k}`, v); skinTokens.push(k); }
+    }
+    audio.setOverrides(loaded.ruleset.skin?.sounds);
     game = createGameScreen(doc, gameScreen, {
       ruleset: loaded.ruleset, text: loaded.text, sheets, toast: say, setup, resume, debug: params.has('debug'), hooks: makeHooks(), ...(quick ?? {}),
     });

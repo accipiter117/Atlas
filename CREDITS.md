@@ -15,3 +15,12 @@ Atlas engine code: original work under the MIT licence (see `LICENSE`).
 ## Sprite sheets
 
 - **unit.warrior** (`assets/sprites/lpc-test-warrior.json`): Composed from the Universal LPC Spritesheet Character Generator (https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator), layers: body (body/bodies/male); head (head/heads/human/male); trousers (legs/pants/male); chainmail (torso/chainmail/male); helmet (hat/helmet/barbarian_nasal/adult). Artists: bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike), ElizaWy, Matthew Krohn (makrohn), Napsio (Vitruvian Studio). Used under OGA-BY 3.0 (each layer is also available under GPL 3.0). Full per-layer credits: assets/sprites/lpc-test-warrior.CREDITS.md
+
+## Fonts
+
+- **Cinzel**: SIL Open Font Licence 1.1 (https://github.com/NDISCOVER/Cinzel), from @fontsource/cinzel 5.3.0; licence in `assets/fonts/LICENSE-cinzel.txt`
+- **Alegreya Sans**: SIL Open Font Licence 1.1 (https://github.com/huertatipografica/Alegreya-Sans), from @fontsource/alegreya-sans 5.3.0; licence in `assets/fonts/LICENSE-alegreya-sans.txt`
+
+## Icons
+
+- **Atlas icons** (`assets/icons.svg`, `assets/icons.png`): original pixel art drawn in code by `tools/gen/icons.mjs`, MIT licence.

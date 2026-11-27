@@ -1,0 +1,16 @@
+[
+  {
+    "family": "Cinzel",
+    "licence": "SIL Open Font Licence 1.1",
+    "source": "https://github.com/NDISCOVER/Cinzel",
+    "via": "@fontsource/cinzel 5.3.0",
+    "licenceFile": "assets/fonts/LICENSE-cinzel.txt"
+  },
+  {
+    "family": "Alegreya Sans",
+    "licence": "SIL Open Font Licence 1.1",
+    "source": "https://github.com/huertatipografica/Alegreya-Sans",
+    "via": "@fontsource/alegreya-sans 5.3.0",
+    "licenceFile": "assets/fonts/LICENSE-alegreya-sans.txt"
+  }
+]

@@ -76,6 +76,13 @@ export async function checkData(root) {
     try { await readFile(join(root, desc.src)); } catch { sheetProblems.push(`${path} points to image ${desc.src}, which is missing`); }
     credits.push(`- **${id}** (\`${path}\`): ${desc.credits ?? 'MISSING CREDITS'}`);
   }
+  // Bundled fonts (graphics overhaul G1), from assets/fonts/credits.json written by tools/copy-fonts.mjs.
+  try {
+    const fonts = JSON.parse(await readFile(join(root, 'assets', 'fonts', 'credits.json'), 'utf8'));
+    credits.push('', '## Fonts', '');
+    for (const f of fonts) credits.push(`- **${f.family}**: ${f.licence} (${f.source}), from ${f.via}; licence in \`${f.licenceFile}\``);
+  } catch { /* no bundled fonts */ }
+  credits.push('', '## Icons', '', '- **Atlas icons** (`assets/icons.svg`, `assets/icons.png`): original pixel art drawn in code by `tools/gen/icons.mjs`, MIT licence.');
   credits.push('');
   return { results, credits: credits.join('\n'), sheetProblems, artStatus: artStatus(artStacks) };
 }

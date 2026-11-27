@@ -64,6 +64,20 @@ anything locally. Explain decisions in gameplay terms, not jargon.
 6. Finish by telling Matthew, in plain British English and in a short list, what he can now try
    on the GitHub Pages link and anything he should look out for.
 
+## Visual work (graphics and UI overhaul, docs/OVERHAUL.md)
+- Target screens 1280px wide and up. The phone layout is frozen until a later phone pass;
+  phone Playwright projects are skipped, not deleted.
+- Use the tokens in css/tokens.css and the icons in assets/icons.svg. No hard-coded colours,
+  no text standing in for an icon, no underlined links in the HUD.
+- One light direction (top left) for every shadow and highlight on the map.
+- All art and sound go through the registries by id, with code placeholders, so skins can
+  replace anything and nothing breaks while art is missing.
+- Run npm run shots before and after any visual change, look at the images yourself, fix what
+  looks wrong, and commit the after set to docs/shots/<phase>/.
+- Animation is presentation only: it plays events after they happen and must never change
+  the game. Respect reduced motion and the animation settings.
+- Every LPC layer used must have its author and licence recorded; check-data fails otherwise.
+
 ## Never
 - Copy art, text or code from the source games or other projects' assets.
 - Put tuning numbers in code.

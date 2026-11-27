@@ -18,7 +18,32 @@
   --hex-line: rgba(80, 64, 32, 0.10);
 
   --font-display: "Cinzel", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Alegreya Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* The graphics overhaul's palette (docs/OVERHAUL.md section 2): a general's
+     campaign table. Walnut panels trimmed in brass over the map, parchment for
+     menus and documents. Defined now (G1) and taken up by the HUD from G2; a
+     skin replaces them through skin.json "tokens" (only tokens change, never
+     layout). Yield colours always come with an icon, never alone. */
+  --walnut: rgba(43, 33, 24, 0.94);
+  --walnut-solid: #2b2118;
+  --brass: #b08d57;
+  --brass-inner: #5a4630;
+  --panel-ink: #f1e6cf;
+  --parchment: #efe3c6;
+  --parchment-ink: #2a1f14;
+  --gold: #c9a227;
+  --danger: #a63a2b;
+  --y-food: #7cb342;
+  --y-production: #c97b2a;
+  --y-gold: #e6b422;
+  --y-science: #4fa3d9;
+  --y-culture: #b46ad4;
+  --y-faith: #e8e2d0;
+  --font-heading: "Cinzel", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-text: "Alegreya Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* UI scale (Settings): 0.9, 1, 1.1 or 1.25; the map itself is not scaled. */
+  --ui-scale: 1;
 
   --radius: 10px;
   --gap: 12px;

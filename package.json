@@ -13,13 +13,16 @@
     "lint": "eslint . --max-warnings 0",
     "sim": "node tools/sim.mjs",
     "perf": "node tools/perf.mjs",
-    "replay": "node tools/replay.mjs"
+    "replay": "node tools/replay.mjs",
+    "shots": "node tools/shots.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
+    "@fontsource/alegreya-sans": "^5.3.0",
+    "@fontsource/cinzel": "^5.3.0",
     "@playwright/test": "1.63.0",
     "eslint": "9.39.5",
     "globals": "15.15.0"

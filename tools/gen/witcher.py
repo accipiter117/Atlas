@@ -219,6 +219,8 @@ skin = OD([('contentType', 'skin'), ('values', OD([
     ('fonts', OD([('display', 'Cinzel'), ('body', 'Inter')])),
     ('art', {}), ('sounds', {}),
     ('factionColours', True),
+    # Graphics overhaul tokens (docs/OVERHAUL.md section 2): cold slate and iron instead of walnut and brass.
+    ('tokens', OD([('walnut', 'rgba(36, 40, 43, 0.94)'), ('walnut-solid', '#24282b'), ('brass', '#8d969b'), ('brass-inner', '#454c52'), ('panel-ink', '#e4e7e9'), ('gold', '#b8c4cc')])),
     ('raiderColour', '#2b2b2b'),
 ]))])
 open(W + 'skin/skin.json', 'w').write(json.dumps(skin, indent=2, ensure_ascii=False) + '\n')

@@ -4,6 +4,10 @@
 
 import { test, expect } from '@playwright/test';
 
+// Frozen during the graphics and UI overhaul (docs/OVERHAUL.md): the new HUD
+// targets screens 1280px wide and up, and a phone pass comes after G8.
+test.skip(true, 'Phone layout frozen during the overhaul: see docs/OVERHAUL.md');
+
 const watchErrors = (page) => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e)));

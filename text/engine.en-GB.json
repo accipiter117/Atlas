@@ -741,6 +741,25 @@
     "front.siteCaptured": "{side} took the {site}.",
     "front.shift": "The front moved towards {side}.",
     "setup.phoneMaps": "On a phone, Small and Standard maps play most smoothly.",
-    "setup.slowOnPhones": "{size} (slow on phones)"
+    "setup.slowOnPhones": "{size} (slow on phones)",
+    "tooltip.yield.gold": "Gold",
+    "tooltip.yield.science": "Science",
+    "tooltip.yield.culture": "Culture",
+    "tooltip.yield.faith": "Faith",
+    "tooltip.source.tiles": "Worked tiles",
+    "tooltip.source.city": "City centres",
+    "tooltip.source.citizens": "Citizens",
+    "tooltip.source.buildings": "Buildings",
+    "tooltip.source.specialists": "Specialists",
+    "tooltip.source.trade": "Trade routes",
+    "tooltip.source.bonuses": "Bonuses (traits, policies, beliefs, mood)",
+    "tooltip.upkeep.units": "Unit upkeep",
+    "tooltip.upkeep.buildings": "Building upkeep",
+    "tooltip.perTurn": "Each turn",
+    "tooltip.stock": "In the treasury: {n}",
+    "tooltip.none": "Nothing yet",
+    "tooltip.key.trees": "Click to open the tech tree",
+    "tooltip.key.civics": "Click to open the civics tree",
+    "tooltip.key.religion": "Click to open religion"
   }
 }

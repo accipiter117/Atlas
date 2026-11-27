@@ -1,5 +1,19 @@
 # Changelog
 
+## Graphics overhaul G1: foundations for the new look
+
+The plan for the overhaul is now in the repository as `docs/OVERHAUL.md` (eight phases, G1 to G8). G1 lays the groundwork; the game looks almost the same afterwards.
+
+What you can try: hover the gold, science, culture or faith figures in the top bar to see where each comes from (worked tiles, citizens, buildings, specialists, trade routes, bonuses, and for gold the upkeep it costs). On a touch screen, press and hold. Open Settings from the title screen: Interface size (90% to 125%) makes every panel and screen bigger or smaller without touching the map; Tooltips chooses how quickly they appear (or turns them off); three volume sliders and "Play a test sound". Headings now use Cinzel and text Alegreya Sans, bundled with the game so they work offline.
+
+- `npm run shots`: three fixed turn-120 games (base game, Witcher, Killzone, in `test/fixtures/saves/`) loaded through Import code and photographed at 1366x768 and 1920x1080 (title, setup, map, zoomed-out map, a unit, a city, tech tree, Empire, Diplomacy, Victory, menu). The set for this phase is in `docs/shots/G1/`.
+- `src/ui/game.js` split into `src/ui/hud/` (top bar, advice line, attention list, unit card, shared helpers, tooltips, icons) and `src/ui/screens/` (city panel, dialogs, full-screen sheets), with no change in behaviour: from 1,400 lines to about 960.
+- The overhaul's design tokens in `css/tokens.css` (walnut, brass, parchment, gold, danger, yield colours, heading and text fonts) and a `--ui-scale` variable; the Witcher and Killzone skins restyle the tokens through `skin.json`.
+- 65 pixel icons drawn in code (`tools/gen/icons.mjs`): yields, stats, unit classes, lenses, screen buttons, statuses and every resource, as an SVG sprite for the interface and a PNG atlas for the map.
+- A tooltip system (delay from Settings, long press on touch, keyboard focus) and a sound registry with seven sounds synthesised in the browser (click, end turn, clash, bow, built, tech done, city founded), silent until you first interact.
+- The phone layout is frozen for the overhaul: its tests are skipped, not deleted.
+- Tests: a browser test of the yield tooltips, the UI scale, the fonts, the icon sprite and the test sound.
+
 ## Phase 21: Phone layout and offline play
 
 Phase 20 (pass-and-play) is skipped for now, at Matthew's request; everything in it was about several people sharing one screen.

@@ -16,6 +16,14 @@
     "art": {},
     "sounds": {},
     "factionColours": true,
+    "tokens": {
+      "walnut": "rgba(36, 40, 43, 0.94)",
+      "walnut-solid": "#24282b",
+      "brass": "#8d969b",
+      "brass-inner": "#454c52",
+      "panel-ink": "#e4e7e9",
+      "gold": "#b8c4cc"
+    },
     "raiderColour": "#2b2b2b"
   }
 }
