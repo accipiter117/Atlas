@@ -111,7 +111,8 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   const say = (m) => toast(doc, m);
 
   // ---------- Settings (atlas:settings) ----------
-  const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70', animSpeed: 'normal', rivalMoves: 'quick', combatCamera: true };
+  const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70', animSpeed: 'normal', rivalMoves: 'quick', combatCamera: true,
+    confirmEndTurn: true, autoEndTurn: false, showGrid: false, showYields: false, edgeScroll: 'off', zoomSpeed: 'normal', ambient: true, factionColours: 'standard', autosaveEvery: 'every', autosaveKeep: '3' };
   function readSettings() {
     try { return { ...SETTINGS_DEFAULTS, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { ...SETTINGS_DEFAULTS }; }
   }
@@ -122,6 +123,10 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     doc.documentElement.dataset.animSpeed = s.animSpeed;
     doc.documentElement.dataset.rivalMoves = s.rivalMoves;
     doc.documentElement.dataset.combatCamera = s.combatCamera ? 'on' : 'off';
+    // Graphics overhaul G7: the rest of section 5.2, read by the game screen and the map.
+    for (const k of ['edgeScroll', 'zoomSpeed', 'factionColours', 'autosaveEvery', 'autosaveKeep']) doc.documentElement.dataset[k] = String(s[k]);
+    for (const k of ['confirmEndTurn', 'autoEndTurn', 'showGrid', 'showYields', 'ambient']) doc.documentElement.dataset[k] = s[k] ? 'on' : 'off';
+    game?.applySettings?.();
     // Interface size (graphics overhaul G1): one CSS variable scales every panel and screen.
     doc.documentElement.style.setProperty('--ui-scale', String(Number(s.uiScale) || 1));
     doc.documentElement.dataset.tooltips = s.tooltipDelay;
@@ -170,7 +175,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       },
       async autosave(snap, label) {
         try {
-          await autosave(storage, createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal, meta: snap.meta }));
+          await autosave(storage, createSave({ state: snap.state, log: snap.log, label, now: new Date().toISOString(), journal: snap.journal, meta: snap.meta }), undefined, Math.max(1, Math.min(10, Number(readSettings().autosaveKeep) || 3)));
           refreshTitle();
         } catch (e) {
           say(e instanceof SaveTooBigError ? tt('save.autosaveTooBig') : tt('save.autosaveFailed'));
@@ -319,16 +324,25 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
       cfg.aiFactions = (cfg.aiFactions ?? []).map((f) => (f && loaded.ruleset.factions[f] ? f : null));
       return loaded;
     }
+    // Leader portraits for the summary card and the faction picker (graphics overhaul G7).
+    const portraitSets = new Map();
+    async function portraitsFor(ruleset) {
+      const key = Object.keys(ruleset.factions).join(',');
+      if (!portraitSets.has(key)) portraitSets.set(key, await loadSheets(Object.fromEntries(Object.entries(ruleset.skin.art ?? {}).filter(([k]) => k.startsWith('leader.')))));
+      const sheets = portraitSets.get(key);
+      return (civ) => sheets[`leader.${ruleset.factions[civ]?.leaders?.[0]}`]?.src ?? null;
+    }
     const draw = async () => {
       const { ruleset, text } = await rulesForCfg(setupCfg);
-      renderSetup(doc, host, {
+      const portrait = await portraitsFor(ruleset);
+      renderSetup(doc, host, { portrait,
         ruleset, text, mods, conversions, cfg: setupCfg, newSeed, limit: { maxAis: ruleset.tuning?.setup?.maxAis ?? 11 },
         onRulesChange: () => { draw(); },
         onBack: () => { setupCfg = null; show(doc, 'title'); },
         onPickFaction: (cfg) => {
           returnTo = 'setup';
           show(doc, 'pick');
-          showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, (civ) => { cfg.faction = civ; returnTo = 'title'; show(doc, 'setup'); draw(); });
+          showFactionPicker(doc, doc.getElementById('pick'), ruleset, text, portrait, (civ) => { cfg.faction = civ; returnTo = 'title'; show(doc, 'setup'); draw(); });
         },
         onStart: async (cfg) => {
           const { setup, selection, options } = toSetup(ruleset, cfg, { manifests, text });
@@ -402,7 +416,8 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     },
     settings() { applySettings(); show(doc, 'settings'); },
     async 'quick-start'() { await sources(); await quickStart(); },
-    'title-help'() {
+    async 'title-help'() {
+      await sources();
       doc.querySelector('[data-field="help-body"]').replaceChildren(helpBody(doc, tt));
       show(doc, 'help');
     },

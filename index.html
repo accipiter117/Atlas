@@ -87,22 +87,15 @@
   </main>
 
   <main id="settings" class="screen" hidden aria-labelledby="settings-heading">
-    <div class="card wide">
+    <div class="card wide settings-card">
       <div class="mods-head">
         <h2 id="settings-heading">Settings</h2>
-        <button class="btn back" type="button" data-action="back">Title screen</button>
+        <button class="btn back" type="button" data-action="back">Done</button>
       </div>
-      <div class="setup-groups">
+      <p class="mods-intro">Changes apply at once and are remembered in this browser.</p>
+      <div class="settings-groups">
         <section class="setup-group">
-          <label class="setup-row"><span class="setup-label">Motion and animation</span>
-            <select name="motion" data-setting="motion">
-              <option value="device">Follow my device</option>
-              <option value="reduce">Reduce motion</option>
-              <option value="full">Full motion</option>
-            </select></label>
-          <label class="tick setup-row"><input type="checkbox" data-setting="developer"><span>Developer mode (shows the map viewer link)</span></label>
-        </section>
-        <section class="setup-group">
+          <h3>Interface</h3>
           <label class="setup-row"><span class="setup-label">Interface size</span>
             <select name="uiScale" data-setting="uiScale">
               <option value="0.9">90%</option>
@@ -117,6 +110,29 @@
               <option value="long">Long delay</option>
               <option value="off">Off</option>
             </select></label>
+          <label class="tick setup-row"><input type="checkbox" name="confirmEndTurn" data-setting="confirmEndTurn"><span>Ask before ending a turn with units still waiting</span></label>
+          <label class="tick setup-row"><input type="checkbox" name="autoEndTurn" data-setting="autoEndTurn"><span>End the turn by itself when nothing needs you</span></label>
+        </section>
+        <section class="setup-group">
+          <h3>Map</h3>
+          <label class="tick setup-row"><input type="checkbox" name="showGrid" data-setting="showGrid"><span>Hex grid (also G)</span></label>
+          <label class="tick setup-row"><input type="checkbox" name="showYields" data-setting="showYields"><span>Yield icons on every hex (also Y)</span></label>
+          <label class="setup-row"><span class="setup-label">Move the map at the screen edge</span>
+            <select name="edgeScroll" data-setting="edgeScroll">
+              <option value="off">Off</option>
+              <option value="slow">Slow</option>
+              <option value="fast">Fast</option>
+            </select></label>
+          <label class="setup-row"><span class="setup-label">Zoom speed</span>
+            <select name="zoomSpeed" data-setting="zoomSpeed">
+              <option value="slow">Slow</option>
+              <option value="normal">Normal</option>
+              <option value="fast">Fast</option>
+            </select></label>
+          <label class="tick setup-row"><input type="checkbox" name="ambient" data-setting="ambient"><span>Water sparkle and drifting clouds</span></label>
+        </section>
+        <section class="setup-group">
+          <h3>Pace</h3>
           <label class="setup-row"><span class="setup-label">Unit animations</span>
             <select name="animSpeed" data-setting="animSpeed">
               <option value="normal">Normal</option>
@@ -125,17 +141,53 @@
             </select></label>
           <label class="setup-row"><span class="setup-label">Rivals' moves you can see</span>
             <select name="rivalMoves" data-setting="rivalMoves">
-              <option value="full">Play them in full</option>
               <option value="quick">Play them quickly</option>
+              <option value="full">Play them in full</option>
               <option value="off">Do not play them</option>
             </select></label>
-          <label class="tick setup-row"><input type="checkbox" data-setting="combatCamera"><span>Move the map to battles against you</span></label>
+          <label class="tick setup-row"><input type="checkbox" name="combatCamera" data-setting="combatCamera"><span>Move the map to battles against you</span></label>
         </section>
         <section class="setup-group">
+          <h3>Sound</h3>
           <label class="setup-row"><span class="setup-label">Master volume</span><input type="range" min="0" max="100" step="5" name="volumeMaster" data-setting="volumeMaster"></label>
           <label class="setup-row"><span class="setup-label">Effects volume</span><input type="range" min="0" max="100" step="5" name="volumeEffects" data-setting="volumeEffects"></label>
           <label class="setup-row"><span class="setup-label">Music volume</span><input type="range" min="0" max="100" step="5" name="volumeMusic" data-setting="volumeMusic"></label>
           <button class="btn small" type="button" data-action="test-sound">Play a test sound</button>
+        </section>
+        <section class="setup-group">
+          <h3>Accessibility</h3>
+          <label class="setup-row"><span class="setup-label">Faction colours</span>
+            <select name="factionColours" data-setting="factionColours">
+              <option value="standard">Standard</option>
+              <option value="colourblind">Colour-blind safe</option>
+            </select></label>
+          <label class="setup-row"><span class="setup-label">Motion</span>
+            <select name="motion" data-setting="motion">
+              <option value="device">Follow my device</option>
+              <option value="reduce">Reduce motion</option>
+              <option value="full">Full motion</option>
+            </select></label>
+        </section>
+        <section class="setup-group">
+          <h3>Saves</h3>
+          <label class="setup-row"><span class="setup-label">Autosave</span>
+            <select name="autosaveEvery" data-setting="autosaveEvery">
+              <option value="every">Every turn</option>
+              <option value="five">Every 5 turns</option>
+              <option value="off">Off</option>
+            </select></label>
+          <label class="setup-row"><span class="setup-label">Autosaves to keep</span>
+            <select name="autosaveKeep" data-setting="autosaveKeep">
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select></label>
+          <label class="tick setup-row"><input type="checkbox" name="developer" data-setting="developer"><span>Developer mode (shows the map viewer link)</span></label>
         </section>
       </div>
     </div>

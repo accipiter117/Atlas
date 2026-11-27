@@ -19,7 +19,7 @@ test('G1: yield tooltips, UI scale, fonts, icons and sounds', async ({ page }, i
   await expect.poll(async () => (await page.locator('#settings .card').boundingBox()).height).toBeGreaterThan(before.height * 1.15);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-scale').trim())).toBe('1.25');
   await page.locator('select[name="uiScale"]').selectOption('1');
-  await page.getByRole('button', { name: 'Title screen' }).click();
+  await page.locator('#settings [data-action="back"]').click();
 
   // Into a game: the fonts are the bundled ones.
   await page.goto('/?seed=42&faction=rome&nosw=1');

@@ -87,7 +87,9 @@ export function attachMapInput(view, { keyTarget, onTap, onHover, onContext, key
   el.addEventListener('wheel', (e) => {
     e.preventDefault();
     const p = local(e);
-    view.setCamera(zoomAt(view.camera, Math.exp(-e.deltaY * 0.0015), p.x, p.y));
+    // Zoom speed from Settings (graphics overhaul G7).
+    const speed = { slow: 0.0008, normal: 0.0015, fast: 0.003 }[el.ownerDocument.documentElement.dataset.zoomSpeed] ?? 0.0015;
+    view.setCamera(zoomAt(view.camera, Math.exp(-e.deltaY * speed), p.x, p.y));
   }, { passive: false });
 
   (keyTarget ?? el.ownerDocument).addEventListener('keydown', (e) => {

@@ -303,6 +303,13 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **G6: three animation settings.** Unit animations (normal, fast, instant), rivals' moves (in full, quickly, off) and moving the map to battles against you. Reduce motion switches off walks, lunges, flashes and dust but keeps the damage numbers and city banners, which carry information.
 - **G6: the battle event records where the attack came from** (`from`), so arrows and lunges know their start; it is part of the event only, not the game state, so saves and fingerprints are unchanged.
 - **G6: the turn summary lives in the notifications panel** as a collapsible "Last round" list, so it needs no new panel or space on screen. It lists what concerned you: battles you were in, units lost, cities taken or founded nearby, wars and peace, what you learned and built, wonders and offers. Items with a place move the map there.
+- **G7: saves carry a small optional "meta"** (faction, leader, portrait path, colour and a text-encoded thumbnail of the explored map, about 1.5 KB) for the Continue and Load cards. Nothing in the game reads it and older saves without it still load, so no save version change or migration is needed.
+- **G7: autosave frequency and count moved to Settings.** They are about this browser, not about one game, so the setup screen no longer asks; a game started before still honours its own choice until Settings says otherwise. Keeping fewer autosaves than before deletes the oldest.
+- **G7: "Ask before ending a turn" guards Shift+Enter.** The Next button never ends a turn while units wait (it selects them), so the question only arises with the new Shift+Enter (end the turn now); with the setting on, the first press warns and a second press within three seconds ends the turn.
+- **G7: auto end turn waits for quiet.** It fires once per turn, a moment after the last order, only when no unit, city, battle, capture, event, sheet or animation is waiting.
+- **G7: the colour-blind safe palette is Okabe and Ito's**, assigned by seat, applied at once to the map, units, cities and minimap; switching back restores the faction colours.
+- **G7: setup keeps every option; only the layout changed.** Tabs (Rules, Map, Players, Victory, Advanced) and a summary card hold the same fields with the same names, so setups and saves are unchanged. Rival and team rows fold away unless opened.
+- **G7: the title's world is the game's own map view on a fixed seed**, imported after the title appears so the first load is unchanged; it pans only while the title shows and holds still under reduced motion.
 
 ## Later
 

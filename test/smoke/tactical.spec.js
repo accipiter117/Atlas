@@ -111,6 +111,7 @@ test('ask each time: Auto-resolve settles it at once', async ({ page }, info) =>
 test('setup: the battle modes can be chosen', async ({ page }) => {
   await page.goto('/?seed=42');
   await page.getByRole('button', { name: 'New game' }).click();
+  await page.locator('[data-tab="advanced"]').click();
   await page.locator('select[name="battleMode"]').selectOption('ask');
   await expect(page.locator('select[name="battleModule"]')).toHaveValue('tactical');
   await expect(page.locator('select[name="battleModule"]')).toBeEnabled();

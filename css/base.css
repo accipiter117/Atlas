@@ -723,3 +723,53 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px soli
 .help-glossary dd { margin: 0; }
 @media (max-width: 899px) { .game-menu { grid-template-columns: 1fr; } .save-item { grid-template-columns: 1fr; } }
 .save-dialog[hidden] { display: none; }
+
+/* Setup (graphics overhaul G7): two panes that fit a 1366x768 screen without scrolling the page. */
+#setup.screen { padding: 16px; }
+.card.setup { max-width: 1320px; width: 100%; height: calc(100vh - 32px); height: calc(100dvh - 32px); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px; padding: 18px 22px; }
+.card.setup .mods-head { margin: 0; }
+.card.setup .mods-head h2 { margin: 0; }
+.setup-body { display: grid; grid-template-columns: 170px minmax(0, 1fr) 300px; gap: 16px; min-height: 0; }
+.setup-tabs { display: grid; align-content: start; gap: 6px; }
+.setup-tab {
+  min-height: 48px; padding: 8px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--ink);
+  font: 600 16px/1.2 var(--font-heading); text-align: left; cursor: pointer;
+}
+.setup-tab.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.setup-tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.setup-pane { min-height: 0; overflow-y: auto; padding-right: 4px; }
+.setup-tabpanel { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-content: start; }
+.setup-tabpanel[hidden] { display: none; }
+.setup-summary {
+  display: grid; align-content: start; gap: 10px; padding: 14px; border: 1px solid var(--line); border-top: 6px solid var(--faction, var(--accent));
+  border-radius: var(--radius); background: var(--panel); min-height: 0; overflow-y: auto;
+}
+.setup-summary .btn.primary { min-height: 56px; font-size: 19px; margin-top: auto; }
+.summary-head { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; }
+.summary-head h3 { margin: 0; font: 600 20px/1.2 var(--font-heading); }
+.summary-head p { margin: 2px 0 0; }
+.summary-face { width: 72px; height: 72px; image-rendering: pixelated; border: 2px solid var(--brass); border-radius: 6px; background: var(--parchment); display: grid; place-items: center; font: 700 30px/1 var(--font-heading); color: var(--ink-soft); }
+.summary-lines { margin: 0; padding: 0 0 0 18px; display: grid; gap: 2px; font-size: 14px; }
+.setup-rivals { border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 10px; }
+.setup-rivals > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; }
+.card-face { grid-row: span 2; width: 56px; height: 56px; image-rendering: pixelated; border: 2px solid var(--faction, var(--brass)); border-radius: 6px; background: var(--parchment); }
+@media (max-width: 899px) {
+  .card.setup { height: auto; }
+  .setup-body { grid-template-columns: 1fr; }
+  .setup-tabs { grid-auto-flow: column; overflow-x: auto; }
+}
+/* Settings (graphics overhaul G7): every group visible at once on a laptop. */
+.settings-card { max-width: 1320px; width: 100%; }
+.settings-card .mods-intro { margin: 0 0 10px; }
+.settings-groups { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.settings-groups .setup-group { padding: 10px 14px; }
+.settings-groups .setup-group h3 { margin: 0 0 4px; }
+.settings-groups .setup-row { margin: 4px 0; }
+@media (max-width: 899px) { .settings-groups { grid-template-columns: 1fr; } }
+.setup-stack { display: grid; gap: 14px; align-content: start; }
+.settings-groups label.setup-row:not(.tick) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 10px; }
+.settings-groups label.setup-row:not(.tick) .setup-label { margin: 0; }
+.settings-groups .tick.setup-row { margin: 0; }
+.settings-card { padding-top: 18px; padding-bottom: 18px; }
+input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
+.settings-groups label.setup-row:not(.tick) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }

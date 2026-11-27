@@ -119,3 +119,14 @@ test('save size of a typical game is small (the 330-turn budget runs in tools/ch
   const { bytes } = await packSave(saveOf(game), codec);
   assert.ok(bytes < 200_000, `${bytes} bytes after 30 turns`);
 });
+
+test('graphics overhaul G7: Settings choose how many autosaves to keep', async () => {
+  const g = game;
+  const storage = memoryStorage();
+  for (let i = 0; i < 7; i += 1) await autosave(storage, createSave({ state: g.state, log: [], label: `Auto ${i}`, now: at(10 + i) }), codec, 5);
+  assert.equal(listSaves(storage).filter((e) => e.kind === 'autosave').length, 5);
+  await autosave(storage, createSave({ state: g.state, log: [], label: 'Auto later', now: at(30) }), codec, 2);
+  const left = listSaves(storage).filter((e) => e.kind === 'autosave');
+  assert.equal(left.length, 2);
+  assert.ok(left.some((e) => e.label === 'Auto later'));
+});

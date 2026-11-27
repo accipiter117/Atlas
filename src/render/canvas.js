@@ -88,6 +88,8 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     const dpr = win.devicePixelRatio || 1;
     const w = host.clientWidth;
     const h = host.clientHeight;
+    // A hidden host measures nothing: keep the last size (and the camera) until it shows again.
+    if (!w || !h) return;
     if (w === size.w && h === size.h && canvas.width === Math.round(w * dpr)) return;
     // Keep the same spot in the middle when the map area changes size (a phone's
     // bottom sheet opening or closing, or the phone turning on its side).

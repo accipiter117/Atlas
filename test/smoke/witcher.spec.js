@@ -28,6 +28,7 @@ test('setup: Witcher + lock-era (Classical) + no-religious-victory starts a Nort
   await expect(page.locator('input[name="victory-science"]')).toBeDisabled();
   await expect(page.locator('input[name="victory-religious"]')).toBeDisabled();
   await expect(page.locator('select[name="turnLimit"] option[value="default"]')).toHaveText('No limit (switched off by a mod)');
+  await page.locator('[data-tab="players"]').click();
   await page.locator('select[name="faction"]').selectOption('temeria');
   await page.screenshot({ path: `test-results/witcher-setup-${info.project.name}.png`, fullPage: true });
   await page.locator('[data-action="start-game"]').click();

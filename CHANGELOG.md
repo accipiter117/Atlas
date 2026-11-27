@@ -1,5 +1,16 @@
 # Changelog
 
+## Graphics overhaul G7: title, setup, load, menu, settings and help
+
+The menus now fit a laptop screen and get you into a game in two clicks.
+
+What you can try: open the game and watch a generated world drift behind the title. Continue shows your latest save's leader, faction, turn and a little map; Quick start plays your last setup on a brand new world. New game is now one screen with tabs (Rules, Map, Players, Victory, Advanced) and a card on the right showing your faction's leader, trait and unique unit and building, with Start always in view; the rivals and teams fold away unless you open them, and the faction cards show each leader's portrait. Load shows cards with portraits and map thumbnails, your saves above the autosaves. In a game, the menu offers Resume, Save game (with Share as code inside), Load, Settings, Help and Exit to title. Settings now has everything: interface size and tooltips, ask before ending a turn with units waiting (Shift+Enter ends a turn early), end the turn by itself when nothing needs you, grid and yield icons on from the start, moving the map at the screen edge, zoom speed, water and cloud animation, unit and rival animation speeds, the combat camera, volumes, colour-blind safe faction colours, motion, and how often to autosave and how many to keep. Help (on the title, in the menu or with ?) explains how to play, every key and the game's terms.
+
+- `src/ui/titleWorld.js`, `src/ui/thumb.js`, `src/ui/helpContent.js`; `src/ui/setup.js` laid out as tabs and a summary card; `src/ui/gameMenu.js` rebuilt; Settings in `index.html` and `src/ui/app.js`.
+- Settings that now do something new: edge scrolling, zoom speed, confirm before ending a turn, auto end turn, the colour-blind palette, water and cloud animation, the grid and yield icons, autosave frequency and count.
+- Fixed: a map view hidden behind another screen no longer loses its place.
+- Tests: setup and settings fit 1366x768 without scrolling, Help, Quick start, the Continue card, and a browser check that the grid, colour-blind palette, edge scrolling, Shift+Enter with its question, and auto end turn all work; a unit test for the number of autosaves kept.
+
 ## Graphics overhaul G6: movement, combat and sound
 
 Actions now feel physical: units walk, attacks land, numbers fly, turns have a rhythm, and you hear it all.

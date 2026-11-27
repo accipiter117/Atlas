@@ -16,7 +16,7 @@ function el(doc, tag, props = {}, ...children) {
   return node;
 }
 
-export function factionCard(doc, ruleset, text, civId, { onPick } = {}) {
+export function factionCard(doc, ruleset, text, civId, { onPick, portrait = null } = {}) {
   const f = ruleset.factions[civId];
   const leader = ruleset.leaders[f.leaders[0]];
   const say = (key) => text[key] ?? key;
@@ -25,7 +25,7 @@ export function factionCard(doc, ruleset, text, civId, { onPick } = {}) {
   const name = say(f.nameKey);
   const card = el(doc, 'article', { class: 'faction-card', dataset: { faction: civId }, style: `--faction:${f.colours.primary};--faction2:${f.colours.secondary}` },
     el(doc, 'header', {},
-      el(doc, 'span', { class: 'swatch', 'aria-hidden': 'true' }),
+      portrait ? el(doc, 'img', { class: 'card-face', src: portrait, alt: '' }) : el(doc, 'span', { class: 'swatch', 'aria-hidden': 'true' }),
       el(doc, 'h3', {}, name),
       el(doc, 'p', { class: 'leader' }, t(text, 'pick.leader', { leader: say(leader.nameKey) }))),
     el(doc, 'p', { class: 'trait' }, t(text, 'pick.trait', { name: say(f.trait.nameKey), text: say(f.trait.descriptionKey) })),
@@ -36,9 +36,9 @@ export function factionCard(doc, ruleset, text, civId, { onPick } = {}) {
   return card;
 }
 
-/** Fill the picker screen with one card per faction. */
-export function showFactionPicker(doc, root, ruleset, text, onPick) {
+/** Fill the picker screen with one card per faction, each with its leader's portrait (graphics overhaul G7). */
+export function showFactionPicker(doc, root, ruleset, text, portraitOf, onPick) {
   const grid = root.querySelector('[data-field="factions"]');
-  grid.replaceChildren(...Object.keys(ruleset.factions).map((id) => factionCard(doc, ruleset, text, id, { onPick })));
+  grid.replaceChildren(...Object.keys(ruleset.factions).map((id) => factionCard(doc, ruleset, text, id, { onPick, portrait: portraitOf?.(id) ?? null })));
   root.querySelector('[data-pick]')?.focus({ preventScroll: true });
 }

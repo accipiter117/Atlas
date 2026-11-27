@@ -18,6 +18,7 @@ test('Killzone: a front instead of settlers, and a platoon battle that moves it'
   await expect(page.locator('select[name="ais"]')).toHaveValue('1');
   await expect(page.locator('select[name="battleMode"]')).toHaveValue('ask');
   await expect(page.locator('select[name="battleModule"]')).toHaveValue('killzone');
+  await page.locator('[data-tab="players"]').click();
   await page.locator('select[name="faction"]').selectOption('isa');
   await page.locator('[data-action="start-game"]').click();
   await page.waitForFunction(() => window.__atlasGame);

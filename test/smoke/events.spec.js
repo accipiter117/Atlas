@@ -38,6 +38,7 @@ test('setup: events and disasters can be chosen', async ({ page }) => {
   const events = page.locator('select[name="events"]');
   await expect(events).toBeEnabled();
   await expect(events).toHaveValue('occasional');
+  await page.locator('[data-tab="map"]').click();
   await events.selectOption('frequent');
   await expect(page.locator('select[name="disasters"]')).toBeEnabled();
   await expect(page.locator('input[name="victory-culture"]')).toBeEnabled();

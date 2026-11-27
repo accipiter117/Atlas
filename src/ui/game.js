@@ -291,7 +291,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     hexTooltip: (tile) => hexContent(tile),
     /** The game's fingerprint now (tests: animations never change the game). */
     fingerprint: () => fingerprint(state),
-    get summary() { return playback.summary; } };
+    get summary() { return playback.summary; },
+    /** The faction colours in use (Settings may switch to the colour-blind safe set). */
+    get colours() { return { ...colours }; } };
   if (debug) {
     // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
     // state directly, outside the rules, so they are never available in a normal game.
@@ -643,7 +645,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     return tt('save.label', { faction: ruleset.text[ruleset.factions?.[civ]?.nameKey] ?? '', turn: state.turn, size, type });
   }
   function autosaveNow() {
-    const every = setup.autosave ?? 'every';
+    // How often comes from Settings (graphics overhaul G7); an old setup's own choice otherwise.
+    const every = doc.documentElement.dataset.autosaveEvery ?? setup.autosave ?? 'every';
     if (every === 'off' || !hooks.autosave || gameOver()) return;
     if (every === 'five' && state.turn % 5 !== 0) return;
     hooks.autosave(snapshot(), saveLabel());
@@ -706,6 +709,72 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     };
     if (ms > 0) doc.defaultView.setTimeout(firstJob, Math.min(ms, 2500)); else firstJob();
   }
+
+  // ---- Settings that change how the game screen behaves (graphics overhaul G7, docs/OVERHAUL.md 5.2) ----
+  const settingOn = (k, fallback = false) => (doc.documentElement.dataset[k] ?? (fallback ? 'on' : 'off')) === 'on';
+  // Colour-blind safe faction colours (Okabe and Ito's palette), by seat; standard colours are kept to switch back.
+  const SAFE = ['#0072b2', '#e69f00', '#009e73', '#cc79a7', '#56b4e9', '#d55e00', '#f0e442', '#2b2b2b', '#999999', '#6a3d9a', '#b15928', '#1f78b4'];
+  const standardColours = { ...colours };
+  function applyColourScheme() {
+    const safe = doc.documentElement.dataset.factionColours === 'colourblind';
+    state.factions.forEach((f, i) => { colours[f.id] = safe ? SAFE[i % SAFE.length] : standardColours[f.id]; });
+  }
+  function applySettings() {
+    toggleGrid(settingOn('showGrid'));
+    toggleYields(settingOn('showYields'));
+    mapView.setAmbient(settingOn('ambient', true));
+    const before = JSON.stringify(colours);
+    applyColourScheme();
+    if (JSON.stringify(colours) !== before) { refreshMinimap(); mapView.redraw(); render(); }
+  }
+
+  // Shift+Enter ends the turn even with units waiting; with "Ask before ending" on, it asks first
+  // (press again within three seconds).
+  let confirmUntil = 0;
+  function endTurnNow() {
+    const waiting = idle().length;
+    if (waiting && settingOn('confirmEndTurn', true) && doc.defaultView.performance.now() > confirmUntil) {
+      confirmUntil = doc.defaultView.performance.now() + 3000;
+      toast(tt('game.confirmEnd', { n: waiting }));
+      return;
+    }
+    confirmUntil = 0;
+    endTurn();
+  }
+
+  // "End the turn by itself when nothing needs you": once per turn, a moment after the last order.
+  let autoEndedTurn = -1;
+  function maybeAutoEnd() {
+    if (!settingOn('autoEndTurn') || busy || gameOver() || autoEndedTurn === state.turn || currentFactionId(state) !== human) return;
+    const nothingWaits = () => !idle().length && !noProduction().length && !v.pendingBattle && !v.pendingCapture && !v.pendingEvent && panel.hidden && overlay.hidden && !mapView.isAnimating();
+    if (!nothingWaits()) return;
+    doc.defaultView.setTimeout(() => {
+      if (!settingOn('autoEndTurn') || busy || autoEndedTurn === state.turn || !nothingWaits()) return;
+      autoEndedTurn = state.turn;
+      endTurn();
+    }, 900);
+  }
+
+  // Edge scrolling: the map moves while the mouse rests near the edge of the window.
+  let edgePointer = null;
+  $('#game-map').addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') edgePointer = { x: e.clientX, y: e.clientY }; });
+  $('#game-map').addEventListener('pointerleave', () => { edgePointer = null; });
+  let edgeLast = doc.defaultView.performance.now();
+  function edgeTick(now) {
+    if (mapView.destroyed) return;
+    const dt = Math.min(50, now - edgeLast);
+    edgeLast = now;
+    const speed = { slow: 0.35, fast: 0.9 }[doc.documentElement.dataset.edgeScroll] ?? 0;
+    if (speed && edgePointer && !root.hidden) {
+      const win = doc.defaultView;
+      const m = 24;
+      const dx = edgePointer.x < m ? 1 : edgePointer.x > win.innerWidth - m ? -1 : 0;
+      const dy = edgePointer.y < m ? 1 : edgePointer.y > win.innerHeight - m ? -1 : 0;
+      if (dx || dy) { const cam = mapView.camera; mapView.setCamera({ ...cam, x: cam.x - (dx * speed * dt) / cam.zoom, y: cam.y - (dy * speed * dt) / cam.zoom }); }
+    }
+    doc.defaultView.requestAnimationFrame(edgeTick);
+  }
+  doc.defaultView.requestAnimationFrame(edgeTick);
 
   /** The Next button: whatever still blocks the turn, else end it (section 10.1). */
   function next() {
@@ -950,6 +1019,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     $('[data-action="next"]').textContent = noProduction().length ? tt('game.nextChooseProduction')
       : idle().length ? tt('game.nextUnit', { n: idle().length }) : tt('game.nextTurn');
     updateInsets();
+    maybeAutoEnd();
   }
 
   root.addEventListener('keydown', (e) => {
@@ -957,7 +1027,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     const handled = {
       ' ': () => selectNextIdle(),
-      Enter: () => { if (!e.target.closest?.('button')) next(); else return false; },
+      Enter: () => { if (e.target.closest?.('button')) return false; if (e.shiftKey) endTurnNow(); else next(); },
       b: () => { const u = selectedUnit(); if (u && isFounder(u)) act('foundCity'); else return false; },
       r: () => openTrees('techs'),
       c: () => (ruleset.civics ? openTrees('civics') : false),
@@ -1035,6 +1105,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   $('[data-action="faction"]').onclick = () => { overlay.querySelector('[data-action="close-overlay"]').hidden = false; showClose(); };
 
   // The computer seats before you in the first round play now (a loaded game is already at your turn).
+  applySettings();
   refresh();
   const firstUnit = myUnits()[0];
   if (firstUnit) mapView.centreOnTile(firstUnit.tile);
@@ -1048,5 +1119,5 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     checkEnd();
     doc.defaultView.__atlasGame = api;
   });
-  return { destroy: () => { mapView.destroy(); worker?.terminate(); doc.removeEventListener('keydown', onDocKey); hideTooltip(); }, get state() { return state; }, snapshot };
+  return { applySettings, destroy: () => { mapView.destroy(); worker?.terminate(); doc.removeEventListener('keydown', onDocKey); hideTooltip(); }, get state() { return state; }, snapshot };
 }

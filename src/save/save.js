@@ -162,11 +162,13 @@ export async function saveToSlot(storage, slotId, save, codec = createCodec()) {
   return store(storage, { kind: 'slot', id: String(slotId) }, save, codec);
 }
 
-/** Rolling autosave: overwrites the oldest of the last three. */
-export async function autosave(storage, save, codec = createCodec()) {
-  const autos = listSaves(storage).filter((e) => e.kind === 'autosave');
+/** Rolling autosave: overwrites the oldest once `keep` exist (three unless Settings says otherwise, up to ten). */
+export async function autosave(storage, save, codec = createCodec(), keep = AUTOSAVES) {
+  let autos = listSaves(storage).filter((e) => e.kind === 'autosave').sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0));
+  // Fewer kept than before: the oldest go.
+  while (autos.length > keep) { deleteSave(storage, autos[0]); autos = autos.slice(1); }
   let n = 0;
-  if (autos.length >= AUTOSAVES) n = autos.slice().sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))[0].n;
+  if (autos.length >= keep) n = autos[0].n;
   else while (autos.some((e) => e.n === n)) n += 1;
   return store(storage, { kind: 'autosave', id: `auto-${n}`, n }, save, codec);
 }

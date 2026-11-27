@@ -1,5 +1,5 @@
-// The setup screen (section 6): one scrolling page with three presets at the
-// top and every match option below. Options whose systems do not exist yet are
+// The setup screen (section 6; laid out as two panes with tabs and a summary card in the
+// graphics overhaul G7): three presets at the top and every match option below. Options whose systems do not exist yet are
 // shown greyed out with a note saying when they arrive. The chosen options
 // become state.setup and never change once the match starts.
 //
@@ -113,14 +113,14 @@ export function toSetup(ruleset, cfg, { manifests, text }) {
  * mods: [{ id, name, description, version, options }] (tweak mods on offer)
  * onStart(cfg), onBack(), onPickFaction(cfg) (opens the faction cards), newSeed()
  */
-export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange = null }) {
+export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange = null, portrait = () => null }) {
   const tt = (k, a) => t(text, k, a);
   const say = (key, fallback) => text[key] ?? ruleset.text?.[key] ?? fallback;
   const conf = ruleset.tuning?.setup ?? {};
   // The rules may cap the rivals (a two-sided front-line war has one).
   if (limit?.maxAis && cfg.ais > limit.maxAis) { cfg.ais = limit.maxAis; cfg.aiFactions = cfg.aiFactions.slice(0, cfg.ais); }
   const later = (phase) => el(doc, 'span', { class: 'later' }, tt('setup.later', { phase }));
-  const rerender = () => renderSetup(doc, host, { ruleset, text, mods, conversions, cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange });
+  const rerender = () => renderSetup(doc, host, { ruleset, text, mods, conversions, cfg, onStart, onBack, onPickFaction, newSeed, limit, onRulesChange, portrait });
   // A change to the mods reloads the rules (the factions, eras and victories on offer follow).
   const rulesChanged = () => (onRulesChange ? onRulesChange(cfg) : rerender());
 
@@ -217,13 +217,13 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
   });
   const used0 = cfg.noDuplicates ? taken(0) : new Set();
   const players = group(tt('setup.group.players'),
-    row(tt('setup.yourFaction'), el(doc, 'span', { class: 'seed-row' },
-      select('faction', cfg.faction ?? '', [{ value: '', label: tt('setup.random') }, ...factionIds.map((id) => ({ value: id, label: factionName(id), disabled: used0.has(id) }))], (v) => { cfg.faction = v || null; }),
-      el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'see-cards' }, onclick: () => onPickFaction(cfg) }, tt('setup.seeCards')))),
+    row(tt('setup.yourFaction'), select('faction', cfg.faction ?? '', [{ value: '', label: tt('setup.random') }, ...factionIds.map((id) => ({ value: id, label: factionName(id), disabled: used0.has(id) }))], (v) => { cfg.faction = v || null; })),
     row(tt('setup.ais'), select('ais', cfg.ais, Array.from({ length: limit.maxAis }, (_, i) => ({ value: i + 1, label: String(i + 1) })), (v) => { cfg.ais = Number(v); cfg.aiFactions = cfg.aiFactions.slice(0, cfg.ais); changed(); })),
-    ...aiRows,
-    el(doc, 'label', { class: 'tick setup-row' }, el(doc, 'input', { type: 'checkbox', name: 'noDuplicates', checked: cfg.noDuplicates, onchange: (e) => { cfg.noDuplicates = e.target.checked; rerender(); } }), el(doc, 'span', {}, tt('setup.noDuplicates'))),
-    el(doc, 'div', { class: 'setup-row' }, el(doc, 'span', { class: 'setup-label' }, tt('setup.teams')),
+    // The rivals one by one, folded into a summary line unless opened (graphics overhaul G7).
+    foldable('rivals', el(doc, 'summary', {}, cfg.aiFactions.some(Boolean) ? tt('setup.rivalsChosen', { n: cfg.ais, chosen: cfg.aiFactions.filter(Boolean).length }) : tt('setup.rivalsRandom', { n: cfg.ais })),
+      ...aiRows,
+      el(doc, 'label', { class: 'tick setup-row' }, el(doc, 'input', { type: 'checkbox', name: 'noDuplicates', checked: cfg.noDuplicates, onchange: (e) => { cfg.noDuplicates = e.target.checked; rerender(); } }), el(doc, 'span', {}, tt('setup.noDuplicates')))),
+    foldable('teams', el(doc, 'summary', {}, (cfg.teams ?? []).some((x) => Number(x) > 0) ? tt('setup.teamsSet') : tt('setup.teamsNone')),
       el(doc, 'div', { class: 'setup-teams' }, ...Array.from({ length: cfg.ais + 1 }, (_, i) => row(tt('setup.team', { player: i === 0 ? tt('game.you') : tt('game.rival', { n: i }) }),
         select(`team-${i}`, cfg.teams?.[i] ?? 0, [{ value: 0, label: tt('setup.noTeam') }, ...[1, 2, 3, 4].map((n) => ({ value: n, label: tt('setup.teamN', { n }) }))], (v) => { cfg.teams = Array.from({ length: cfg.ais + 1 }, (_, k) => (k === i ? Number(v) : cfg.teams?.[k] ?? 0)); })))),
       el(doc, 'p', { class: 'small muted' }, tt('setup.teamsNote'))));
@@ -270,13 +270,63 @@ export function renderSetup(doc, host, { ruleset, text, mods, conversions = [], 
     el(doc, 'p', { class: 'small muted' }, tt(mode === 'auto' ? 'setup.battleNoteAuto' : 'setup.battleNoteFight')));
   const advanced = group(tt('setup.group.advanced'),
     row(tt('setup.fog'), select('fog', cfg.fog, choose('setup.onOff', ['on', 'off']), (v) => { cfg.fog = v; })),
-    row(tt('setup.recorder'), select('recordAI', cfg.recordAI, choose('setup.journalOpt', ['on', 'off']), (v) => { cfg.recordAI = v; })),
-    row(tt('setup.autosave'), select('autosave', cfg.autosave, choose('setup.autosaveOpt', ['every', 'five', 'off']), (v) => { cfg.autosave = v; })));
+    row(tt('setup.recorder'), select('recordAI', cfg.recordAI, choose('setup.journalOpt', ['on', 'off']), (v) => { cfg.recordAI = v; })));
+  // (How often to autosave moved to Settings in the graphics overhaul G7.)
+
+  // Two panes (graphics overhaul G7, docs/OVERHAUL.md 5.1): tabs on the left, the chosen tab in the
+  // middle, and a summary card with your faction and the Start button always on the right.
+  const stack = (...groups) => el(doc, 'div', { class: 'setup-stack' }, ...groups);
+  const tabs = [['rules', rules, stack(pace, difficulty)], ['map', map, world], ['players', players], ['victory', victory], ['advanced', battles, advanced]];
+  if (!tabs.some(([id]) => id === activeTab)) activeTab = 'rules';
+  const tabButtons = tabs.map(([id]) => el(doc, 'button', { type: 'button', role: 'tab', class: `setup-tab${id === activeTab ? ' on' : ''}`, dataset: { tab: id }, 'aria-selected': String(id === activeTab),
+    onclick: () => {
+      activeTab = id;
+      for (const b of host.querySelectorAll('[data-tab]')) { b.classList.toggle('on', b.dataset.tab === id); b.setAttribute('aria-selected', String(b.dataset.tab === id)); }
+      for (const p of host.querySelectorAll('[data-panel]')) p.hidden = p.dataset.panel !== id;
+    } }, tt(`setup.tab.${id}`)));
+  const panels = tabs.map(([id, ...groups]) => el(doc, 'div', { class: 'setup-tabpanel', role: 'tabpanel', dataset: { panel: id }, hidden: id !== activeTab }, ...groups));
 
   host.replaceChildren(
     el(doc, 'div', { class: 'mods-head' }, el(doc, 'h2', { id: 'setup-heading' }, tt('setup.title')), el(doc, 'button', { type: 'button', class: 'btn back', onclick: onBack }, tt('setup.back'))),
     presets,
-    el(doc, 'div', { class: 'setup-groups' }, rules, map, players, victory, pace, difficulty, world, battles, advanced),
-    el(doc, 'div', { class: 'setup-start' },
-      el(doc, 'button', { type: 'button', class: 'btn primary', dataset: { action: 'start-game' }, disabled: !cfg.victories.length && cfg.turnLimit === 'none', onclick: () => onStart(cfg) }, tt('setup.start'))));
+    el(doc, 'div', { class: 'setup-body' },
+      el(doc, 'div', { class: 'setup-tabs', role: 'tablist', 'aria-label': tt('setup.title') }, ...tabButtons),
+      el(doc, 'div', { class: 'setup-pane' }, ...panels),
+      summaryCard()));
+
+  /** The summary card: your faction (portrait, leader, trait, uniques), the game in a few lines, and Start. */
+  function summaryCard() {
+    const f = cfg.faction ? ruleset.factions[cfg.faction] : null;
+    const leader = f ? ruleset.leaders?.[f.leaders?.[0]] : null;
+    const uniques = f ? [...(f.uniqueUnits ?? []).map((id) => say(ruleset.units[id]?.nameKey, id)), ...(f.uniqueBuildings ?? []).map((id) => say(ruleset.buildings?.[id]?.nameKey, id))] : [];
+    const src = f ? portrait(cfg.faction) : null;
+    const sizeName = say(ruleset.mapSizes?.[cfg.map.size]?.nameKey, cfg.map.size ?? '');
+    const typeName = mapPresets.length ? say(ruleset.mapPresets[cfg.map.preset]?.nameKey, cfg.map.preset) : say(ruleset.mapTypes?.[cfg.map.type]?.nameKey, cfg.map.type);
+    return el(doc, 'aside', { class: 'setup-summary', dataset: { field: 'setup-summary' }, style: f ? `--faction:${f.colours.primary}` : '' },
+      el(doc, 'div', { class: 'summary-head' },
+        src ? el(doc, 'img', { class: 'summary-face', src, alt: '' }) : el(doc, 'span', { class: 'summary-face random', 'aria-hidden': 'true' }, '?'),
+        el(doc, 'div', {},
+          el(doc, 'h3', {}, f ? factionName(cfg.faction) : tt('setup.randomFaction')),
+          el(doc, 'p', { class: 'small muted' }, leader ? say(leader.nameKey, '') : tt('setup.randomNote')))),
+      f ? el(doc, 'p', { class: 'small' }, el(doc, 'strong', {}, say(f.trait?.nameKey, '')), ` ${say(f.trait?.descriptionKey, '')}`) : null,
+      uniques.length ? el(doc, 'p', { class: 'small' }, tt('setup.uniques', { list: uniques.join(', ') })) : null,
+      el(doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'see-cards' }, onclick: () => onPickFaction(cfg) }, tt('setup.seeCards')),
+      el(doc, 'ul', { class: 'summary-lines' },
+        el(doc, 'li', {}, tt('setup.sumMap', { size: sizeName, type: typeName })),
+        el(doc, 'li', {}, tt('setup.sumRivals', { n: cfg.ais })),
+        el(doc, 'li', {}, tt('setup.sumPace', { speed: tt(`setup.speed.${cfg.speed}`), level: say(ruleset.difficulty?.[cfg.difficulty]?.nameKey, cfg.difficulty) })),
+        el(doc, 'li', {}, tt('setup.sumVictories', { n: cfg.victories.length }))),
+      el(doc, 'button', { type: 'button', class: 'btn primary', dataset: { action: 'start-game' }, disabled: !cfg.victories.length && cfg.turnLimit === 'none', onclick: () => onStart(cfg) }, tt('setup.start')));
+  }
+
+  /** A folded section (the rivals, the teams) that remembers being opened across redraws. */
+  function foldable(id, summary, ...children) {
+    const d = el(doc, 'details', { class: 'setup-rivals', dataset: { fold: id }, open: Boolean(openFolds[id]) }, summary, ...children);
+    d.addEventListener('toggle', () => { openFolds[id] = d.open; });
+    return d;
+  }
 }
+
+// Which tab is showing and which folded sections are open, kept across redraws.
+let activeTab = 'rules';
+const openFolds = {};

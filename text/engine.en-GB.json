@@ -390,7 +390,7 @@
     "menu.export": "Export code",
     "menu.victory": "Victory progress (V)",
     "menu.toTitle": "Exit to title",
-    "menu.autosaveNote": "Your game also autosaves as you play (the Autosave option on the setup screen), and Continue on the title screen picks up the latest save.",
+    "menu.autosaveNote": "Your game also autosaves as you play (Settings, Saves), and Continue on the title screen picks up the latest save.",
     "menu.working": "Working...",
     "menu.saved": "Saved as \"{label}\".",
     "menu.saveFailed": "The save failed.",
@@ -883,6 +883,23 @@
     "menu.share": "Share as code",
     "menu.load": "Load a game",
     "menu.settings": "Settings",
-    "menu.help": "Help"
+    "menu.help": "Help",
+    "setup.tab.rules": "Rules",
+    "setup.tab.map": "Map",
+    "setup.tab.players": "Players",
+    "setup.tab.victory": "Victory",
+    "setup.tab.advanced": "Advanced",
+    "setup.rivalsRandom": "{n} rivals, chosen at random (open to pick them)",
+    "setup.rivalsChosen": "{n} rivals, {chosen} picked by you",
+    "setup.randomFaction": "A random faction",
+    "setup.randomNote": "Pick one with the cards below, or on the Players tab.",
+    "setup.uniques": "Unique: {list}",
+    "setup.sumMap": "{size} {type}",
+    "setup.sumRivals": "{n} rivals",
+    "setup.sumPace": "{speed} speed, {level}",
+    "setup.sumVictories": "{n} ways to win",
+    "setup.teamsNone": "Teams: none (open to set them)",
+    "setup.teamsSet": "Teams: set",
+    "game.confirmEnd": "{n} units still need orders. Press Shift+Enter again to end the turn anyway."
   }
 }

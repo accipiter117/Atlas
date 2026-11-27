@@ -24,6 +24,7 @@ async function setUpQuick(page, info) {
   await expect(page.locator('[data-field="difficulty-bonus"]')).toContainText('+1 settler');
   await page.locator('select[name="difficulty"]').selectOption('prince');
   await expect(page.locator('select[name="conversion"] option')).toHaveText(['None', 'The Witcher: Northern Wars', 'Killzone: The Front']);
+  await page.locator('[data-tab="players"]').click();
   await page.locator('select[name="faction"]').selectOption('greece');
   if (info) await page.screenshot({ path: `test-results/setup-${info.project.name}.png`, fullPage: true });
   await page.locator('[data-action="start-game"]').click();
