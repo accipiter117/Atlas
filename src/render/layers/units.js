@@ -22,18 +22,39 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
   /** A faction's own sheet for a unit (Killzone's ISA and Helghast troopers), else the shared one. */
   const sheetFor = (type, faction) => sheets[`unit.${type}.${civs[faction]}`] ?? sheets[`unit.${type}`] ?? null;
   const anims = new Map(); // unit id -> { path, start, msPerTile }
+  const lunges = new Map(); // unit id -> { to, start, dur } (graphics overhaul G6)
   const facing = new Map(); // unit id -> last facing, kept between redraws
   const nbsDir = (a, b) => facingBetween(map, a, b);
 
-  function animate(unitId, path, now) {
+  /** Walk a unit along a path, starting at `start` (later moves wait their turn), `msPerTile` per step. */
+  function animate(unitId, path, now, { start = now, msPerTile = 220 } = {}) {
     if (path.length < 2) return;
-    if (reducedMotion()) { facing.set(unitId, nbsDir(path.at(-2), path.at(-1))); return; }
-    anims.set(unitId, { path, start: now, msPerTile: 220 });
+    if (reducedMotion() || msPerTile <= 0) { facing.set(unitId, nbsDir(path.at(-2), path.at(-1))); return; }
+    anims.set(unitId, { path, start, msPerTile });
+  }
+
+  /** A melee lunge: the unit leans into the hex it attacks and back. */
+  function lunge(unitId, to, { start, dur = 360 }) {
+    if (reducedMotion() || dur <= 0) return;
+    lunges.set(unitId, { to, start, dur });
   }
 
   function placeOf(unit, now) {
+    const p = walkPlace(unit, now);
+    const l = lunges.get(unit.id);
+    if (!l) return p;
+    if (now >= l.start + l.dur) { lunges.delete(unit.id); return p; }
+    if (now < l.start) return p;
+    const k = Math.sin(Math.PI * ((now - l.start) / l.dur)) * 0.38;
+    const q = tileCentre(map, l.to);
+    return { ...p, x: p.x + (q.x - p.x) * k, y: p.y + (q.y - p.y) * k, facing: nbsDir(unit.tile, l.to) };
+  }
+
+  function walkPlace(unit, now) {
     const a = anims.get(unit.id);
     if (!a) return { ...tileCentre(map, unit.tile), facing: facing.get(unit.id) ?? 's', moving: false };
+    // Waiting for an earlier move to finish: stand at the start of the path.
+    if (now < a.start) return { ...tileCentre(map, a.path[0]), facing: nbsDir(a.path[0], a.path[1]), moving: false };
     const t = (now - a.start) / a.msPerTile;
     if (t >= a.path.length - 1) {
       anims.delete(unit.id);
@@ -156,7 +177,7 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
         ctx.fillText(String(here), x + 16 * scale, y + 2.5 * scale);
       }
     }
-    return anims.size > 0;
+    return anims.size > 0 || lunges.size > 0;
   }
 
   /** A class pennant on a little pole behind the unit, in its faction's colour. */
@@ -186,5 +207,5 @@ export function createUnitsLayer({ map, ruleset, sheets, colours, civs = {}, red
     drawIcon(ctx, atlas, name, x, y, Math.round(r * 1.3));
   }
 
-  return { draw, animate, sheetFor, isAnimating: () => anims.size > 0 };
+  return { draw, animate, lunge, sheetFor, isAnimating: () => anims.size > 0 || lunges.size > 0 };
 }

@@ -108,13 +108,17 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
   const say = (m) => toast(doc, m);
 
   // ---------- Settings (atlas:settings) ----------
-  const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70' };
+  const SETTINGS_DEFAULTS = { motion: 'device', developer: false, uiScale: '1', tooltipDelay: 'short', volumeMaster: '70', volumeEffects: '70', volumeMusic: '70', animSpeed: 'normal', rivalMoves: 'quick', combatCamera: true };
   function readSettings() {
     try { return { ...SETTINGS_DEFAULTS, ...JSON.parse(storage.getItem('atlas:settings') ?? '{}') }; } catch { return { ...SETTINGS_DEFAULTS }; }
   }
   function applySettings() {
     const s = readSettings();
     doc.documentElement.dataset.motion = s.motion;
+    // Animation settings (graphics overhaul G6), read by the game screen when it plays events.
+    doc.documentElement.dataset.animSpeed = s.animSpeed;
+    doc.documentElement.dataset.rivalMoves = s.rivalMoves;
+    doc.documentElement.dataset.combatCamera = s.combatCamera ? 'on' : 'off';
     // Interface size (graphics overhaul G1): one CSS variable scales every panel and screen.
     doc.documentElement.style.setProperty('--ui-scale', String(Number(s.uiScale) || 1));
     doc.documentElement.dataset.tooltips = s.tooltipDelay;
@@ -190,7 +194,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     }
     audio.setOverrides(loaded.ruleset.skin?.sounds);
     game = createGameScreen(doc, gameScreen, {
-      ruleset: loaded.ruleset, text: loaded.text, sheets, toast: say, setup, resume, debug: params.has('debug'), hooks: makeHooks(), ...(quick ?? {}),
+      ruleset: loaded.ruleset, text: loaded.text, sheets, toast: say, sound: (id) => audio.play(id), setup, resume, debug: params.has('debug'), hooks: makeHooks(), ...(quick ?? {}),
     });
     gameScreen.querySelector('#game-map').focus({ preventScroll: true });
   }

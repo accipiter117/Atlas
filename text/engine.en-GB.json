@@ -822,6 +822,15 @@
     "help.key.escape": "Close a sheet, then clear the selection",
     "help.key.pan": "Pan the map (arrow keys too)",
     "help.key.zoom": "Zoom in and out (mouse wheel too)",
-    "game.progress.turn": "1 turn"
+    "game.progress.turn": "1 turn",
+    "fx.founded": "{city} founded",
+    "fx.captured": "{city} taken by {faction}",
+    "fx.turn": "Turn {n}",
+    "summary.title": "Last round ({n})",
+    "summary.battle": "{attacker} attacked {defender} ({dealt} damage)",
+    "summary.cityCaptured": "{city} taken by {faction}",
+    "summary.cityFounded": "{faction} founded {city}",
+    "summary.built": "{city} finished {item}",
+    "summary.wonder": "{wonder} was completed"
   }
 }

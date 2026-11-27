@@ -14,6 +14,7 @@ import { createTopBar } from './hud/topBar.js';
 import { createAdvice } from './hud/advice.js';
 import { createAttention } from './hud/attention.js';
 import { createMapHud } from './hud/mapHud.js';
+import { createPlayback } from './hud/playback.js';
 import { hideTooltip } from './hud/tooltip.js';
 import { createUnitCard } from './hud/unitCard.js';
 import { createCityDrawer } from './screens/cityDrawer.js';
@@ -35,7 +36,7 @@ import { t, formatText } from '../data/text.js';
  * when a save is loaded. `hooks` connect it to the app: saveSlot, exportCode,
  * autosave, quit and newGame.
  */
-export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, setup: given = null, resume = null, players = 4, mapSize = 'small', mapType = 'continents', faction = null, debug = false, hooks = {} }) {
+export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast, sound = null, setup: given = null, resume = null, players = 4, mapSize = 'small', mapType = 'continents', faction = null, debug = false, hooks = {} }) {
   const tt = (key, args) => t(text, key, args);
   const setup = resume ? resume.state.setup : given ?? {
     seed,
@@ -215,6 +216,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     get showAllOptions() { return showAllOptions; }, set showAllOptions(x) { showAllOptions = x; },
     get showClose() { return showClose; },
     get showEvents() { return showEvents; },
+    get sound() { return sound; },
     get snapshot() { return snapshot; },
     get startMemories() { return startMemories; },
     get startWorker() { return startWorker; },
@@ -277,13 +279,17 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
 
   const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, civs: Object.fromEntries(v.factions.map((f) => [f.id, f.civ])), sheets });
   const { refreshMinimap, updateInsets, toggleYields, toggleGrid, hexHover, hexLeave, hexContent, openHelp } = createMapHud(g);
+  const playback = createPlayback(g);
   doc.defaultView.addEventListener('resize', () => updateInsets());
   // What tests and the dev tools can see; published on window once the opening seats have played.
   const api = { get state() { return state; }, get view() { return v; }, get busy() { return busy; }, mapView, human, ruleset, get journals() { return journals; }, usesWorker: Boolean(worker),
     /** Open one of your cities' panels (the screenshot harness and tests). */
     openCity: (id) => openCityDrawer(id, { centre: true }),
     /** What the hover tooltip says about a hex (tests). */
-    hexTooltip: (tile) => hexContent(tile) };
+    hexTooltip: (tile) => hexContent(tile),
+    /** The game's fingerprint now (tests: animations never change the game). */
+    fingerprint: () => fingerprint(state),
+    get summary() { return playback.summary; } };
   if (debug) {
     // Developer cheats (?debug=1 only), like the plan's dev page: they edit a copy of the
     // state directly, outside the rules, so they are never available in a normal game.
@@ -544,7 +550,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       : tt('battle.report', { attacker, defender, dealt: d.toDefender, taken: d.toAttacker }));
   }
 
-  function showEvents(events) {
+  /** Toasts for what happened, and the animations and sounds (G6). Returns how long the animations run. */
+  function showEvents(events, { rival = false } = {}) {
+    const ms = playback.play(events, { rival });
     for (const e of events) {
       if (e.type === 'battle') battleReport(e);
       if (e.type === 'warDeclared' && (e.faction === human || e.target === human || v.cities.some((c) => c.faction === e.faction))) toast(tt('game.warDeclared', { faction: civName(e.faction), target: civName(e.target) }));
@@ -576,7 +584,6 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'cityCaptured' && e.from === human) toast(tt('battle.cityLost', { city: e.name, faction: civName(e.faction) }));
       if (e.type === 'campCleared' && e.faction === human) toast(tt('battle.campCleared', { gold: e.gold }));
       if (e.type === 'unitCaptured' && e.faction === human) toast(tt('battle.civilianCaptured', { unit: unitName({ type: e.unitType }) }));
-      if (e.type === 'unitMoved' && (e.faction === human || e.path.some((tile) => v.fog[tile] === VISIBLE))) mapView.animateMove(e.unit, e.path);
       if (e.type === 'wonderBuilt') {
         const known = e.faction === human || v.cities.some((c) => c.id === e.city);
         toast(tt('game.wonderBuilt', { faction: known ? civName(e.faction) : '?', wonder: ruleset.text[ruleset.wonders[e.wonder]?.nameKey] ?? e.wonder, city: known ? e.cityName : '?' }));
@@ -596,6 +603,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'factionEliminated') toast(tt(e.faction === human ? 'game.youEliminated' : 'game.eliminated', { faction: civName(e.faction) }));
       if (e.type === 'unitBuilt' && !e.bought) toast(tt('game.unitBuilt', { city: city?.name ?? '', unit: itemName({ kind: 'unit', id: e.unitType }) }));
     }
+    return ms;
   }
 
   function run(cmd) {
@@ -674,12 +682,19 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     all.push(...(await playComputerSeats()));
     $('[data-action="next"]').disabled = false;
     refresh();
-    showEvents(all);
+    sound?.('endTurn');
+    const ms = showEvents(all, { rival: true });
+    playback.ribbon(state.turn);
     autosaveNow();
     checkEnd();
     if (gameOver()) return;
-    if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
-    else selectNextIdle();
+    // Let the rivals' moves play before the camera jumps to your first job (at most 2.5 seconds).
+    const firstJob = () => {
+      if (busy || gameOver() || currentFactionId(state) !== human) return;
+      if (noProduction().length) openCityDrawer(noProduction()[0].id, { centre: true });
+      else selectNextIdle();
+    };
+    if (ms > 0) doc.defaultView.setTimeout(firstJob, Math.min(ms, 2500)); else firstJob();
   }
 
   /** The Next button: whatever still blocks the turn, else end it (section 10.1). */
@@ -1018,7 +1033,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   opening.then((events) => {
     $('[data-action="next"]').disabled = false;
     refresh();
-    showEvents(events);
+    showEvents(events, { rival: true });
     selectNextIdle();
     checkEnd();
     doc.defaultView.__atlasGame = api;

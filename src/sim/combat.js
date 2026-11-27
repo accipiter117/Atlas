@@ -270,6 +270,8 @@ export function promotionsAvailable(ruleset, unit) {
  */
 export function applyResult(state, ruleset, spec, result, events) {
   const target = spec.target;
+  // Where the attack came from (for the map's animation; graphics overhaul G6).
+  const fromTile = spec.attacker.city ? state.cities[spec.attacker.city]?.tile ?? null : state.units[spec.attacker.units[0]?.ref]?.tile ?? null;
   for (const r of result.units) {
     if (r.ref === CITY_REF) continue;
     const u = state.units[r.ref];
@@ -326,7 +328,7 @@ export function applyResult(state, ruleset, spec, result, events) {
   if (captured) captureCity(state, ruleset, captured, attacker.faction, events);
   events.push({ type: 'battle', battleId: spec.battleId, kind: spec.kind, attacker: spec.attacker.units[0].ref, attackerFaction: spec.attacker.faction,
     attackerType: spec.attacker.units[0].type, defenderType: spec.defender.units[0]?.type ?? null, attackerCity: spec.attacker.city ?? null,
-    defenderFaction: spec.defender.faction, target, winner: result.winner, margin: result.margin, damage: result.damage ?? null, city: spec.defender.city?.ref ?? null });
+    defenderFaction: spec.defender.faction, target, from: fromTile, winner: result.winner, margin: result.margin, damage: result.damage ?? null, city: spec.defender.city?.ref ?? null });
 }
 
 /** A city changes hands (section 3.2). The new owner must still choose Keep or Raze. */

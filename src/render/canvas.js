@@ -14,6 +14,7 @@ import { createRegistry } from './art/registry.js';
 import { placeholderColour, shade } from './art/placeholders.js';
 import { fxRandom } from './fxRandom.js';
 import { drawCityArt, cityTier, styleFor } from './art/cityArt.js';
+import { createEffects } from './layers/effects.js';
 import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/cities.js';
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
@@ -65,6 +66,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     frames: 0,
     lastFrameMs: 0,
   };
+  const effects = createEffects();
   const unitsLayer = createUnitsLayer({ map, ruleset, sheets, colours, civs, reducedMotion });
   let size = { w: 0, h: 0 };
   // The parts of the canvas covered by floating panels (graphics overhaul G2): centring
@@ -135,6 +137,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     cities('plate');
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (yieldsAt) drawYieldOverlay(cam, visible);
+    if (effects.draw(ctx, view.map, cam, t0)) dirty = true;
     if (walking) dirty = true;
     view.frames += 1;
     view.lastFrameMs = win.performance.now() - t0;
@@ -351,8 +354,14 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     },
     /** The open city's worked tiles, locks and tile prices (or null to clear). */
     setCityOverlay(cityId, overlay) { view.selectedCity = cityId; view.cityOverlay = overlay; dirty = true; },
-    animateMove(unitId, path) { unitsLayer.animate(unitId, path, win.performance.now()); dirty = true; },
-    isAnimating: () => unitsLayer.isAnimating(),
+    /** Walk a unit along a path; opts { start (ms, performance.now time), msPerTile }. */
+    animateMove(unitId, path, opts = {}) { unitsLayer.animate(unitId, path, win.performance.now(), opts); dirty = true; },
+    /** A melee lunge towards a hex; opts { start, dur }. */
+    lunge(unitId, to, opts = {}) { unitsLayer.lunge(unitId, to, { start: win.performance.now(), ...opts }); dirty = true; },
+    /** A cosmetic effect (layers/effects.js): { kind, start, dur, ... }; skipped with reduced motion except banners. */
+    effect(e) { if (reducedMotion() && e.kind !== 'banner' && e.kind !== 'number') return; effects.add({ start: win.performance.now(), ...e }); dirty = true; },
+    reducedMotion,
+    isAnimating: () => unitsLayer.isAnimating() || effects.count > 0,
     setSelection(unitId) { view.selected = unitId; dirty = true; },
     setHover(tile) { if (view.hover !== tile) { view.hover = tile; dirty = true; } },
     setPath(from, plan) { view.pathFrom = from; view.path = plan; dirty = true; },

@@ -106,6 +106,19 @@
               <option value="long">Long delay</option>
               <option value="off">Off</option>
             </select></label>
+          <label class="setup-row"><span class="setup-label">Unit animations</span>
+            <select name="animSpeed" data-setting="animSpeed">
+              <option value="normal">Normal</option>
+              <option value="fast">Fast</option>
+              <option value="instant">Instant</option>
+            </select></label>
+          <label class="setup-row"><span class="setup-label">Rivals' moves you can see</span>
+            <select name="rivalMoves" data-setting="rivalMoves">
+              <option value="full">Play them in full</option>
+              <option value="quick">Play them quickly</option>
+              <option value="off">Do not play them</option>
+            </select></label>
+          <label class="tick setup-row"><input type="checkbox" data-setting="combatCamera"><span>Move the map to battles against you</span></label>
         </section>
         <section class="setup-group">
           <label class="setup-row"><span class="setup-label">Master volume</span><input type="range" min="0" max="100" step="5" name="volumeMaster" data-setting="volumeMaster"></label>
@@ -139,7 +152,12 @@
     <aside class="attention hud-panel" aria-labelledby="attention-title">
       <h2 id="attention-title" data-field="attention-title">Needs attention</h2>
       <ul data-field="attention"></ul>
+      <details class="turn-summary" data-field="turn-summary" hidden>
+        <summary data-field="summary-title">Last round</summary>
+        <ul></ul>
+      </details>
     </aside>
+    <div class="turn-ribbon" data-field="turn-ribbon" aria-hidden="true"></div>
     <div class="drawer-backdrop phone-only" data-field="drawer-backdrop" hidden></div>
     <aside class="unit-panel hud-panel" aria-live="polite">
       <button class="sheet-handle phone-only" type="button" data-action="sheet-toggle" aria-label="Show or hide the panel" aria-expanded="true"><span aria-hidden="true"></span></button>

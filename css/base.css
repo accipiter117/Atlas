@@ -674,3 +674,26 @@ kbd { display: inline-block; min-width: 24px; padding: 1px 6px; border: 1px soli
 /* Leader portraits (graphics overhaul G4): head and shoulders in a brass frame. */
 .dip-face { float: right; width: 96px; height: 96px; image-rendering: pixelated; border: 2px solid var(--brass); border-radius: 6px; box-shadow: inset 0 0 0 1px var(--brass-inner); background: var(--parchment); margin: 0 0 8px 12px; }
 .dip-face.small-face { float: none; width: 40px; height: 40px; margin: 0 8px 0 0; vertical-align: middle; }
+
+/* Graphics overhaul G6: the turn ribbon, the progress glow and the turn summary. */
+.turn-ribbon {
+  position: absolute; z-index: 7; top: 64px; left: 50%; transform: translateX(-50%); pointer-events: none; opacity: 0;
+  padding: 6px 48px; font: 700 24px/1.2 var(--font-heading); letter-spacing: 0.08em; color: var(--panel-ink);
+  background: linear-gradient(90deg, transparent, var(--walnut) 18%, var(--walnut) 82%, transparent); border-top: 1.5px solid var(--brass); border-bottom: 1.5px solid var(--brass);
+}
+.turn-ribbon.show { animation: ribbon 1.8s ease-out both; }
+@keyframes ribbon { 0% { opacity: 0; transform: translate(-60%, 0); } 15% { opacity: 1; transform: translate(-50%, 0); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-45%, 0); } }
+.progress-row.glow .ring { animation: ring-glow 1.6s ease-out; border-radius: 50%; }
+@keyframes ring-glow { 0% { box-shadow: 0 0 0 0 var(--gold); } 30% { box-shadow: 0 0 14px 6px var(--gold); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.turn-summary { margin-top: 8px; border-top: 1px solid var(--brass-inner); padding-top: 6px; }
+.turn-summary > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font: 600 12px/1.2 var(--font-heading); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+.turn-summary ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.summary-item {
+  width: 100%; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 2px 6px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--ink); font: 500 13px/1.25 var(--font-body); text-align: left; cursor: pointer;
+}
+.summary-item:hover:not(:disabled) { background: var(--brass-glow); }
+.summary-item:disabled { cursor: default; color: var(--ink-soft); }
+.summary-item .icon { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .turn-ribbon.show, :root:not([data-motion="full"]) .progress-row.glow .ring { animation: none; } }
+:root[data-motion="reduce"] .turn-ribbon.show, :root[data-motion="reduce"] .progress-row.glow .ring { animation: none; }

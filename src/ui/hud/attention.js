@@ -39,7 +39,7 @@ export function createAttention(g) {
     if (items.length > shown.length) lis.push(el(g.doc, 'li', { class: 'more' }, g.tt('game.attention.more', { n: items.length - shown.length })));
     g.$('[data-field="attention"]').replaceChildren(...(lis.length ? lis : [el(g.doc, 'li', { class: 'none' }, g.tt('game.attention.none'))]));
     // An empty list on a laptop needs no panel at all: the end-turn button says the same.
-    g.root.querySelector('.attention').classList.toggle('empty', !items.length);
+    g.root.querySelector('.attention').classList.toggle('empty', !items.length && g.root.querySelector('[data-field="turn-summary"]')?.hidden !== false);
   }
 
   return { renderAttention };

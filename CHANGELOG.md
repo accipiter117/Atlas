@@ -1,5 +1,18 @@
 # Changelog
 
+## Graphics overhaul G6: movement, combat and sound
+
+Actions now feel physical: units walk, attacks land, numbers fly, turns have a rhythm, and you hear it all.
+
+What you can try: attack something. Melee units lean into the enemy, there is a flash where the blow lands and the damage floats up over both sides; archers, slingers and siege engines send an arrow or a stone on an arc. A unit that falls leaves a puff of dust. Found a city and a banner rises over it with a fanfare; a captured city gets a banner in its new owner's colour. When you end the turn, the rivals' moves you can see play one after another, then "Turn N" sweeps across the map and the camera goes to your first job. When you finish a tech or civic its ring glows and a chime plays. The notifications panel now has "Last round": what happened to you while the rivals moved, and clicking an item moves the map there. Settings has three new choices: unit animation speed (normal, fast, instant), rivals' moves (in full, quickly, or not at all) and whether the map moves to battles against you; "Reduce motion" turns the movement off but keeps the numbers and banners. A short recording of an attack is in `docs/shots/G6/attack.webm`.
+
+- `src/render/layers/effects.js`: flashes, floating numbers, projectiles, dust and city banners, presentation only.
+- `src/render/layers/units.js`: walks that wait their turn and melee lunges.
+- `src/ui/hud/playback.js`: turns events into effects and sounds, queues rivals' moves, the turn ribbon, the ring glow and the turn summary.
+- Sounds (G1's synthesised set) on attacks, arrows, founding a city, finishing a build or a tech, and ending the turn.
+- Battle events now say which hex the attack came from.
+- Tests: the same three turns with every animation on and with them all off end in exactly the same game; an attack really plays its effects.
+
 ## Faster first load
 
 The title screen now opens without downloading the game screen and map renderer; they load quietly in the background while you read the title, or when you start a game. The first page load drops from about 936 KB to 651 KB (the budget is 1,000 KB), which leaves room for the rest of the overhaul. This was planned for G8 (docs/OVERHAUL.md section 7) and is done now because G6 adds more code.
