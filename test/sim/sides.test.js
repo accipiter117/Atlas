@@ -57,12 +57,14 @@ test('high support speeds industry; low support makes units dearer and growth sl
 test('propaganda becomes support (a few points a round per side); a blockaded home world drains it', () => {
   const s = game();
   const isa = s.factions.find((f) => f.civ === 'isa');
-  isa.stocks.faith = 60;
+  // Enough for one point more than the cap, so the cap shows.
+  const plenty = t.propagandaPer * (t.propagandaMax + 1);
+  isa.stocks.faith = plenty;
   s.factions.find((f) => f.civ === 'home_guard').stocks.faith = 200;
   const events = [];
   sidesRound(s, rs, events);
   assert.equal(s.warSupport[0], t.start + t.propagandaMax, 'capped for the side');
-  assert.equal(isa.stocks.faith, 60 - 2 * t.propagandaPer);
+  assert.equal(isa.stocks.faith, plenty - t.propagandaMax * t.propagandaPer);
   const b = game();
   const helFleet = Object.values(b.space.fleets).find((f) => f.at === 'helghan');
   delete b.space.fleets[Object.values(b.space.fleets).find((f) => f.at === 'vekta').id];

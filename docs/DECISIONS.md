@@ -360,6 +360,14 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **K4b: when the campaign's time runs out,** the side with more war support wins (then more worlds held), replacing the score victory, which, like conquest, is off in this war.
 - **K4b: arms deals are for credits only** for now, at twice the unit's cost and 10% more with each sale. Paying in petrusite, and Stahl's price rise when refused it, wait for a real economy of resources.
 - **K4b: separate peace and the petrusite warhead are left out.** Separate peace is optional and off by default in the plan; the warhead was an open question there (keep, option or drop). Both can come back as setup options.
+- **K5: delegation lives in the game, its play on the page.** `setDelegation` records each world's stance in the game (so saves keep it); the delegated orders are ordinary commands played just before your end of turn and kept in the log, so replays stay exact. The theatre commander moves, fights and fortifies only: research, production, diplomacy and fleets stay yours.
+- **K5: the stances are fixed names, their meaning is data.** Hold the line, Advance and All-out assault are the three in the plan; what each does to the AI's odds is in `rules/killzone-war/ai/weights.json` (theatre.stances).
+- **K5: the turn report is a message and a line on the star map,** not a separate screen, so it costs no extra click; the reason it gives is the AI journal's most common reason that turn.
+- **K5: units in a delegated theatre do not need orders,** so they leave Needs attention and never hold up ending the turn.
+- **K5: the campaign length follows the game speed** (Quick 80, Standard 120, Epic 200 turns), giving the plan's three lengths without a new setup option.
+- **K5: a dead heat is a coin toss.** At the time limit with war support and worlds level, the side of the first (shuffled) seat wins. Glory was tried as the tie-break but some factions earn it by holding ground, which always handed ties to the same side. The simulator reports dead heats apart, like stalled games.
+- **K5: the key site march and landing rules are for wars across worlds only,** so Killzone: The Front's one-world AI plays exactly as before (it was never raced against these changes).
+- **K5: not yet.** The section 7.1 balance targets (see docs/AI_TUNING.md), allies following the council's objective beyond what the target score gives, splitting fleets, setup's default delegation, and grouping the AI journal by world.
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## After the overhaul

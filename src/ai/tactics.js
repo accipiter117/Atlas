@@ -143,6 +143,25 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
     return move(view, unit, post, 'ai.reason.toGarrison', {}, 2);
   }
 
+  // K5: a war across worlds is won by holding each world's key sites. Stand on ours; march on
+  // the nearest one our side does not hold (within supply, unless already cut off).
+  // (Only in a war across several worlds: the one-world Killzone front plays as it always has.)
+  if (view.frontline?.sites && view.world) {
+    const side = ruleset.factions?.[view.factions.find((f) => f.id === me)?.civ]?.frontSide;
+    const objective = ruleset.worlds?.[view.world]?.theatre?.objective;
+    const key = Object.values(view.frontline.sites).filter((s) => !objective || s.site === objective);
+    if (key.some((s) => s.tile === unit.tile && s.owner === side)) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 1.5, reasonKey: 'ai.reason.holdSite', params: {} };
+    const free = (t) => !view.units.some((u) => u.tile === t && u.id !== unit.id && u.faction === me);
+    const want = key.filter((s) => s.owner !== side && free(s.tile)).sort((a, b) => dist(view.map, a.tile, unit.tile) - dist(view.map, b.tile, unit.tile) || a.tile - b.tile)[0];
+    if (want && side !== undefined) {
+      const spot = want.tile === unit.tile ? null : pathTo(world, view, ruleset, unit, want.tile) ? want.tile : approach(world, view, ruleset, unit, want.tile, 1);
+      // Supply limits the march only where the side has bases; on a beachhead the fleet's drops follow the troops.
+      const bases = view.cities.some((c) => ruleset.factions?.[view.factions.find((f) => f.id === c.faction)?.civ]?.frontSide === side);
+      const supplied = !bases || !view.supply || !view.supply.includes(unit.tile) || (spot !== null && view.supply.includes(spot));
+      if (spot !== null && spot !== unit.tile && supplied) return move(view, unit, spot, 'ai.reason.toKeySite', {}, 1.5);
+    }
+  }
+
   // Scouts explore.
   if (def.class === 'recon' || ctx.exploring(unit)) {
     const frontier = ctx.frontierFor(unit);
@@ -162,8 +181,9 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
         const wait = pathTo(world, view, ruleset, unit, spot)?.tiles?.find((t) => dist(view.map, t, ctx.warTarget) <= muster);
         if (wait !== undefined && wait !== unit.tile) return move(view, unit, wait, 'ai.reason.muster', {}, 1);
       }
-      // K5: never march out of supply (the view lists what we can supply).
-      if (spot !== null && view.supply && !view.supply.includes(spot)) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.supplyLine', params: {} };
+      // K5: never march out of supply (the view lists what we can supply); a unit already cut off
+      // marches on, since standing still only ends in surrender.
+      if (spot !== null && view.supply && view.supply.includes(unit.tile) && !view.supply.includes(spot)) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.supplyLine', params: {} };
       if (spot !== null) return move(view, unit, spot, 'ai.reason.march', {}, 1);
     }
   }
@@ -205,6 +225,17 @@ export function builderJobs(world, view, ruleset) {
     const ours = (t) => (side === 0 ? control[t] > 0 : control[t] < 0);
     const nbs = neighbourCache(view.map);
     const nearFront = (t) => { const seen = new Set([t]); let ring = [t]; for (let k = 0; k < (tw.frontBand ?? 2); k += 1) { ring = ring.flatMap((x) => nbs[x]).filter((j) => j >= 0 && !seen.has(j) && seen.add(j)); if (ring.some((j) => control[j] !== 0 && !ours(j))) return true; } return false; };
+    // A beachhead: where our troops stand out of supply, a supply work (landing bay, depot) first.
+    if (view.supply && tw.beachhead) {
+      const cut = new Set(view.units.filter((u) => u.faction === view.me && !view.supply.includes(u.tile)).map((u) => u.tile));
+      for (const t of cut) {
+        if (view.map.improvement?.[t] >= 0 || view.cities.some((c) => c.tile === t)) continue;
+        for (const [id, def] of Object.entries(ruleset.improvements ?? {})) {
+          if (!def.war?.supply || improvementProblem(world, ruleset, view.me, id, t)) continue;
+          jobs.push({ tile: t, from: t, improvement: id, gain: tw.beachhead * def.war.supply });
+        }
+      }
+    }
     for (let t = 0; t < view.map.terrain.length; t += 1) {
       if (view.map.improvement?.[t] >= 0 || !ours(t) || view.cities.some((c) => c.tile === t) || !nearFront(t)) continue;
       for (const [id, value] of Object.entries(tw.works)) {

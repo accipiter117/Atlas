@@ -4,7 +4,7 @@
 import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { loadReal } from '../test/data/helpers.js';
-import { createGame, turnLimit } from '../src/sim/index.js';
+import { createGame, turnLimit, sideOf } from '../src/sim/index.js';
 import { createSeatRunner } from '../src/ai/index.js';
 import { clone, deepFreeze } from '../src/core/clone.js';
 
@@ -41,9 +41,13 @@ export function aiRulesFor(ruleset, patch) {
  * Play one game. seats: optional { seatIndex: 'challenger' | 'champion' } (by player index).
  * Returns a plain summary (no state), the same on every run for the same inputs.
  */
-export async function playGame({ seed, mods = ['base-ancient'], size = 'small', type = 'continents', speed = 'quick', players = 4, turnLimit: limit, seats = null, challenger = null, champion = null }) {
+export async function playGame({ seed, mods = ['base-ancient'], size = 'small', type = 'continents', speed = 'quick', players = 4, turnLimit: limit, seats = null, challenger = null, champion = null, war = null }) {
   const { ruleset } = await rulesFor(mods);
-  const setup = { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, speed, raiders: 'on', events: 'occasional' };
+  // A side war (Killzone Extrasolar War, K5): every faction with a side, on the war's map preset.
+  const warCivs = war ? Object.keys(ruleset.factions).filter((c) => ruleset.factions[c].frontSide !== undefined) : null;
+  const setup = war
+    ? { seed, players: warCivs.map((c) => ({ kind: 'ai', faction: c })), map: { preset: war.preset }, speed, ...(war.scenario ? { scenario: war.scenario } : {}) }
+    : { seed, players: Array.from({ length: players }, () => ({ kind: 'ai' })), map: { size, type }, speed, raiders: 'on', events: 'occasional' };
   if (limit !== undefined) setup.turnLimit = limit;
   let state = createGame(ruleset, setup);
   const version = (i) => (seats?.[i] ?? 'champion');
@@ -54,6 +58,8 @@ export async function playGame({ seed, mods = ['base-ancient'], size = 'small', 
   const refusals = [];
   let worstRound = 0;
   let error = null;
+  let homeInvaded = false;
+  let landings = 0;
   try {
     while (!state.winner && state.turn <= limitTurn + 1) {
       const t0 = performance.now();
@@ -62,6 +68,12 @@ export async function playGame({ seed, mods = ['base-ancient'], size = 'small', 
         const r = runner.play(state, { maxSeats: ids.length });
         state = r.state;
         refusals.push(...r.refusals);
+        for (const e of war ? r.events : []) {
+          if (e.type !== 'armyLanded') continue;
+          landings += 1;
+          const home = ruleset.worlds?.[e.world]?.homeOf;
+          if (home !== undefined && home !== sideOf(state, ruleset, e.faction)) homeInvaded = true;
+        }
       }
       worstRound = Math.max(worstRound, performance.now() - t0);
     }
@@ -84,7 +96,20 @@ export async function playGame({ seed, mods = ['base-ancient'], size = 'small', 
     nan,
     error,
     worstRoundMs: Math.round(worstRound),
+    ...(war ? { war: warSummary(state, ruleset, ids, version, { homeInvaded, landings }) } : {}),
   };
+}
+
+/** How a side war went: the winning side, whether a home world was invaded, who topped glory. */
+function warSummary(state, ruleset, ids, version, extra) {
+  const top = Object.entries(state.glory ?? {}).sort((a, b) => b[1] - a[1] || ids.indexOf(a[0]) - ids.indexOf(b[0]))[0]?.[0];
+  const winSide = state.winner ? sideOf(state, ruleset, state.winner.faction) : null;
+  // The AI version that played the winning side (sides are all one version in a war comparison).
+  const sideVersion = winSide === null ? null : version(ids.findIndex((id) => sideOf(state, ruleset, id) === winSide));
+  // A dead heat: the time ran out with support and worlds level (settled by seat order).
+  const held = (s) => Object.values(state.holders ?? {}).filter((h) => h === s).length;
+  const deadHeat = state.winner?.victory === 'war_time' && state.warSupport[0] === state.warSupport[1] && held(0) === held(1);
+  return { winSide, sideVersion, deadHeat, topGlory: state.factions.find((f) => f.id === top)?.civ ?? null, support: { ...state.warSupport }, ...extra };
 }
 
 /** Section 9.7 report lines from a list of game summaries. */
@@ -109,7 +134,47 @@ export function report(games, { victories = ['conquest', 'science', 'score'] } =
     errors: { refusals: games.reduce((n, g) => n + g.refusals, 0), nan: games.reduce((n, g) => n + g.nan.length, 0), crashes: games.filter((g) => g.error).length },
     worstRoundMs: Math.max(0, ...games.map((g) => g.worstRoundMs)),
     versions,
+    ...(games.some((g) => g.war) ? { war: warReport(games) } : {}),
   };
+}
+
+/** Section 7.1 of docs/KILLZONE.md: sides, length, home invasions and glory. */
+function warReport(games) {
+  const sides = { 0: 0, 1: 0 };
+  const glory = {};
+  for (const c of games[0]?.civs ?? []) glory[c] = 0;
+  for (const g of games) {
+    if (g.war.winSide !== null && !g.war.deadHeat) sides[g.war.winSide] += 1;
+    if (g.war.topGlory) glory[g.war.topGlory] = (glory[g.war.topGlory] ?? 0) + 1;
+  }
+  return {
+    sides, topGlory: glory, deadHeats: games.filter((g) => g.war.deadHeat).length,
+    homeInvaded: games.filter((g) => g.war.homeInvaded).length,
+    averageLength: Math.round(games.reduce((n, g) => n + (g.winner?.turn ?? g.turns), 0) / Math.max(1, games.length)),
+    landings: Math.round(games.reduce((n, g) => n + g.war.landings, 0) / Math.max(1, games.length)),
+  };
+}
+
+/**
+ * Which section 7.1 targets a war report misses. These need about 100 games to measure well,
+ * more than CLAUDE.md allows without asking; a smaller batch is a direction, not a verdict.
+ */
+export function warProblems(r) {
+  const out = [];
+  const w = r.war;
+  // Dead heats (settled by seat order) are left out of the side balance, like stalled games.
+  const decided = w.sides[0] + w.sides[1];
+  if (w.deadHeats / Math.max(1, r.games) >= 0.2) out.push(`${w.deadHeats} dead heats, 20% or more`);
+  for (const s of [0, 1]) {
+    const rate = w.sides[s] / Math.max(1, decided);
+    if (decided && (rate < 0.45 || rate > 0.55)) out.push(`side ${s} wins ${pct(rate)} of decided games, outside 45 to 55%`);
+  }
+  for (const [v, n] of Object.entries(r.winsByVictory)) if (n / Math.max(1, r.games) < 0.1) out.push(`${v} ${pct(n / Math.max(1, r.games))}, under 10%`);
+  if (w.averageLength < 90 || w.averageLength > 140) out.push(`average length ${w.averageLength} turns, outside 90 to 140`);
+  const inv = w.homeInvaded / Math.max(1, r.games);
+  if (inv < 0.3 || inv > 0.6) out.push(`a home world invaded in ${pct(inv)} of games, outside 30 to 60%`);
+  for (const [c, n] of Object.entries(w.topGlory)) if (n / Math.max(1, r.games) < 0.08) out.push(`${c} tops glory in ${pct(n / Math.max(1, r.games))}, under 8%`);
+  return out;
 }
 
 /** Which healthy ranges (section 9.7) a report breaks. Win rate by faction is judged only from 40 games up. */

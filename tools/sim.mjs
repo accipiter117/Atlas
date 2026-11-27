@@ -15,13 +15,18 @@
 //   --json FILE, --md FILE   write the report
 //   --threads N        parallel games (default: CPU count)
 //   --healthy          exit with an error if a healthy range (section 9.7) is broken
+//   --war [PRESET]     a side war (Killzone Extrasolar War; default map preset kw_vekta, mods
+//                      base-ancient,killzone,killzone-war): every faction with a side plays, a
+//                      challenger takes a whole side (swapped with --swap-seats), and the report
+//                      checks docs/KILLZONE.md 7.1 (sides, victory types, length, invasions, glory)
+//   --scenario ID      a war scenario (with --war)
 //
 // Results are the same for the same options on any machine; only timings differ.
 
 import { Worker } from 'node:worker_threads';
 import { cpus } from 'node:os';
 import { writeFileSync } from 'node:fs';
-import { report, healthProblems, readVersion, pct } from './lib-sim.mjs';
+import { report, healthProblems, warProblems, readVersion, pct } from './lib-sim.mjs';
 import { AI_VERSION } from '../src/ai/version.js';
 
 export function parseArgs(argv) {
@@ -48,6 +53,10 @@ export function parseArgs(argv) {
     else if (a === '--threads') o.threads = Number(v());
     else if (a === '--healthy') o.healthy = true;
     else if (a === '--quiet') o.quiet = true;
+    else if (a === '--war') {
+      o.war = { preset: argv[i + 1] && !argv[i + 1].startsWith('--') ? v() : 'kw_vekta' };
+      if (!argv.includes('--mods')) o.mods = ['base-ancient', 'killzone', 'killzone-war'];
+    } else if (a === '--scenario') o.scenario = v();
     else throw new Error(`Unknown option ${a}`);
   }
   return o;
@@ -59,12 +68,15 @@ export function plan(o) {
   const champion = readVersion(o.champion);
   const count = o.swap ? Math.ceil(o.games / 2) : o.games;
   const seeds = (o.seeds ?? Array.from({ length: count }, (_, k) => 1000 + k)).slice(0, count);
-  const base = { mods: o.mods, size: o.size, type: o.type, speed: o.speed, players: o.players, turnLimit: o.turnLimit, challenger, champion };
+  const war = o.war ? { ...o.war, ...(o.scenario ? { scenario: o.scenario } : {}) } : null;
+  const base = { mods: o.mods, size: o.size, type: o.type, speed: o.speed, players: o.players, turnLimit: o.turnLimit, challenger, champion, ...(war ? { war } : {}) };
   const games = [];
   for (const seed of seeds) {
     if (!challenger) { games.push({ ...base, seed }); continue; }
     // Alternate seats: challenger in even seats, champion in odd; swapped for the second game.
-    const a = Object.fromEntries(Array.from({ length: o.players }, (_, i) => [i, i % 2 === 0 ? 'challenger' : 'champion']));
+    // In a side war the challenger takes a whole side: the first three seats (side 0 in kw_vekta).
+    const seatsOf = o.war ? 6 : o.players;
+    const a = Object.fromEntries(Array.from({ length: seatsOf }, (_, i) => [i, (o.war ? i < seatsOf / 2 : i % 2 === 0) ? 'challenger' : 'champion']));
     games.push({ ...base, seed, seats: a });
     if (o.swap) games.push({ ...base, seed, seats: Object.fromEntries(Object.entries(a).map(([i, s]) => [i, s === 'challenger' ? 'champion' : 'challenger'])) });
   }
@@ -93,7 +105,7 @@ export async function runBatch(o, onDone = () => {}) {
 export function markdown(o, r, games, problems) {
   const lines = [];
   const champ = o.champion ?? `${AI_VERSION} (as committed)`;
-  lines.push(`- Games: ${r.games} (${o.size}, ${o.speed} speed, ${o.players} players, mods ${o.mods.join(' + ')}), seeds ${games[0]?.seed} to ${games[games.length - 1]?.seed}${o.swap ? ', seats swapped' : ''}`);
+  lines.push(`- Games: ${r.games} (${o.war ? `side war on ${o.war.preset}${o.scenario ? `, ${o.scenario}` : ''}` : `${o.size}, ${o.speed} speed, ${o.players} players`}, mods ${o.mods.join(' + ')}), seeds ${games[0]?.seed} to ${games[games.length - 1]?.seed}${o.swap ? ', seats swapped' : ''}`);
   if (o.challenger) {
     const c = r.versions.challenger ?? { wins: 0 };
     const k = r.versions.champion ?? { wins: 0 };
@@ -106,6 +118,10 @@ export function markdown(o, r, games, problems) {
   lines.push(`- Average victory turn: ${r.averageVictoryTurn ?? 'none'}; stalled games: ${r.stalled}`);
   lines.push(`- Win rate by faction: ${Object.entries(r.winRateByCiv).map(([c, x]) => `${c} ${x.wins}/${x.games}`).join(', ')}`);
   lines.push(`- Errors: ${r.errors.refusals} refused commands, ${r.errors.nan} NaN, ${r.errors.crashes} crashes; slowest round ${r.worstRoundMs} ms`);
+  if (r.war) {
+    lines.push(`- Sides: side 0 won ${r.war.sides[0]}, side 1 won ${r.war.sides[1]}, dead heats ${r.war.deadHeats} (settled by seat order, left out of the balance); average length ${r.war.averageLength} turns; a home world invaded in ${r.war.homeInvaded} of ${r.games}; landings per game ${r.war.landings}`);
+    lines.push(`- Tops glory: ${Object.entries(r.war.topGlory).map(([c, n]) => `${c} ${n}`).join(', ')}`);
+  }
   lines.push(`- Healthy ranges: ${problems.length ? problems.join('; ') : 'all met'}`);
   return lines.join('\n');
 }
@@ -117,8 +133,8 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
     if (!o.quiet) process.stdout.write(`\r  ${done}/${total} games (last: seed ${g.seed}, ${g.winner ? `${g.winner.civ} ${g.winner.victory} turn ${g.winner.turn}` : 'stalled'})   `);
   });
   if (!o.quiet) process.stdout.write('\n');
-  const r = report(games);
-  const problems = healthProblems(r, o);
+  const r = report(games, o.war ? { victories: ['war_capitals', 'war_support', 'war_territory', 'war_time'] } : {});
+  const problems = o.war ? [...warProblems(r), ...(r.errors.refusals || r.errors.nan || r.errors.crashes ? [`errors: ${r.errors.refusals} refused commands, ${r.errors.nan} NaN, ${r.errors.crashes} crashes`] : [])] : healthProblems(r, o);
   const md = markdown(o, r, games, problems);
   console.log(md);
   console.log(`  (${Math.round((Date.now() - t0) / 1000)} s)`);

@@ -1,5 +1,17 @@
 # Changelog
 
+## Killzone Extrasolar War K5: the computer plays the war, and you can delegate a theatre
+
+The computer now fights across the whole star system, and you can hand any world to your generals.
+
+What you can try (Killzone: Extrasolar War): open the star map and pick a world. Its panel has a new Theatre command row: I command, Hold the line, Advance, All-out assault. Choose a stance and, at the end of each of your turns, your generals play your units on that world first (Hold the line digs in and only attacks on very good odds; Advance pushes on fair odds within supply; All-out assault attacks on any reasonable chance). The world's card on the star map says "delegated", its units stop asking you for orders, and after your turn a message reports what happened there (orders given, battles won and lost, enemy units destroyed, our losses, works built, and the main reason behind its orders); the same report stays on that world's star map panel. Choose I command to take it back at any time. Battles in a delegated theatre are always auto-resolved.
+
+The computer factions now: send their fleets to the world worth most to them (enemy and contested worlds first, then neutral ones, their ambition's world and the war council's choice, nearer is better, strong enemy fleets put them off, and a threat to home brings the fleet back); embark their own and allies' troops, with an engineer, from beside their bases; land on any world on the way their side does not hold; keep a cruiser over a beachhead dropping supplies for up to six turns while engineers build a landing bay; send empty transports back for more troops; slowly grow bolder when a stronger fleet blocks the way; blockade enemy worlds; ask their bases for troops, warships and transports when they need them. On the ground, engineers fortify the front, troops will not march off supply unless already cut off, outnumbered units fall back to their own works, and troops march on each world's key sites to capture it.
+
+- Rules fixes: a cruiser's supply drop now lasts the full round (another faction's drop was clearing it early, so a supplied beachhead could still surrender); propaganda becomes at most 1 point of war support a round per side, at 40 each (was 3 at 25), so support no longer sits at 100; held ambitions pay every few rounds (Home Guard and the Army every 5, Stahl's petrusite every 4 and Kerberos every 5) and glory for deeds is bigger; Headquarters make 2 propaganda (was 4); destroyers need no research and cost 90; the game's length follows the speed: 80 turns at Quick, 120 at Standard, 200 at Epic; a dead heat at the time limit goes to the first seat's side (a coin toss).
+- `tools/sim.mjs --war` plays the six-faction war and reports the section 7.1 targets. Results and what is still off are in `docs/AI_TUNING.md`: game length and home world invasions are on target; the side balance, the spread of victory types and glory are not yet.
+- Tests: `test/ai/k5.test.js` (six computer factions for 40 rounds with no refused orders, fleets embark, sail, land and blockade, engineers dig in, the game replays exactly, delegation set and taken back, a delegated theatre played as you on that world only with a report, stances as data, the report's counts, supply drops lasting the round, the dead heat) and `test/smoke/delegation.spec.js` (the browser flow). Screenshots in `docs/shots/K5/`.
+
 ## Killzone Extrasolar War K4b: war support, glory, victory and scenarios
 
 The war can now be won, and the allies on each side compete for the credit.

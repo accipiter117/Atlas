@@ -142,3 +142,28 @@ test('the AI\'s view of a world keeps the world and the space flag, so it can bu
   assert.ok(Array.isArray(v.supply) && v.supply.length > 0, 'supplied tiles for the theatre AI');
   assert.ok(Object.values(worldData(s, 'vekta').cities).length > 0);
 });
+
+test('a supply drop lasts the round: another faction\'s later drop does not clear it', async () => {
+  const { supplyDrop } = await import('../../src/sim/space.js');
+  const s = createGame(rs, setup());
+  const fleet = Object.values(s.space.fleets).find((f) => f.ships.some((x) => rs.units[x.type]?.space?.bombard));
+  s.space.drops = [{ world: 'midway', tile: 15, faction: 'f_other', turn: s.turn - 1 }];
+  supplyDrop.apply(s, { type: 'supplyDrop', faction: fleet.faction, fleet: fleet.id, tile: 0 }, [], rs);
+  assert.ok(s.space.drops.some((d) => d.faction === 'f_other'), 'last round\'s drop still counts until its faction\'s next turn');
+  s.space.drops.push({ world: 'midway', tile: 15, faction: 'f_old', turn: s.turn - 2 });
+  fleet.struck = []; // a new turn for the cruiser
+  supplyDrop.apply(s, { type: 'supplyDrop', faction: fleet.faction, fleet: fleet.id, tile: 0 }, [], rs);
+  assert.ok(!s.space.drops.some((d) => d.faction === 'f_old'), 'older drops are tidied away');
+});
+
+test('a dead heat at the turn limit goes to the first seat\'s side, not to whoever farmed glory', async () => {
+  const { checkVictory } = await import('../../src/sim/victories/index.js');
+  const { sideOf } = await import('../../src/sim/index.js');
+  const s = createGame(rs, setup(null, { turnLimit: 50 }));
+  s.turn = 50;
+  s.warSupport = { 0: 70, 1: 70 };
+  for (const f of s.factions) s.glory[f.id] = sideOf(s, rs, f.id) === sideOf(s, rs, s.seatOrder[0]) ? 0 : 500;
+  checkVictory(s, rs, []);
+  assert.equal(s.winner.victory, 'war_time');
+  assert.equal(sideOf(s, rs, s.winner.faction), sideOf(s, rs, s.seatOrder[0]));
+});

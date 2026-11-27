@@ -7,6 +7,15 @@
     "warSupport.gloryCity": 10,
     "warSupport.gloryCapital": 25,
     "warSupport.gloryWorld": 15,
+    "warSupport.propagandaPer": 40,
+    "warSupport.propagandaMax": 1,
+    "victory.turnLimits": {
+      "online": 80,
+      "quick": 80,
+      "standard": 120,
+      "epic": 200,
+      "marathon": 200
+    },
     "setup.maxAis": 5,
     "space.loadRange": 3,
     "raiders.units": [

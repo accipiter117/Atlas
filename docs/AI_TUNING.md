@@ -267,10 +267,51 @@ Rules changes in this batch: Trajan's +1 production in every city; Pericles' cul
 - In sample games conquest AIs now capture 5 to 17 cities and knock a faction out, and one
   ended holding two original capitals, but none takes all four before turn 220.
 
+### 2026-11-27: Killzone Extrasolar War K5, star map and theatre AI (side war, kw_vekta)
+
+New: `node tools/sim.mjs --war [preset] [--scenario id] --speed standard --games N` plays the
+six-faction war and checks the targets in docs/KILLZONE.md 7.1. Those targets need about 100
+games to measure well, more than CLAUDE.md allows without asking, so every batch here is 4 to 8
+games: a direction, not a verdict. The K5 AI is new behaviour (the K4 AI had no star map play
+at all), so there was no previous version to race; every step was kept only when the trace or
+batch showed it better, and reverted otherwise.
+
+| Step | Battles on the ground | Landings a game | Worlds captured | Result |
+| --- | --- | --- | --- | --- |
+| Start of K5 (4 games, quick) | 0 | 1 | none | every game to the time limit; fleets stand off for ever |
+| Fleets land on the way, dare more each turn held back (8) | few | 13 | none | the Helghast side wins all 8 (support pinned at 100 by propaganda) |
+| Propaganda 1 a round (cost 40); campaign lengths 80, 120, 200 by speed (8, standard) | 0 | 6 | none | average length 120 (target met); landed troops surrender out of supply |
+| Fleets keep cruisers over a beachhead and drop supplies; engineers build landing bays; key sites (8) | some | 5 to 7 | Midway, Kerberos early | still slow: single squads thrown at Ardent |
+| Engine fix: a supply drop lasted less than a round when seats were shuffled | | | | troops on a beachhead no longer surrender while supplied |
+| Ferry to the world with most of our troops (8) | | 7 | | no change: REVERTED |
+| Dead heats settled by seat order, reported apart (8) | | 7 | | 4 dead heats; side 1 won the other 4 |
+
+Latest batch, 8 games, seeds 1000 to 1007, standard speed:
+
+| Target (docs/KILLZONE.md 7.1) | Result | Met? |
+| --- | --- | --- |
+| Each side wins 45 to 55% | side 0 won 0, side 1 won 4, 4 dead heats | **no** |
+| Each victory type 10% or more | all 8 by time | **no** |
+| Average length 90 to 140 | 120 | yes |
+| A home world invaded in 30 to 60% | 3 of 8 (38%) | yes |
+| Every faction tops glory 8% or more | Stahl 5, Army 3 | **no** |
+| Refused orders, NaN, crashes | 0, 0, 0 | |
+
+- Why the Helghast side wins the decided games: the Navy reaches Vekta (a home landing costs
+  the ISA 10 support) while the ISA Fleet's landings on Ardent are one squad at a time and are
+  mopped up. The ISA never reaches Helghan.
+- Why the rest are dead heats: once the neutral worlds fall in the first ten turns, neither side
+  takes another world, so war support only moves with propaganda, equally for both.
+
 ## Open problems
 
 - **Conquest wins 0%.** Every other range is met. Since ai-v12 conquest AIs take cities and
   knock rivals out, but holding all four original capitals by turn 220 at Quick speed has not
   happened yet. Ideas for later phases: a later turn limit at Quick, or conquest-minded AIs
   making peace with distant rivals to focus on one neighbour at a time.
-
+- **Killzone Extrasolar War is not yet balanced (K5).** Of the section 7.1 targets only length
+  and home invasions are met in small batches. Next steps, each to be measured: invasions that
+  wait for a full army group of four with an engineer, fleets that split so a cruiser can guard a
+  beachhead while transports ferry, and the ISA's path to Helghan. Measuring the targets properly
+  needs about 100 games a batch, which needs Matthew's go-ahead (CLAUDE.md allows 20, or 40 when
+  close).

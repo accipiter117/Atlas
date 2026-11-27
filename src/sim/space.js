@@ -409,8 +409,11 @@ export const supplyDrop = {
       u.hp = Math.min(100, u.hp + (t.supplyDropHeal ?? 15));
       healed.push(u.id);
     }
-    // Recorded for the supply rules (K3): this area counts as supplied for the turn.
-    state.space.drops = [...(state.space.drops ?? []).filter((d) => d.turn >= state.turn), { world: fleet.at, tile: cmd.tile, faction: cmd.faction, turn: state.turn }];
+    // Recorded for the supply rules (K3): this area counts as supplied until the dropping faction's
+    // next turn has started. Older drops are tidied away here, but last round's are kept: seats
+    // play in a shuffled order, so another faction's drop must not clear one that still counts
+    // (war.js suppliedTiles reads drops from this round and the one before).
+    state.space.drops = [...(state.space.drops ?? []).filter((d) => d.turn >= state.turn - 1), { world: fleet.at, tile: cmd.tile, faction: cmd.faction, turn: state.turn }];
     events.push({ type: 'supplyDrop', fleet: fleet.id, faction: cmd.faction, world: fleet.at, tile: cmd.tile, units: healed });
   },
 };
