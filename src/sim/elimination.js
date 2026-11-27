@@ -3,15 +3,23 @@
 // remaining units are removed and its seat is skipped from then on.
 // Rule-test fixtures (no cities by design) turn this off with setup.elimination: false.
 
+import { allCities, allUnits, worldIds, worldData } from './worlds.js';
+
 export function eliminate(state, ruleset, events) {
   if (!state.cities || !state.units || state.setup?.elimination === false) return;
+  // With several worlds (K1a) a faction counts its cities and units on every world.
+  const cities = Object.values(allCities(state));
+  const units = Object.values(allUnits(state));
   for (const f of state.factions) {
     if (!f.alive) continue;
-    if (Object.values(state.cities).some((c) => c.faction === f.id)) continue;
-    const units = Object.values(state.units).filter((u) => u.faction === f.id);
-    if (units.some((u) => (ruleset.units?.[u.type]?.tags ?? []).includes('founder'))) continue;
+    if (cities.some((c) => c.faction === f.id)) continue;
+    const own = units.filter((u) => u.faction === f.id);
+    if (own.some((u) => (ruleset.units?.[u.type]?.tags ?? []).includes('founder'))) continue;
     f.alive = false;
-    for (const u of units) delete state.units[u.id];
+    for (const w of worldIds(state)) {
+      const held = worldData(state, w).units;
+      for (const u of own) delete held[u.id];
+    }
     events.push({ type: 'factionEliminated', faction: f.id, turn: state.turn, global: true });
   }
 }

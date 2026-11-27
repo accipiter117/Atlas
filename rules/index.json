@@ -29,6 +29,16 @@
       "id": "test-slow-scouts",
       "path": "rules/test-slow-scouts/",
       "dev": true
+    },
+    {
+      "id": "test-two-worlds",
+      "path": "rules/test-two-worlds/",
+      "dev": true
+    },
+    {
+      "id": "test-killzone-worlds",
+      "path": "rules/test-killzone-worlds/",
+      "dev": true
     }
   ],
   "stacks": [
@@ -66,6 +76,15 @@
     [
       "base-ancient",
       "killzone"
+    ],
+    [
+      "base-ancient",
+      "test-two-worlds"
+    ],
+    [
+      "base-ancient",
+      "killzone",
+      "test-killzone-worlds"
     ]
   ]
 }

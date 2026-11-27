@@ -1,0 +1,7 @@
+{
+  "contentType": "worlds",
+  "entries": [
+    {"id": "vekta", "nameKey": "world.vekta.name", "kind": "homeworld", "order": 0, "start": true, "map": {"preset": "corinth_front"}},
+    {"id": "helghan", "nameKey": "world.helghan.name", "kind": "homeworld", "order": 1, "map": {"preset": "corinth_front"}}
+  ]
+}

@@ -19,6 +19,7 @@ import { canBuild, completeItem } from './cities.js';
 import { startTradeRoute } from './trade.js';
 import { assignSpy, startMission } from './espionage.js';
 import { chooseEvent } from './events.js';
+import { multiWorld, activeWorld, switchTo } from './worlds.js';
 
 // Buying a building with faith finishes it like any other, so it borrows the city rules.
 const buyWithFaith = {
@@ -82,12 +83,25 @@ const FIXED_MAP_LAYERS = new Set(['terrain', 'hills', 'feature', 'resource', 'ri
 /** A working copy of the state for one command: everything copied except the fixed map layers. */
 export function cloneState(state) {
   if (!state.map) return clone(state);
-  const { map, ...rest } = state;
+  const { map, worlds, ...rest } = state;
   const out = clone(rest);
+  out.map = cloneMap(map);
+  // Parked worlds (K1a) share their fixed layers the same way.
+  if (worlds) {
+    out.worlds = {};
+    for (const [id, w] of Object.entries(worlds)) {
+      if (!w) { out.worlds[id] = w; continue; }
+      const { map: wm, ...wrest } = w;
+      out.worlds[id] = { ...clone(wrest), ...(wm ? { map: cloneMap(wm) } : {}) };
+    }
+  }
+  return out;
+}
+
+function cloneMap(map) {
   const m = {};
   for (const key of Object.keys(map)) m[key] = FIXED_MAP_LAYERS.has(key) ? map[key] : clone(map[key]);
-  out.map = m;
-  return out;
+  return m;
 }
 
 function refuse(code, message) {
@@ -114,10 +128,19 @@ export function applyCommand(state, cmd, ruleset = EMPTY) {
   if (state.winner) return refuse('gameOver', 'The game is over');
 
   const handler = COMMANDS[cmd.type];
-  const problem = handler.validate(state, cmd, ruleset);
+  // With several worlds (K1a), a command may name the world it is for: that world
+  // becomes the active one first (in the new state only; a refusal changes nothing).
+  let base = state;
+  if (cmd.world !== undefined && multiWorld(state) && cmd.world !== activeWorld(state)) {
+    if (!state.worldOrder.includes(cmd.world)) return refuse('unknownWorld', `No world "${cmd.world}"`);
+    if (state.pendingBattle || state.pendingCapture) return refuse('battlePending', 'Finish the battle first');
+    base = cloneState(state);
+    switchTo(base, cmd.world);
+  }
+  const problem = handler.validate(base, cmd, ruleset);
   if (problem) return { ok: false, error: problem };
 
-  const next = cloneState(state);
+  const next = base === state ? cloneState(state) : base;
   const events = [];
   handler.apply(next, cmd, events, ruleset);
   if (ruleset.techs) applyBoosts(next, ruleset, events);

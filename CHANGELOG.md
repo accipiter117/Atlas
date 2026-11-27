@@ -1,5 +1,17 @@
 # Changelog
 
+## Killzone Extrasolar War K1a: several worlds in one game (engine only)
+
+The engine can now hold several worlds in one game, each with its own map, borders, fog of war, units, cities, front line and raider camps. Nothing changes on screen yet: this is the foundation the star map (K2) is built on, and the world switcher and two-world Killzone game come next, in K1b.
+
+What you can try: nothing new to see. Your base game, Witcher and Killzone games should look and play exactly as before; if anything feels different, that is a bug to report.
+
+- `docs/KILLZONE.md`: the Extrasolar War design, exported from the plan with the review's changes.
+- `src/sim/worlds.js`: one world is active and its data sits where it always has, so every existing rule works on it unchanged; the others are parked under `state.worlds`. Each round, every world's cities, units, raiders, sight and front take their turn; knocking factions out and victory look at every world. A command can name the world it is for, and a view can show any world.
+- `worlds` content type: a ruleset switches the system on by listing worlds, each with a fixed map (a front-line preset) or a generated one.
+- Two hidden test rulesets: the base game on two generated worlds (Alpha and Beta), and Killzone fought on two Corinth fronts (Vekta and Helghan).
+- Tests: worlds never leak units, cities, borders or sight into each other, 40 AI turns on two worlds with no refused orders, reproducible games, factions with cities on another world are not knocked out. A new safety-net test replays the base, Witcher and Killzone turn-120 games command by command (7,298 commands) and checks every state is exactly what it was before worlds existed.
+
 ## Graphics overhaul G9: polish after review
 
 The map reads more cleanly at every zoom, and Killzone has its own research.

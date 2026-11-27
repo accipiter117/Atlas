@@ -7,10 +7,20 @@
 
 import { VISIBLE, UNEXPLORED } from './visibility.js';
 import { opinionOf } from './diplomacy.js';
+import { multiWorld, lookAt, activeWorld } from './worlds.js';
 
 const HIDDEN = -1;
 
-export function view(state, factionId, ruleset = null) {
+/**
+ * opts.world: with several worlds (K1a), the world to look at (default: the active one).
+ * The view then also says which world it shows and lists them all (world, worlds).
+ */
+export function view(state, factionId, ruleset = null, opts = {}) {
+  const multi = multiWorld(state);
+  if (multi && opts.world && opts.world !== activeWorld(state)) {
+    if (!state.worldOrder.includes(opts.world)) throw new Error(`No world "${opts.world}"`);
+    state = lookAt(state, opts.world);
+  }
   const me = state.factions.find((f) => f.id === factionId);
   if (!me) throw new Error(`No faction "${factionId}"`);
   const out = {
@@ -25,6 +35,7 @@ export function view(state, factionId, ruleset = null) {
     fog: null,
     units: [],
   };
+  if (multi) { out.world = activeWorld(state); out.worlds = state.worldOrder.slice(); }
   if (!state.map) return out;
   const map = state.map;
   const fog = state.fog?.[factionId] ?? new Array(map.width * map.height).fill(UNEXPLORED);

@@ -1,0 +1,12 @@
+{
+  "id": "test-two-worlds",
+  "name": "Test: two worlds",
+  "version": "1.0.0",
+  "type": "tweak",
+  "engine": ">=0.1.0",
+  "description": "Plays the base game on two small generated worlds at once, Alpha (where everyone starts) and Beta (empty). For testing the several-worlds system (Killzone Extrasolar War, phase K1a).",
+  "dependsOn": ["base-ancient"],
+  "files": ["worlds.json", "text/en-GB.json"],
+  "credits": "Original Atlas content, MIT licence.",
+  "dev": true
+}

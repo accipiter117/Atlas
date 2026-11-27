@@ -11,6 +11,8 @@ Atlas engine code: original work under the MIT licence (see `LICENSE`).
 - **No religious victory** (`no-religious-victory` 1.0.0): Original Atlas content, MIT licence.
 - **Test: swift scouts** (`test-swift-scouts` 1.0.0): Original Atlas content, MIT licence.
 - **Test: slow scouts** (`test-slow-scouts` 1.0.0): Original Atlas content, MIT licence.
+- **Test: two worlds** (`test-two-worlds` 1.0.0): Original Atlas content, MIT licence.
+- **Test: Killzone on two worlds** (`test-killzone-worlds` 1.0.0): Original Atlas content, MIT licence. Fan work: setting names belong to their owners.
 
 ## Sprite sheets
 

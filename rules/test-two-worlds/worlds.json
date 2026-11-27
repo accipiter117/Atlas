@@ -1,0 +1,7 @@
+{
+  "contentType": "worlds",
+  "entries": [
+    {"id": "alpha", "nameKey": "world.alpha.name", "kind": "world", "order": 0, "start": true, "map": {"size": "small", "type": "pangaea"}},
+    {"id": "beta", "nameKey": "world.beta.name", "kind": "moon", "order": 1, "map": {"size": "small", "type": "islands"}}
+  ]
+}

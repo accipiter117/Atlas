@@ -21,6 +21,7 @@ import { startCultureTurn } from './culture.js';
 import { startEventsTurn } from './events.js';
 import { addModifier } from './diplomacy.js';
 import { eliminate } from './elimination.js';
+import { forEachWorld, wholeGame } from './worlds.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
@@ -33,21 +34,31 @@ function startFactionTurn(state, factionId, events, ruleset) {
   if (ruleset?.victories?.culture) startCultureTurn(state, ruleset, factionId);
   if (ruleset?.events && state.cities) startEventsTurn(state, ruleset, factionId, events);
   // Section 3.14: cities first (yields, growth, production, borders), then units.
-  if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
-  if (state.units) startUnitsTurn(state, ruleset, factionId, events);
+  // With several worlds (K1a), each world's cities and units take their turn in order.
+  forEachWorld(state, () => {
+    if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
+    if (state.units) startUnitsTurn(state, ruleset, factionId, events);
+  });
 }
 
 function startRound(state, events, ruleset) {
   // End of the round (section 3.14): raiders move and fight.
   if (state.map && ruleset?.tuning) {
-    runRaiders(state, ruleset, events, runBattle);
-    updateAllVisibility(state, ruleset);
+    // Raiders, sight and the front happen on every world; diplomacy and religion once.
+    // A one-world game runs these in exactly the order it always has.
+    forEachWorld(state, () => {
+      runRaiders(state, ruleset, events, runBattle);
+      updateAllVisibility(state, ruleset);
+    });
     diplomacyRound(state, ruleset, events);
     religionRound(state, ruleset, events);
     // Phase 19: armies push the front (only in front-line games).
-    if (state.frontline) frontlineRound(state, ruleset, events);
+    forEachWorld(state, () => { if (state.frontline) frontlineRound(state, ruleset, events); });
     eliminate(state, ruleset, events);
-    checkVictory(state, ruleset, events);
+    // Victory judges factions across every world (read only; the winner is written here).
+    const whole = wholeGame(state);
+    checkVictory(whole, ruleset, events);
+    if (whole !== state && whole.winner) state.winner = whole.winner;
   }
   if (state.winner) return;
   state.turn += 1;

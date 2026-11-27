@@ -83,3 +83,15 @@ export const mapPresets = entryType('mapPresets', {
   units: list(placed),
   sites: list(obj({ site: req(ref('sites')), col: req(int(0, 200)), row: req(int(0, 200)) })),
 });
+
+// Killzone Extrasolar War, phase K1a: several worlds in one game (on when any are listed).
+// Each world has its own map: a fixed one from mapPresets, or one generated at a size and
+// type. Exactly one world is where the game starts (start: true): the first one viewed, and
+// on a generated map the one that gets the starting units.
+export const worlds = entryType('worlds', {
+  descriptionKey: key(),
+  kind: req(oneOf(['homeworld', 'moon', 'asteroid', 'station', 'world'])),
+  order: req(int(0, 99)),
+  start: bool(),
+  map: req(obj({ preset: ref('mapPresets'), size: ref('mapSizes'), type: ref('mapTypes') })),
+});

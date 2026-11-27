@@ -19,6 +19,7 @@ import { emptyTrade } from './trade.js';
 import { emptyEspionage } from './espionage.js';
 import { emptyEvents } from './events.js';
 import { updateAllVisibility, EXPLORED } from './visibility.js';
+import { worldsOn, park, unpark } from './worlds.js';
 
 export const STATE_VERSION = 1;
 export const ENGINE_VERSION = '0.1.0';
@@ -106,21 +107,50 @@ export function createGame(ruleset, setup) {
 
   // The world, when the setup asks for one and the ruleset can build it.
   // A front-line game (phase 19) is fought on a fixed map from mapPresets.json.
+  // A ruleset with several worlds (K1a, src/sim/worlds.js) builds each in turn, parks
+  // all but the starting one under state.worlds, and starts on that one.
+  if (setup.map && worldsOn(ruleset)) {
+    const list = Object.values(ruleset.worlds).sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1));
+    const start = (list.find((w) => w.start) ?? list[0]).id;
+    state.worlds = {};
+    state.worldOrder = list.map((w) => w.id);
+    state.wondersBuilt = {};
+    for (const w of list) {
+      state.world = w.id;
+      const preset = w.map.preset && frontlineOn(ruleset) ? w.map.preset : null;
+      buildWorld(state, ruleset, setup, factions, { preset, size: w.map.size, type: w.map.type, units: w.id === start });
+      park(state);
+    }
+    unpark(state, start);
+    return state;
+  }
   const preset = frontlineOn(ruleset) && setup.map && ruleset.mapPresets ? (ruleset.mapPresets[setup.map.preset] ? setup.map.preset : Object.keys(ruleset.mapPresets)[0]) : null;
   if (setup.map && (ruleset?.mapSizes || preset)) {
-    state.map = preset ? buildPresetMap(ruleset, preset) : generateMap(ruleset, { ...setup.map, seed: setup.seed, factions: factions.length });
-    state.map.road = new Array(state.map.width * state.map.height).fill(0);
-    state.map.improvementIds = Object.keys(ruleset.improvements ?? {});
-    state.map.improvement = new Array(state.map.width * state.map.height).fill(-1);
     state.wondersBuilt = {};
-    state.units = {};
-    state.cities = {};
-    state.owner = new Array(state.map.width * state.map.height).fill(null);
-    if (preset) setUpFrontline(state, ruleset, preset, { foundCity, createUnit, assignCitizens });
-    else placeStartingUnits(state, ruleset);
-    updateAllVisibility(state, ruleset);
-    // A front-line war is fought on a known map: both sides start with every tile explored.
-    if (preset && state.fog) for (const fog of Object.values(state.fog)) for (let i = 0; i < fog.length; i += 1) if (fog[i] < EXPLORED) fog[i] = EXPLORED;
+    buildWorld(state, ruleset, setup, factions, { preset, units: true });
   }
   return state;
+}
+
+/**
+ * Build one world's map, borders, units and cities at the top of the state (the active
+ * world). preset: a front-line map; otherwise generated from the setup's map options,
+ * with size and type overriding them; units: place the starting units here.
+ */
+function buildWorld(state, ruleset, setup, factions, { preset = null, size, type, units = true }) {
+  const mapOpts = { ...setup.map, ...(size ? { size } : {}), ...(type ? { type } : {}), seed: setup.seed, factions: factions.length };
+  // Each extra world draws its own map from a seed of its own, so worlds never repeat.
+  if (state.world && state.worldOrder?.indexOf(state.world) > 0) mapOpts.seed = (setup.seed + 7919 * state.worldOrder.indexOf(state.world)) | 0;
+  state.map = preset ? buildPresetMap(ruleset, preset) : generateMap(ruleset, mapOpts);
+  state.map.road = new Array(state.map.width * state.map.height).fill(0);
+  state.map.improvementIds = Object.keys(ruleset.improvements ?? {});
+  state.map.improvement = new Array(state.map.width * state.map.height).fill(-1);
+  state.units = {};
+  state.cities = {};
+  state.owner = new Array(state.map.width * state.map.height).fill(null);
+  if (preset) setUpFrontline(state, ruleset, preset, { foundCity, createUnit, assignCitizens });
+  else if (units) placeStartingUnits(state, ruleset);
+  updateAllVisibility(state, ruleset);
+  // A front-line war is fought on a known map: both sides start with every tile explored.
+  if (preset && state.fog) for (const fog of Object.values(state.fog)) for (let i = 0; i < fog.length; i += 1) if (fog[i] < EXPLORED) fog[i] = EXPLORED;
 }
