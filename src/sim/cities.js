@@ -16,7 +16,7 @@ import { buildingProblem, spawnUnit, claimWonder, claimProject } from './buildin
 import { knows, speedMultiplier } from './progression.js';
 import { receivedResources, givenResources } from './diplomacy.js';
 import { spyCount, spyCap } from './espionage.js';
-import { allCities } from './worlds.js';
+import { allCities, activeWorld } from './worlds.js';
 
 export function citiesOf(state, factionId) {
   return Object.values(state.cities ?? {}).filter((c) => c.faction === factionId);
@@ -183,6 +183,11 @@ export function canBuild(state, ruleset, city, item) {
       if (u.replaces === item.id && u.requires?.faction === f?.civ) return false;
     }
     const domain = def.domain ?? ruleset.unitClasses[def.class]?.domain ?? 'land';
+    // K2: ships are built at bases on the kinds of world their data names, in a star map game.
+    if (domain === 'space') {
+      const kind = ruleset.worlds?.[activeWorld(state)]?.kind;
+      if (!state.space || !(def.space?.builtAt ?? []).includes(kind)) return false;
+    }
     if (domain === 'sea') {
       const coastal = neighbourCache(state.map)[city.tile].some((j) => j >= 0 && ruleset.terrain[state.map.terrainIds[state.map.terrain[j]]]?.water);
       if (!coastal) return false;

@@ -1,0 +1,16 @@
+{
+  "contentType": "lanes",
+  "entries": [
+    {"id": "vekta_bastion", "from": "vekta", "to": "bastion", "turns": 1},
+    {"id": "vekta_halcyon", "from": "vekta", "to": "halcyon", "turns": 1},
+    {"id": "bastion_halcyon", "from": "bastion", "to": "halcyon", "turns": 1},
+    {"id": "helghan_ardent", "from": "helghan", "to": "ardent", "turns": 1},
+    {"id": "helghan_morrow", "from": "helghan", "to": "morrow", "turns": 1},
+    {"id": "ardent_morrow", "from": "ardent", "to": "morrow", "turns": 1},
+    {"id": "bastion_midway", "from": "bastion", "to": "midway", "turns": 1},
+    {"id": "ardent_midway", "from": "ardent", "to": "midway", "turns": 1},
+    {"id": "halcyon_kerberos", "from": "halcyon", "to": "kerberos", "turns": 1},
+    {"id": "morrow_kerberos", "from": "morrow", "to": "kerberos", "turns": 1},
+    {"id": "vekta_helghan", "from": "vekta", "to": "helghan", "turns": 3, "heavyOnly": true}
+  ]
+}

@@ -79,7 +79,10 @@ export const mapPresets = entryType('mapPresets', {
   legend: req(obj({}, { open: true })),
   rows: req(list(str(), { min: 4 })),
   front: req(int(0, 200)),
-  cities: req(list(placed, { min: 2 })),
+  // K2: who holds the ground at the start: split at the front column (the default), all one
+  // side's, or nobody's (a neutral world waiting to be claimed). Then cities may be none.
+  start: oneOf(['front', 'side0', 'side1', 'neutral']),
+  cities: req(list(placed)),
   units: list(placed),
   sites: list(obj({ site: req(ref('sites')), col: req(int(0, 200)), row: req(int(0, 200)) })),
 });
@@ -94,4 +97,23 @@ export const worlds = entryType('worlds', {
   order: req(int(0, 99)),
   start: bool(),
   map: req(obj({ preset: ref('mapPresets'), size: ref('mapSizes'), type: ref('mapTypes') })),
+  // K2: fleets in this world's orbit at the start, by side (ships are units with domain space).
+  fleets: list(obj({ side: req(int(0, 1)), ships: req(list(ref('units'), { min: 1 })) })),
+});
+
+// K2: the star map's lanes between worlds. turns: how many system turns the jump takes;
+// heavyOnly: only fleets of heavy ships (cruisers) may take it.
+export const lanes = entryType('lanes', {
+  from: req(ref('worlds')),
+  to: req(ref('worlds')),
+  turns: req(int(1, 9)),
+  heavyOnly: bool(),
+});
+
+// K2: scenarios, presets of starting ownership: per world, the map preset to use instead of
+// the world's own (whose cities and front say who holds it). One is the default.
+export const scenarios = entryType('scenarios', {
+  descriptionKey: key(),
+  default: bool(),
+  presets: obj({}, { open: true }),
 });

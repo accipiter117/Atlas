@@ -1,0 +1,13 @@
+{
+  "contentType": "worlds",
+  "entries": [
+    {"id": "vekta", "nameKey": "world.vekta.name", "descriptionKey": "world.vekta.text", "kind": "homeworld", "order": 0, "map": {"preset": "kw_vekta"}, "start": true, "fleets": [{"side": 0, "ships": ["isa_cruiser", "isa_destroyer", "isa_intruder", "isa_transport"]}]},
+    {"id": "helghan", "nameKey": "world.helghan.name", "descriptionKey": "world.helghan.text", "kind": "homeworld", "order": 1, "map": {"preset": "kw_helghan"}, "fleets": [{"side": 1, "ships": ["helghast_cruiser", "helghast_destroyer", "helghast_dropship", "helghast_transport"]}]},
+    {"id": "halcyon", "nameKey": "world.halcyon.name", "descriptionKey": "world.halcyon.text", "kind": "moon", "order": 2, "map": {"preset": "kw_halcyon"}},
+    {"id": "morrow", "nameKey": "world.morrow.name", "descriptionKey": "world.morrow.text", "kind": "moon", "order": 3, "map": {"preset": "kw_morrow"}},
+    {"id": "bastion", "nameKey": "world.bastion.name", "descriptionKey": "world.bastion.text", "kind": "station", "order": 4, "map": {"preset": "kw_bastion"}, "fleets": [{"side": 0, "ships": ["isa_destroyer"]}]},
+    {"id": "ardent", "nameKey": "world.ardent.name", "descriptionKey": "world.ardent.text", "kind": "station", "order": 5, "map": {"preset": "kw_ardent"}, "fleets": [{"side": 1, "ships": ["helghast_destroyer"]}]},
+    {"id": "midway", "nameKey": "world.midway.name", "descriptionKey": "world.midway.text", "kind": "station", "order": 6, "map": {"preset": "kw_midway"}},
+    {"id": "kerberos", "nameKey": "world.kerberos.name", "descriptionKey": "world.kerberos.text", "kind": "asteroid", "order": 7, "map": {"preset": "kw_kerberos"}}
+  ]
+}

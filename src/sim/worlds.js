@@ -93,7 +93,7 @@ export function worldData(state, id = activeWorld(state)) {
 /** A read-only look at the state as if world `id` were active (for views and queries; never write to it). */
 export function lookAt(state, id) {
   if (!multiWorld(state) || id === activeWorld(state)) return state;
-  const out = { ...state, world: id };
+  const out = { ...state, world: id, worlds: { ...state.worlds, [activeWorld(state)]: worldData(state), [id]: null } };
   for (const k of WORLD_KEYS) delete out[k];
   return Object.assign(out, state.worlds[id]);
 }

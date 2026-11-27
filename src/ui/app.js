@@ -315,9 +315,9 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     let loaded = null;
     let loadedKey = null;
     async function rulesForCfg(cfg) {
-      const key = JSON.stringify([selectionOf(cfg), optionsOf(cfg)]);
+      const key = JSON.stringify([selectionOf(cfg, manifests), optionsOf(cfg)]);
       if (key === loadedKey) return loaded;
-      const next = await rulesFor(selectionOf(cfg), optionsOf(cfg));
+      const next = await rulesFor(selectionOf(cfg, manifests), optionsOf(cfg));
       if (next.error) { say(next.error); return loaded; }
       loaded = next;
       loadedKey = key;
@@ -367,7 +367,7 @@ export function startApp(doc, { loadModSources, loadSheets } = {}) {
     const cfg = defaultSetup(base.ruleset, { seed: newSeed(), previous });
     if (cfg.conversion && cfg.conversion !== 'none' && !manifests[cfg.conversion]) cfg.conversion = 'none';
     cfg.tweaks = (cfg.tweaks ?? []).filter((id) => manifests[id]);
-    const loaded = await rulesFor(selectionOf(cfg), optionsOf(cfg));
+    const loaded = await rulesFor(selectionOf(cfg, manifests), optionsOf(cfg));
     if (loaded.error) { say(loaded.error); return; }
     if (cfg.faction && !loaded.ruleset.factions[cfg.faction]) cfg.faction = null;
     const { setup, selection, options } = toSetup(loaded.ruleset, cfg, { manifests, text: loaded.text });

@@ -10,7 +10,8 @@
 
 import { neighbourCache } from './map.js';
 import { buildingDef, hasBuilding } from './effects/index.js';
-import { canStand, createUnit } from './units.js';
+import { canStand, createUnit, domainOf } from './units.js';
+import { spawnShip } from './space.js';
 import { knows } from './progression.js';
 
 /** The building this faction actually gets for a base building id (its unique version, if any). */
@@ -81,6 +82,8 @@ export function adjacencyBonus(state, ruleset, city, id) {
 /** Put a new unit in or next to a city. Returns the event, or null if there is no room. */
 export function spawnUnit(state, ruleset, city, typeId) {
   if (!ruleset.units[typeId]) return null;
+  // K2: a ship joins its faction's fleet in this world's orbit.
+  if (domainOf(ruleset, typeId) === 'space') return state.space ? spawnShip(state, ruleset, city, typeId) : null;
   const spots = [city.tile, ...neighbourCache(state.map)[city.tile].filter((j) => j >= 0)];
   const spot = spots.find((t) => canStand(state, ruleset, typeId, city.faction, t));
   if (spot === undefined) return null;

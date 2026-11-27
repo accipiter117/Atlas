@@ -20,6 +20,7 @@ import { startTradeRoute } from './trade.js';
 import { assignSpy, startMission } from './espionage.js';
 import { chooseEvent } from './events.js';
 import { multiWorld, activeWorld, switchTo } from './worlds.js';
+import { moveFleet, loadArmy, landArmy, orbitalStrike, supplyDrop, setBlockade } from './space.js';
 
 // Buying a building with faith finishes it like any other, so it borrows the city rules.
 const buyWithFaith = {
@@ -71,6 +72,13 @@ export const COMMANDS = Object.freeze({
   assignSpy,
   startMission,
   chooseEvent,
+  // The star map (K2).
+  moveFleet,
+  loadArmy,
+  landArmy,
+  orbitalStrike,
+  supplyDrop,
+  setBlockade,
 });
 
 const EMPTY = Object.freeze({});

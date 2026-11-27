@@ -1,0 +1,13 @@
+{
+  "contentType": "units",
+  "entries": [
+    {"id": "isa_cruiser", "nameKey": "unit.isa_cruiser.name", "descriptionKey": "unit.isa_cruiser.text", "class": "capital_ship", "domain": "space", "strength": 60, "moves": 1, "cost": 320, "upkeep": 2, "requires": {"faction": "isa"}, "space": {"capacity": 3, "bombard": true, "heavy": true, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "isa_destroyer", "nameKey": "unit.isa_destroyer.name", "descriptionKey": "unit.isa_destroyer.text", "class": "escort", "domain": "space", "strength": 30, "moves": 1, "cost": 150, "upkeep": 2, "requires": {"faction": "isa"}, "space": {"capacity": 0, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "isa_intruder", "nameKey": "unit.isa_intruder.name", "descriptionKey": "unit.isa_intruder.text", "class": "dropship", "domain": "space", "strength": 0, "moves": 1, "cost": 120, "upkeep": 2, "requires": {"faction": "isa"}, "space": {"capacity": 1, "lands": true, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "isa_transport", "nameKey": "unit.isa_transport.name", "descriptionKey": "unit.isa_transport.text", "class": "transport", "domain": "space", "strength": 0, "moves": 1, "cost": 100, "upkeep": 2, "requires": {"faction": "isa"}, "space": {"capacity": 2, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "helghast_cruiser", "nameKey": "unit.helghast_cruiser.name", "descriptionKey": "unit.helghast_cruiser.text", "class": "capital_ship", "domain": "space", "strength": 60, "moves": 1, "cost": 320, "upkeep": 2, "requires": {"faction": "helghast"}, "space": {"capacity": 3, "bombard": true, "heavy": true, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "helghast_destroyer", "nameKey": "unit.helghast_destroyer.name", "descriptionKey": "unit.helghast_destroyer.text", "class": "escort", "domain": "space", "strength": 30, "moves": 1, "cost": 150, "upkeep": 2, "requires": {"faction": "helghast"}, "space": {"capacity": 0, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "helghast_dropship", "nameKey": "unit.helghast_dropship.name", "descriptionKey": "unit.helghast_dropship.text", "class": "dropship", "domain": "space", "strength": 0, "moves": 1, "cost": 120, "upkeep": 2, "requires": {"faction": "helghast"}, "space": {"capacity": 1, "lands": true, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]},
+    {"id": "helghast_transport", "nameKey": "unit.helghast_transport.name", "descriptionKey": "unit.helghast_transport.text", "class": "transport", "domain": "space", "strength": 0, "moves": 1, "cost": 100, "upkeep": 2, "requires": {"faction": "helghast"}, "space": {"capacity": 2, "builtAt": ["homeworld", "station"]}, "tags": ["ship"]}
+  ]
+}

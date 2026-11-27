@@ -1,9 +1,9 @@
 // Units, unit classes and promotions (section 3.5).
 
-import { entryType, req, str, int, bool, ref, refs, obj, oneOf, effects, key } from './fields.js';
+import { entryType, req, str, int, bool, ref, refs, obj, oneOf, effects, key, list } from './fields.js';
 
 export const unitClasses = entryType('unitClasses', {
-  domain: req(oneOf(['land', 'sea'])),
+  domain: req(oneOf(['land', 'sea', 'space'])),
   combat: req(oneOf(['melee', 'ranged', 'none'])),
   civilian: bool(),
   ignoresZoc: bool(),
@@ -12,7 +12,7 @@ export const unitClasses = entryType('unitClasses', {
 
 export const units = entryType('units', {
   class: req(ref('unitClasses')),
-  domain: oneOf(['land', 'sea']),
+  domain: oneOf(['land', 'sea', 'space']),
   era: ref('eras'),
   strength: req(int(0, 200)),
   rangedStrength: int(0, 200),
@@ -38,6 +38,16 @@ export const units = entryType('units', {
   // Phase 17: units only raiders field (a conversion's monsters); no city can train them.
   raiderOnly: bool(),
   charges: int(1, 20),
+  // Killzone Extrasolar War K2: a ship (domain space) on the star map. capacity: army groups it
+  // carries; lands: it can put them down away from a base (dropships); bombard: orbital strikes;
+  // heavy: may take heavy-only lanes; builtAt: the kinds of world whose bases can build it.
+  space: obj({
+    capacity: int(0, 6),
+    lands: bool(),
+    bombard: bool(),
+    heavy: bool(),
+    builtAt: list(oneOf(['homeworld', 'moon', 'asteroid', 'station', 'world'])),
+  }),
 });
 
 export const promotions = entryType('promotions', {

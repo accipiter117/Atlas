@@ -1,0 +1,24 @@
+{
+  "id": "killzone-war",
+  "name": "Killzone: Extrasolar War",
+  "version": "0.1.0",
+  "type": "conversion",
+  "engine": ">=0.1.0",
+  "description": "The Killzone war across eight worlds: move fleets on a star map, take orbit, land armies and fight a front on every world. Early build: placeholder maps, and the star map rules only (Killzone Extrasolar War, phase K2).",
+  "dependsOn": [
+    "killzone"
+  ],
+  "loadAfter": [],
+  "incompatibleWith": [],
+  "options": [],
+  "files": [
+    "unitClasses.json",
+    "units.json",
+    "mapPresets.json",
+    "worlds.json",
+    "lanes.json",
+    "scenarios.json",
+    "text/en-GB.json"
+  ],
+  "credits": "Original Atlas content, MIT licence. Fan work: setting names belong to their owners; no text, art or code is taken from the games."
+}

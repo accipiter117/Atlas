@@ -1,0 +1,9 @@
+{
+  "contentType": "unitClasses",
+  "entries": [
+    {"id": "capital_ship", "nameKey": "unitClass.capital_ship.name", "domain": "space", "combat": "none"},
+    {"id": "escort", "nameKey": "unitClass.escort.name", "domain": "space", "combat": "none"},
+    {"id": "dropship", "nameKey": "unitClass.dropship.name", "domain": "space", "combat": "none"},
+    {"id": "transport", "nameKey": "unitClass.transport.name", "domain": "space", "combat": "none"}
+  ]
+}

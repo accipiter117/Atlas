@@ -118,7 +118,13 @@ export function loadRuleset({ available, selection, options = {}, engineVersion 
   if (rulesets.length === 0) say('error', 'noRuleset', null, {});
   for (const extra of rulesets.slice(1)) say('error', 'twoRulesets', extra.id, { other: rulesets[0].id });
   const conversions = ofType('conversion');
-  for (const extra of conversions.slice(1)) say('error', 'twoConversions', extra.id, { other: conversions[0].id });
+  // Only one conversion per match, except one built on another (it names it in dependsOn, as
+  // Killzone: Extrasolar War does Killzone): the two then count as one.
+  const builtOn = (a, b) => (a.dependsOn ?? []).includes(b.id) || (b.dependsOn ?? []).includes(a.id);
+  for (const extra of conversions.slice(1)) {
+    if (conversions.every((c) => c === extra || builtOn(extra, c))) continue;
+    say('error', 'twoConversions', extra.id, { other: conversions[0].id });
+  }
   const reportedPairs = new Set();
   for (const m of manifests.values()) {
     for (const other of m.incompatibleWith ?? []) {

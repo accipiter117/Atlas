@@ -8,6 +8,8 @@
 import { VISIBLE, UNEXPLORED } from './visibility.js';
 import { opinionOf } from './diplomacy.js';
 import { multiWorld, lookAt, activeWorld } from './worlds.js';
+import { spaceView } from './space.js';
+import { sideOf } from './frontline.js';
 
 const HIDDEN = -1;
 
@@ -36,6 +38,8 @@ export function view(state, factionId, ruleset = null, opts = {}) {
     units: [],
   };
   if (multi) { out.world = activeWorld(state); out.worlds = state.worldOrder.slice(); }
+  // K2: the star map, as this faction may know it.
+  if (state.space && ruleset) out.space = spaceView(state, ruleset, factionId, sideOf);
   if (!state.map) return out;
   const map = state.map;
   const fog = state.fog?.[factionId] ?? new Array(map.width * map.height).fill(UNEXPLORED);

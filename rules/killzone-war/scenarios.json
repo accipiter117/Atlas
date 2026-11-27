@@ -1,0 +1,6 @@
+{
+  "contentType": "scenarios",
+  "entries": [
+    {"id": "balanced_war", "nameKey": "scenario.balanced_war.name", "descriptionKey": "scenario.balanced_war.text", "default": true, "presets": {}}
+  ]
+}

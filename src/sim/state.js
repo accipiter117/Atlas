@@ -9,7 +9,7 @@ import { hashValue } from '../core/hash.js';
 import { clone, deepFreeze } from '../core/clone.js';
 import { generateMap } from './mapgen.js';
 import { placeStartingUnits, createUnit } from './units.js';
-import { frontlineOn, buildPresetMap, setUpFrontline } from './frontline.js';
+import { frontlineOn, buildPresetMap, setUpFrontline, sideOf } from './frontline.js';
 import { foundCity, assignCitizens } from './cities.js';
 import { emptyResearch, grantErasBefore } from './progression.js';
 import { emptyGovernment } from './government.js';
@@ -20,6 +20,7 @@ import { emptyEspionage } from './espionage.js';
 import { emptyEvents } from './events.js';
 import { updateAllVisibility, EXPLORED } from './visibility.js';
 import { worldsOn, park, unpark } from './worlds.js';
+import { spaceOn, setUpSpace } from './space.js';
 
 export const STATE_VERSION = 1;
 export const ENGINE_VERSION = '0.1.0';
@@ -111,17 +112,23 @@ export function createGame(ruleset, setup) {
   // all but the starting one under state.worlds, and starts on that one.
   if (setup.map && worldsOn(ruleset)) {
     const list = Object.values(ruleset.worlds).sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : 1));
+    // K2: a scenario may give a world another preset (who holds what at the start).
+    const scenarios = Object.values(ruleset.scenarios ?? {});
+    const scenario = ruleset.scenarios?.[setup.scenario] ?? scenarios.find((x) => x.default) ?? scenarios[0] ?? null;
     const start = (list.find((w) => w.start) ?? list[0]).id;
     state.worlds = {};
     state.worldOrder = list.map((w) => w.id);
     state.wondersBuilt = {};
     for (const w of list) {
       state.world = w.id;
-      const preset = w.map.preset && frontlineOn(ruleset) ? w.map.preset : null;
+      const chosen = scenario?.presets?.[w.id] ?? w.map.preset;
+      const preset = chosen && frontlineOn(ruleset) && ruleset.mapPresets?.[chosen] ? chosen : null;
       buildWorld(state, ruleset, setup, factions, { preset, size: w.map.size, type: w.map.type, units: w.id === start });
       park(state);
     }
     unpark(state, start);
+    if (spaceOn(ruleset)) setUpSpace(state, ruleset, sideOf);
+    if (scenario) state.scenario = scenario.id;
     return state;
   }
   const preset = frontlineOn(ruleset) && setup.map && ruleset.mapPresets ? (ruleset.mapPresets[setup.map.preset] ? setup.map.preset : Object.keys(ruleset.mapPresets)[0]) : null;

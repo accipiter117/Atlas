@@ -97,7 +97,11 @@ export function setUpFrontline(state, ruleset, presetId, { foundCity, createUnit
   for (let t = 0; t < control.length; t += 1) {
     if (!landTile(state, ruleset, t)) continue;
     const col = t % w;
-    control[t] = Math.max(-100, Math.min(100, Math.round((p.front - col) * soft)));
+    // K2: a world may start wholly one side's, or nobody's.
+    if (p.start === 'side0') control[t] = 100;
+    else if (p.start === 'side1') control[t] = -100;
+    else if (p.start === 'neutral') control[t] = 0;
+    else control[t] = Math.max(-100, Math.min(100, Math.round((p.front - col) * soft)));
   }
   const sites = {};
   for (const s of p.sites ?? []) {

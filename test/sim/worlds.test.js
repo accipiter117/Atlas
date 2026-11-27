@@ -140,6 +140,9 @@ test('lookAt is read only', () => {
   assert.equal(b.map, s.worlds.beta.map);
   assert.equal(activeWorld(s), 'alpha');
   assert.equal(lookAt(s, 'alpha'), s);
+  // Looking at Beta still knows where Alpha's data is (the active world is not lost).
+  assert.equal(worldData(b, 'alpha').units, s.units);
+  assert.equal(worldData(b, 'beta').map, s.worlds.beta.map);
 });
 
 test('a two-world Killzone game saves, packs and replays exactly (orders keep their world)', async () => {

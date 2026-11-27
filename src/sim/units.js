@@ -72,6 +72,7 @@ export function canStand(state, ruleset, typeId, factionId, tile, ignoreUnitId =
   const domain = domainOf(ruleset, typeId);
   if (domain === 'land' && terrain.water) return false;
   if (domain === 'sea' && !terrain.water) return false;
+  if (domain === 'space') return false; // ships never stand on a world's map (K2)
   const slot = slotOf(ruleset, typeId);
   for (const u of unitsAt(state, tile)) {
     if (u.id === ignoreUnitId) continue;

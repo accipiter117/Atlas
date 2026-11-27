@@ -22,6 +22,7 @@ import { startEventsTurn } from './events.js';
 import { addModifier } from './diplomacy.js';
 import { eliminate } from './elimination.js';
 import { forEachWorld, wholeGame } from './worlds.js';
+import { startSpaceTurn, spaceRound } from './space.js';
 
 function startFactionTurn(state, factionId, events, ruleset) {
   events.push({ type: 'turnStarted', turn: state.turn, faction: factionId });
@@ -35,6 +36,7 @@ function startFactionTurn(state, factionId, events, ruleset) {
   if (ruleset?.events && state.cities) startEventsTurn(state, ruleset, factionId, events);
   // Section 3.14: cities first (yields, growth, production, borders), then units.
   // With several worlds (K1a), each world's cities and units take their turn in order.
+  if (state.space) startSpaceTurn(state, ruleset, factionId);
   forEachWorld(state, () => {
     if (state.cities) startCitiesTurn(state, ruleset, factionId, events);
     if (state.units) startUnitsTurn(state, ruleset, factionId, events);
@@ -46,6 +48,8 @@ function startRound(state, events, ruleset) {
   if (state.map && ruleset?.tuning) {
     // Raiders, sight and the front happen on every world; diplomacy and religion once.
     // A one-world game runs these in exactly the order it always has.
+    // K2: fleets on long jumps come closer, and arrive.
+    if (state.space) spaceRound(state, ruleset, events);
     forEachWorld(state, () => {
       runRaiders(state, ruleset, events, runBattle);
       updateAllVisibility(state, ruleset);

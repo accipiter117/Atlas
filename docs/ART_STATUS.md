@@ -285,3 +285,85 @@ code placeholder until a skin gives it real art, so the game is always playable.
 | `wonder.stonehenge` | placeholder |
 | `wonder.temple_of_artemis` | placeholder |
 | `wonder.voyage_beyond` | placeholder |
+
+## base-ancient + killzone + killzone-war
+
+75 art ids: 24 with art, 51 on placeholders.
+
+| Art id | Status |
+| --- | --- |
+| `building.amphitheatre` | placeholder |
+| `building.aqueduct` | placeholder |
+| `building.arena` | placeholder |
+| `building.bank` | placeholder |
+| `building.barracks` | placeholder |
+| `building.caravanserai` | placeholder |
+| `building.castle` | placeholder |
+| `building.courthouse` | placeholder |
+| `building.forge` | placeholder |
+| `building.granary` | placeholder |
+| `building.guildhall` | placeholder |
+| `building.harbour` | placeholder |
+| `building.herbalist` | placeholder |
+| `building.library` | placeholder |
+| `building.lighthouse` | placeholder |
+| `building.market` | placeholder |
+| `building.mint` | placeholder |
+| `building.monument` | placeholder |
+| `building.observatory` | placeholder |
+| `building.palace` | placeholder |
+| `building.sawmill` | placeholder |
+| `building.scriptorium` | placeholder |
+| `building.shrine` | placeholder |
+| `building.stable` | placeholder |
+| `building.temple` | placeholder |
+| `building.university` | placeholder |
+| `building.walls` | placeholder |
+| `building.watchtower` | placeholder |
+| `building.water_mill` | placeholder |
+| `building.workshop` | placeholder |
+| `leader.templar` | real art |
+| `leader.visari` | real art |
+| `unit.archer` | real art |
+| `unit.bombard` | real art |
+| `unit.builder` | real art |
+| `unit.caravel` | real art |
+| `unit.catapult` | real art |
+| `unit.chariot` | real art |
+| `unit.helghast_cruiser` | placeholder |
+| `unit.helghast_destroyer` | placeholder |
+| `unit.helghast_dropship` | placeholder |
+| `unit.helghast_heavy` | placeholder |
+| `unit.helghast_transport` | placeholder |
+| `unit.horseman` | real art |
+| `unit.isa_cruiser` | placeholder |
+| `unit.isa_destroyer` | placeholder |
+| `unit.isa_intruder` | placeholder |
+| `unit.isa_sniper` | placeholder |
+| `unit.isa_transport` | placeholder |
+| `unit.knight` | real art |
+| `unit.man_at_arms` | real art |
+| `unit.missionary` | real art |
+| `unit.musketman` | real art |
+| `unit.pikeman` | real art |
+| `unit.scout` | real art |
+| `unit.settler` | real art |
+| `unit.slinger` | real art |
+| `unit.spearman` | real art |
+| `unit.spy` | real art |
+| `unit.swordsman` | real art |
+| `unit.trader` | real art |
+| `unit.trebuchet` | real art |
+| `unit.trireme` | real art |
+| `unit.warrior` | real art |
+| `wonder.atlas_of_the_world` | placeholder |
+| `wonder.colossus` | placeholder |
+| `wonder.great_library` | placeholder |
+| `wonder.great_lighthouse` | placeholder |
+| `wonder.great_observatory` | placeholder |
+| `wonder.hanging_gardens` | placeholder |
+| `wonder.oracle` | placeholder |
+| `wonder.pyramids` | placeholder |
+| `wonder.stonehenge` | placeholder |
+| `wonder.temple_of_artemis` | placeholder |
+| `wonder.voyage_beyond` | placeholder |

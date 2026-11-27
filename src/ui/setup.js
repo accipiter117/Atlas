@@ -65,8 +65,15 @@ export function interactiveModule(wanted, preferred = null) {
 }
 
 /** The mods a setup loads, in order: the ruleset, the conversion (if any), then the ticked tweaks in their order. */
-export function selectionOf(cfg) {
-  return ['base-ancient', ...(cfg.conversion && cfg.conversion !== 'none' ? [cfg.conversion] : []), ...cfg.tweaks];
+export function selectionOf(cfg, manifests = null) {
+  // A conversion built on another (Killzone: Extrasolar War on Killzone, K2) loads what it depends on first.
+  const chain = [];
+  const add = (id) => {
+    for (const d of manifests?.[id]?.dependsOn ?? []) if (d !== 'base-ancient' && !chain.includes(d)) add(d);
+    if (!chain.includes(id)) chain.push(id);
+  };
+  if (cfg.conversion && cfg.conversion !== 'none') add(cfg.conversion);
+  return ['base-ancient', ...chain, ...cfg.tweaks];
 }
 
 /** The options of the ticked mods only. */
@@ -78,7 +85,7 @@ export function optionsOf(cfg) {
 export function toSetup(ruleset, cfg, { manifests, text }) {
   const tt = (k, a) => t(text, k, a);
   const firstEra = Object.values(ruleset.eras ?? {}).sort((a, b) => a.index - b.index)[0]?.id;
-  const selection = selectionOf(cfg);
+  const selection = selectionOf(cfg, manifests);
   const setup = {
     seed: cfg.seed,
     mods: selection.map((id) => `${id}@${manifests[id]?.version ?? '0.0.0'}`),

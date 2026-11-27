@@ -6,6 +6,8 @@ import { frontlineOn } from './frontline.js';
 import { currentFactionId } from './queries.js';
 import { foundingProblem, foundCity as found, assignCitizens, canBuild, itemCost, completeItem, workable, citiesOf, cityHpMax } from './cities.js';
 import { payUpkeep } from './economy.js';
+import { blockadedFor } from './space.js';
+import { activeWorld } from './worlds.js';
 import { addResearch } from './progression.js';
 import { effectsFor, sumHook } from './effects/index.js';
 import { cityYields } from './yields.js';
@@ -281,6 +283,11 @@ export function startCitiesTurn(state, ruleset, factionId, events) {
     }
     for (const t of city.timed ?? []) t.turns -= 1;
     if (city.timed) city.timed = city.timed.filter((t) => t.turns > 0);
+  }
+  // K2: a world blockaded by an enemy fleet sends its credits nowhere (its costs are still paid).
+  if (state.space && income > 0 && blockadedFor(state, factionId, activeWorld(state))) {
+    events.push({ type: 'blockadeCost', faction: factionId, world: activeWorld(state), gold: income });
+    income = 0;
   }
   payUpkeep(state, ruleset, factionId, income, events);
   if (ruleset.techs) addResearch(state, ruleset, factionId, science, events);

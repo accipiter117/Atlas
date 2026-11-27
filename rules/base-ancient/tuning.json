@@ -234,6 +234,19 @@
     "ai": {
       "lateGameMode": "normal"
     },
+    "space": {
+      "fleetSize": 6,
+      "groupSize": 4,
+      "battleRounds": 3,
+      "battleDamage": 35,
+      "strikeStrength": 60,
+      "antiAirRange": 2,
+      "landingMoves": 1,
+      "loadRange": 1,
+      "supplyDropHeal": 15,
+      "supplyDropRadius": 1,
+      "oddsTrials": 24
+    },
     "frontline": {
       "enabled": false,
       "presenceRange": 2,
