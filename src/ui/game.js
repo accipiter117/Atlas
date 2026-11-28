@@ -573,6 +573,8 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function refresh() {
     v = look();
     mapView.setWorld({ map: v.map, fog: v.fog, units: v.units, cities: v.cities, camps: v.camps });
+    // K7: a storm on the world on screen (Helghan, one turn in four) darkens and streaks the map.
+    mapView.setStorm(Boolean(viewWorld && v.space?.worlds?.find((w) => w.id === viewWorld)?.storm));
     mapView.setHome(myCities().length ? myCities().map((c) => c.tile) : myUnits().map((u) => u.tile));
     if (religionLens) mapView.setReligionLens(lensData());
     if (v.frontline) mapView.setFront(frontData());

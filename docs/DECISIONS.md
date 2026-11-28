@@ -384,7 +384,11 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **K7: a world's look is a tint in its data,** blended into its terrain and feature colours, rather than a new terrain set drawn per world. Every world reads differently straight away and a skin can change it; hand-drawn terrain for each world can replace it later through the art registry.
 - **K7: the War room lives inside the star map** (a button in its header, Back returns), so the war's politics are one click from the map that shows them. The support chart is kept with the save's meta like the score chart, so it never touches the game itself.
 - **K7: the landing planner uses the orders' own rules** (orderZones checks each hex with the order's validation), so what is green is exactly what the order will accept.
-- **K7: not done.** Layout-code sprites for every unit, ship and work, storm effects, a separate fleet panel screen (the star map's side panel already holds the fleet's ships, cargo, moves and orders).
+- **K7: units are drawn per side, coloured per faction.** Each unit has one sheet for the ISA's look and one for the Helghast's, and the game tints it in each faction's colour, as the Killzone conversion does; six separate sheets per unit would have tripled the download for little difference.
+- **K7: the new vehicles are original designs** drawn with the puppet renderer from Matthew's Killzone project (tools/gen/unit-art/vehicles.js, MIT), the same size and view as his tanks, so they belong beside them; the troopers and the tank are still his.
+- **K7: ships are drawn at run time** on the star map and in the fleet panel (small pixel ships in code, src/render/starmap.js), since ships never stand on a world's map and need no sprite sheet.
+- **K7: a storm is drawn in screen space** over the map (an ash-red wash and blowing streaks), moving only with ambient effects on and never with reduced motion.
+- **K7: not done.** New art for the war works (the K3 art stays), and a separate fleet panel screen (the star map's side panel already holds the fleet's ships, cargo, moves and orders).
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## After the overhaul

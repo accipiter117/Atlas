@@ -24,5 +24,19 @@ test('K7: each world of the war, on its own map', async ({ page }, info) => {
     await page.waitForTimeout(300);
     await page.screenshot({ path: `test-results/k7-world-${i + 1}-${w}-${info.project.name}.png` });
   }
+  // Helghan's storm (one turn in four): play on until it blows, then look at Helghan.
+  for (let k = 0; k < 4; k += 1) {
+    const storm = await page.evaluate(() => window.__atlasGame.view.space.worlds.find((w) => w.id === 'helghan').storm);
+    if (storm) break;
+    await page.evaluate(() => window.__atlasGame.debug.autoplay(1));
+    await page.waitForFunction(() => !window.__atlasGame.busy);
+  }
+  expect(await page.evaluate(() => window.__atlasGame.view.space.worlds.find((w) => w.id === 'helghan').storm)).toBe(true);
+  await page.evaluate(() => window.__atlasGame.switchWorld('vekta'));
+  expect(await page.evaluate(() => window.__atlasGame.mapView.stormForTest())).toBe(false);
+  await page.evaluate(() => window.__atlasGame.switchWorld('helghan'));
+  expect(await page.evaluate(() => window.__atlasGame.mapView.stormForTest())).toBe(true);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `test-results/k7-helghan-storm-${info.project.name}.png` });
   expect(errors).toEqual([]);
 });

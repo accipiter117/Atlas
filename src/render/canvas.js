@@ -184,10 +184,44 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     cities('plate');
     if (view.markers.length) drawMarkers(ctx, view.map, cam, view.markers);
     if (yieldsAt) drawYieldOverlay(cam, visible);
+    // K7: a storm on this world (Helghan's): the light goes ash-red and ash streaks across the map.
+    if (view.storm) {
+      drawStorm(t0);
+      if (ambient()) dirty = true;
+    }
     if (effects.draw(ctx, view.map, cam, t0)) dirty = true;
     if (walking) dirty = true;
     view.frames += 1;
     view.lastFrameMs = win.performance.now() - t0;
+  }
+
+  /**
+   * K7: a storm over the map, in screen space: a dark ash-red wash and slanting streaks of ash.
+   * The streaks blow only with ambient motion on (and never with reduced motion); otherwise
+   * they are drawn still. Presentation only.
+   */
+  function drawStorm(now) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(58, 24, 14, 0.38)';
+    ctx.fillRect(0, 0, size.w, size.h);
+    const t = ambient() ? now / 1000 : 0;
+    const rand = fxRandom(73);
+    const n = Math.round((size.w * size.h) / 5000);
+    ctx.lineWidth = 1.5;
+    for (let k = 0; k < n; k += 1) {
+      const sx = rand() * size.w;
+      const sy = rand() * size.h;
+      const speed = 160 + rand() * 120;
+      const len = 10 + rand() * 14;
+      const x = (sx + t * speed) % (size.w + 40) - 20;
+      const y = (sy + t * speed * 0.45) % (size.h + 40) - 20;
+      ctx.strokeStyle = rand() < 0.3 ? 'rgba(255, 150, 80, 0.5)' : 'rgba(220, 200, 180, 0.42)';
+      ctx.beginPath();
+      ctx.moveTo(Math.round(x), Math.round(y));
+      ctx.lineTo(Math.round(x - len), Math.round(y - len * 0.45));
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   /** Yield icons on every hex you know of in view, repeated once per point (up to four), on a dark plate. */
@@ -505,6 +539,9 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setReligionLens(lens) { view.religionLens = lens; dirty = true; },
     /** K7: the landing planner's zones ({ ok, antiAir } tile lists), or null to clear. */
     setZones(zones) { view.zones = zones; dirty = true; },
+    /** K7: a storm on the world shown (true or false). */
+    setStorm(on) { if (view.storm !== Boolean(on)) { view.storm = Boolean(on); dirty = true; } },
+    stormForTest() { return Boolean(view.storm); },
     zonesForTest() { return view.zones ?? null; },
     /** The front line (phase 19): { control, sites, colours, letters }, or null. */
     setFront(front) { view.front = front; dirty = true; },

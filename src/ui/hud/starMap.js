@@ -7,7 +7,7 @@
 // of the screen. Everything the game screen shares comes in through `g` (see game.js).
 
 import { spaceOdds, armsPrice, STANCES } from '../../sim/index.js';
-import { createStarMap } from '../../render/starmap.js';
+import { createStarMap, shipArt, shipClass } from '../../render/starmap.js';
 import { el } from './shared.js';
 import { icon } from './icons.js';
 
@@ -252,8 +252,14 @@ export function createStarMapScreen(g) {
 
   function fleetPanel(f) {
     const box = el(g.doc, 'div', { class: 'fleet-panel', dataset: { field: 'fleet-panel' } });
+    // K7: each ship with its picture (src/render/starmap.js), in your colour.
+    const pic = (s) => {
+      const def = g.ruleset.units[s.type];
+      const c = shipArt(g.doc, shipClass(def), g.colours[f.faction] ?? '#888', def?.requires?.side ?? 0);
+      return el(g.doc, 'img', { class: 'ship-pic', src: c.toDataURL(), width: String(c.width * 2), height: String(c.height * 2), alt: '' });
+    };
     box.append(el(g.doc, 'ul', { class: 'fleet-ships' }, ...f.ships.map((s) => el(g.doc, 'li', {},
-      el(g.doc, 'span', {}, g.ruleset.text[g.ruleset.units[s.type]?.nameKey] ?? s.type),
+      el(g.doc, 'span', { class: 'ship-name' }, pic(s), g.ruleset.text[g.ruleset.units[s.type]?.nameKey] ?? s.type),
       el(g.doc, 'span', { class: 'hp-bar small', role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(s.hp), 'aria-label': tt('game.unit.health', { hp: s.hp }) }, el(g.doc, 'span', { style: `width:${s.hp}%` }))))));
     if (f.transit) { box.append(el(g.doc, 'p', { class: 'small' }, tt('starmap.jumping', { world: worldName(f.transit.to), turns: f.transit.left }))); return box; }
     // Moving: one button per lane, with the odds when enemy warships wait there.

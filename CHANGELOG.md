@@ -1,5 +1,16 @@
 # Changelog
 
+## Killzone Extrasolar War K7: unit and ship sprites, and Helghan's storms
+
+What you can see (Killzone: Extrasolar War):
+- **Every unit has its own figure.** Assault and arc troopers in assault armour, gunners, the Heavy and rocket teams as heavies, recon teams and snipers in recon kit, engineers with tool packs, jetpack troopers with jets, Shadow Marshals and intelligence cells as infiltrators, militia and conscripts as riflemen, the ISA in blue-grey and the Helghast in black and orange, each tinted in its faction's colour.
+- **Five new vehicles** in the style of the Killzone tanks: a six-wheeled APC, a two-legged walker that strides, Stahl's battle suit with its arm cannon, a tracked field gun with a long raised barrel, and arc artillery that throws a crackling arc when it fires; each with its own wreck. The tank platoon keeps the Killzone tank.
+- **Ships.** Fleets on the star map are shown by their most important ship (flagships, cruisers, transports, dropships and escorts each have a shape; the ISA's sleek with blue engines, the Helghast's hammerheads with orange ones), facing the way they travel; the fleet panel shows a picture of each ship.
+- **Storms on Helghan.** On a storm turn Helghan's map darkens to ash-red and ash blows across it (still, with reduced motion or ambient effects off).
+
+- Tools: `node tools/gen/lpc-units.mjs --only killzone-war` draws the war's sheets (rules/killzone-war/art/units.recipes.json; new vehicles in tools/gen/unit-art/vehicles.js); contact sheet in docs/shots/K7/units-killzone-war.png. `npm run shots` refreshed with them (docs/shots/K7), plus a storm shot.
+- Tests: the worlds test now plays to a storm and checks Helghan shows it (and Vekta does not).
+
 ## Killzone Extrasolar War K7: screens and each world's look
 
 What you can try (Killzone: Extrasolar War):

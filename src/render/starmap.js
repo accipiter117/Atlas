@@ -82,6 +82,64 @@ function planetArt(doc, kind, colour, seed) {
  * @param {HTMLCanvasElement} canvas
  * @param {object} opts { ruleset, factionColour(id) -> colour, sideColour(side) -> colour, label(worldId) -> text }
  */
+
+// ---- Ships (K7): small pixel ships in code, by class and side, in the faction's colour ----
+// H hull, L lit (top left), D shade, W windows, E engine glow; facing right. Original designs.
+const SHIP_MASKS = {
+  capital: {
+    0: ['......LLLL............', '...LLLHHHHHHLL........', 'EDDHHHHHHHHHHHHHLL....', 'EDDHHHHWHHWHHWHHHHHHL.', 'EDDDDHHHHHHHHHHHHDD...', '...DDDDHHHHHDD........', '......DDDD............'],
+    1: ['..........DDDD........', '..LLLLLLLLLLLLLLL.....', 'EDHHHHHHHHHHHHHHHHHHHH', 'EDHHWHHWHHWHHHHHHHHHHD', 'EDHHHHHHHHHHHHHHHHHHHH', '..DDDDDDDDDDDDDDD.....', '..........DDDD........'],
+  },
+  flagship: {
+    0: ['.......LLLLL..............', '....LLLHHHHHHLLL..........', 'EEDDHHHHHHHHHHHHHHLL......', 'EEDDHHHWHHWHHWHHWHHHHHHL..', 'EEDDHHHHHHHHHHHHHHHHHHHHHL', 'EEDDDDHHHHHHHHHHHHHHDD....', '....DDDDDHHHHHHDDD........', '.......DDDDD..............'],
+    1: ['...........DDDDD..........', '..LLLLLLLLLLLLLLLLLL......', 'EEDHHHHHHHHHHHHHHHHHHHHHHH', 'EEDHHWHHWHHWHHWHHHHHHHHHHD', 'EEDHHHHHHHHHHHHHHHHHHHHHHD', 'EEDHHHHHHHHHHHHHHHHHHHHHHH', '..DDDDDDDDDDDDDDDDDD......', '...........DDDDD..........'],
+  },
+  escort: {
+    0: ['....LLL.......', 'EDHHHHHHHHL...', 'EDHHWHHHHHHHHL', 'EDDDHHHHHD....', '....DDD.......'],
+    1: ['..LLLLL.......', 'EDHHHHHHHHHHH.', 'EDHWHHHHHHHHHD', 'EDHHHHHHHHHHH.', '..DDDDD.......'],
+  },
+  transport: {
+    0: ['..LLLLLLLLL.....', 'EDHHHHHHHHHHHL..', 'EDHWHWHWHWHHHHH.', 'EDHHHHHHHHHHHD..', '..DDDDDDDDD.....'],
+    1: ['..LLLLLLLLLL....', 'EDHHHHHHHHHHHH..', 'EDHWHWHWHWHHHHHD', 'EDHHHHHHHHHHHH..', '..DDDDDDDDDD....'],
+  },
+  lander: {
+    0: ['...LL.........', '.EHHHHHHL.....', 'EDHHWHHHHHHL..', '.EDDDDDHHD....', '...DD.........'],
+    1: ['..LLL.........', '.EHHHHHHH.....', 'EDHWHHHHHHHD..', '.EDHHHHHHH....', '..DDD.........'],
+  },
+};
+const ENGINE = { 0: '#8fd0ff', 1: '#ff9a3c' };
+const WINDOW = { 0: '#e8f4ff', 1: '#ffcf8a' };
+
+/** A ship's class from its rules: flagship, capital, transport, lander or escort. */
+export function shipClass(def) {
+  const sp = def?.space ?? {};
+  if (sp.heavy && (def.strength ?? 0) >= 80) return 'flagship';
+  if (sp.heavy || sp.bombard) return 'capital';
+  if (sp.lands) return 'lander';
+  if (!def?.strength && sp.capacity) return 'transport';
+  return 'escort';
+}
+
+const shipCache = new Map();
+/** A ship drawn at one canvas pixel per art pixel (scale it up crisp). side: 0 the ISA's look, 1 the Helghast's. */
+export function shipArt(doc, cls, colour, side = 0) {
+  const key = `${cls}|${colour}|${side}`;
+  if (shipCache.has(key)) return shipCache.get(key);
+  const rows = SHIP_MASKS[cls]?.[side ? 1 : 0] ?? SHIP_MASKS.escort[0];
+  const c = doc.createElement('canvas');
+  c.width = Math.max(...rows.map((r) => r.length)) + 2;
+  c.height = rows.length + 2;
+  const ctx = c.getContext('2d');
+  const fill = { H: colour, L: shade(colour, 0.35), D: shade(colour, -0.35), W: WINDOW[side ? 1 : 0], E: ENGINE[side ? 1 : 0] };
+  // A dark outline first, then the ship.
+  ctx.fillStyle = '#0b0e17';
+  rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') ctx.fillRect(x, y, 3, 3); }));
+  rows.forEach((r, y) => [...r].forEach((ch, x) => { if (fill[ch]) { ctx.fillStyle = fill[ch]; ctx.fillRect(x + 1, y + 1, 1, 1); } }));
+  shipCache.set(key, c);
+  return c;
+}
+const SHIP_RANK = { flagship: 4, capital: 3, lander: 2, transport: 1, escort: 0 };
+
 export function createStarMap(canvas, { ruleset, factionColour, sideColour }) {
   const doc = canvas.ownerDocument;
   const win = doc.defaultView;
@@ -163,7 +221,7 @@ export function createStarMap(canvas, { ruleset, factionColour, sideColour }) {
       ctx.drawImage(img, Math.round(p.x - (img.width * PX) / 2), Math.round(p.y - (img.height * PX) / 2), img.width * PX, img.height * PX);
       hits.push({ kind: 'world', id: w.id, x: p.x, y: p.y, r: r + 10 });
     }
-    // Fleets: arrowheads in their faction's colour round the world, or out on the lane.
+    // Fleets: each shown by its lead ship in its faction's colour round the world, or out on the lane.
     const byPlace = new Map();
     for (const f of space.fleets) {
       const key = f.transit ? `${f.transit.from}>${f.transit.to}` : f.at;
@@ -186,35 +244,34 @@ export function createStarMap(canvas, { ruleset, factionColour, sideColour }) {
         } else {
           const p = posOf(key);
           const kind = ruleset.worlds[key].kind;
-          const r = (RADIUS[kind] ?? 10) * PX + 22;
+          const r = (RADIUS[kind] ?? 10) * PX + 40;
           const ang = -Math.PI / 2 - 0.9 + i * 0.75;
           x = p.x + Math.cos(ang) * r;
           y = p.y + Math.sin(ang) * r * 0.75;
         }
         const col = factionColour(f.faction);
-        ctx.fillStyle = col;
-        ctx.strokeStyle = '#0b0e17';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, y - 9);
-        ctx.lineTo(x + 8, y + 7);
-        ctx.lineTo(x, y + 3);
-        ctx.lineTo(x - 8, y + 7);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
-        ctx.fillStyle = shade(col, 0.25);
-        ctx.fillRect(Math.round(x - 1), Math.round(y - 6), 2, 7);
+        // K7: the fleet shown by its most important ship, in its side's look.
+        const lead = f.ships.map((sh) => shipClass(ruleset.units[sh.type])).sort((a, b) => SHIP_RANK[b] - SHIP_RANK[a])[0] ?? 'escort';
+        const side = ruleset.units[f.ships[0]?.type]?.requires?.side ?? 0;
+        const img = shipArt(canvas.ownerDocument, lead, col, side);
+        const sc = 3;
+        ctx.save();
+        ctx.translate(Math.round(x), Math.round(y));
+        // Ships face the way they travel; at a world, outward to the right or left of it.
+        const left = f.transit ? posOf(f.transit.to).x < posOf(f.transit.from).x : posOf(key).x > x;
+        if (left) ctx.scale(-1, 1);
+        ctx.drawImage(img, Math.round(-(img.width * sc) / 2), Math.round(-(img.height * sc) / 2), img.width * sc, img.height * sc);
+        ctx.restore();
         // How many ships.
         ctx.font = '700 11px system-ui, sans-serif';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = '#f1e6cf';
-        ctx.fillText(String(f.ships.length), x + 10, y);
+        ctx.fillText(String(f.ships.length), x + (img.width * sc) / 2 + 4, y);
         if (f.id === selectedFleet) {
           ctx.strokeStyle = '#ffe36b';
           ctx.lineWidth = 2;
-          ctx.strokeRect(x - 12, y - 13, 24, 24);
+          ctx.strokeRect(x - (img.width * sc) / 2 - 3, y - (img.height * sc) / 2 - 3, img.width * sc + 6, img.height * sc + 6);
         }
         if (f.blockade) {
           ctx.strokeStyle = col;
@@ -224,7 +281,7 @@ export function createStarMap(canvas, { ruleset, factionColour, sideColour }) {
           ctx.stroke();
           ctx.setLineDash([]);
         }
-        hits.push({ kind: 'fleet', id: f.id, mine: f.faction === me, x, y, r: 14 });
+        hits.push({ kind: 'fleet', id: f.id, mine: f.faction === me, x, y, r: Math.max(14, (img.width * sc) / 2) });
       });
     }
   }

@@ -960,3 +960,6 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .war-table td:last-child, .war-table th:last-child { text-align: right; }
 .war-table tr.me td { font-weight: 700; }
 .war-proposals { margin: 6px 0; padding-left: 18px; }
+/* K7: ship pictures in the fleet panel. */
+.ship-name { display: inline-flex; align-items: center; gap: 6px; }
+.ship-pic { image-rendering: pixelated; flex: none; }
