@@ -349,15 +349,43 @@ What the traces show, in gameplay terms:
 - **Home invasions fell** (22% to 3%) because the old ones were lone squads dropped on Vekta
   that surrendered; now fleets only sail with a group, and the Navy rarely gathers one for Vekta.
 
+### 2026-11-28: Killzone Extrasolar War, teaching the computer to take bases (100 games a batch)
+
+Same set-up as the batches above. What a base is, in rules terms: 200 health, it heals 20 a turn
+unless attacked the turn before, and it fights at the strength of the best infantry its owner
+could build plus 3 (more with walls or a bunker complex). So it can fall to steady pressure, but
+not to cheap units, and not to troops that cannot reach it.
+
+| # | Change | Sides (ISA / Helghast / dead heats) | ISA share of decided | Landings a game | Kept? |
+| --- | --- | --- | --- | --- | --- |
+| 0 | Start (end of the previous round) | 66 / 12 / 22 | 85% | 7 | |
+| 1 | Sieges: with 3 of our side's troops on a world, gather 2 hexes from the enemy base nearest our army, then assault on siege terms (theatre.siegeUnits, siegeRange, siege); cruisers may bombard a base (space.strikeCity 40) and strike the base under siege; the beachhead guard is 3 turns, not 30, so fleets ferry waves; a fleet with a group aboard tops up with one more, and with no one left at its base sails to the side's biggest army; allies' troops count towards a siege; a base attack only on a fair trade (siege.cityMinDamageRatio 0.4) | 33 / 64 / 3 | 34% | 25 | yes |
+| 2 | Fleets land only groups allowed on that world (no vehicles on stations) | 39 / 59 / 2 | 40% | 25 | yes |
+| 3 | A ready siege fights the ring of defenders on siege terms too (attackMinWinChance 0.4, attackMinDamageRatio 0.8) | | | | yes (no measurable change; the ordinary rules already took those fights) |
+| 4 | Cruisers clear the ring of defenders before bombarding the base | 40 / 57 / 3 | 41% | 26 | yes |
+| 5 | A hex where a landing failed (a hidden enemy) is not tried again | 40 / 58 / 2 | 41% | 26 | yes (refused orders 21 to 0) |
+
+Final (row 5): side balance 41% / 59% (closest yet; target 45 to 55%), 2 stalemates, about
+43 ground battles a game (was 4), 26 landings a game, 0 refused orders; length 120. Still
+every game is decided on time: in 16 traced games there were 18 attacks on bases and 3
+bombardments of a base, and no base fell.
+
+Why bases still hold, in gameplay terms: sieges are rare (about one a game) because a side
+seldom has 3 troops together on an enemy world, and when it does the base is ringed by
+fortified defenders in trenches; the defender's bases keep producing (Home Guard militia are
+30% cheaper), so the ring refills faster than a few landed squads can cut it down. The attacker
+has no edge in numbers: both sides build the same 4 troops a base. Making bases fall now needs
+a design choice (see the options in the open problems), not more AI tuning.
+
 ## Open problems
 
 - **Conquest wins 0%.** Every other range is met. Since ai-v12 conquest AIs take cities and
   knock rivals out, but holding all four original capitals by turn 220 at Quick speed has not
   happened yet. Ideas for later phases: a later turn limit at Quick, or conquest-minded AIs
   making peace with distant rivals to focus on one neighbour at a time.
-- **Killzone Extrasolar War is not yet balanced (K5).** After the 100-game runs only the
-  length target is met. The blocker is that the computer cannot take a defended base: until it
-  can, every war is decided on time by a few points of support. Next: invasions that gather
-  two or three army groups and siege a base (artillery and orbital strikes first, as the plan's
-  theatre AI describes), and the war council pointing both allies' fleets at one world at once.
-  Once bases fall, re-run these batches; the side and victory targets depend on it.
+- **Killzone Extrasolar War: bases do not fall yet.** The computer now lands waves, besieges,
+  bombards and fights constantly (side balance 41% / 59%), but defenders refill faster than an
+  invasion can wear them down, so every war ends on time. Options for Matthew (each would be
+  measured the same way): stronger orbital bombardment of bases; bases that heal less in this
+  war; units on a world with no friendly base cost more to replace (an invader's edge); or the
+  war council sending both allies' fleets to one objective so an invasion arrives in force.

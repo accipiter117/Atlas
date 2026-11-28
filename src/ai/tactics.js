@@ -42,9 +42,10 @@ function approach(world, view, ruleset, unit, goal, range = 1) {
 const move = (view, unit, to, reasonKey, params, score = 1) => ({ cmd: { type: 'moveUnit', faction: view.me, unit: unit.id, to }, reasonKey, params, score });
 
 /** The best attack this unit can make now, if the odds are good enough. */
-export function bestAttack(world, view, ruleset, unit, path = null, stance = null) {
-  // K5: a delegated theatre's stance moves the odds it will take (data: aiWeights theatre.stances).
-  const th = { ...weightsOf(ruleset, 'thresholds'), ...(stance ? weightsOf(ruleset, 'theatre').stances?.[stance] ?? {} : {}) };
+export function bestAttack(world, view, ruleset, unit, path = null, stance = null, extra = null) {
+  // K5: a delegated theatre's stance moves the odds it will take (data: aiWeights theatre.stances),
+  // and a siege its odds against a base (theatre.siege).
+  const th = { ...weightsOf(ruleset, 'thresholds'), ...(stance ? weightsOf(ruleset, 'theatre').stances?.[stance] ?? {} : {}), ...(extra ?? {}) };
   const seen = (t) => view.fog[t] === VISIBLE;
   const candidates = [];
   const targets = new Set();
@@ -62,7 +63,11 @@ export function bestAttack(world, view, ruleset, unit, path = null, stance = nul
       ok = o.ranged ? o.dealt >= 5 : (o.defenderHp === 0 || o.win >= (th.cityAttackMinWinChance ?? 0.7));
       // Wearing a city down with melee (thresholds.cityMeleeMinDealt in data; off when absent).
       const wearPaths = th.cityMeleePaths ?? null;
-      if (!ok && !o.ranged && th.cityMeleeMinDealt && (!wearPaths || wearPaths.includes(path))) ok = o.dealt >= th.cityMeleeMinDealt && o.attackerHp - o.taken >= (th.attackMinHpAfter ?? 35);
+      if (!ok && !o.ranged && th.cityMeleeMinDealt && (!wearPaths || wearPaths.includes(path))) {
+        ok = o.dealt >= th.cityMeleeMinDealt && o.attackerHp - o.taken >= (th.attackMinHpAfter ?? 35)
+          // K5: a siege trades blows only when this unit gives a fair share of what it takes (theatre.siege.cityMinDamageRatio).
+          && o.dealt >= o.taken * (th.cityMinDamageRatio ?? 0);
+      }
     } else if (o.ranged) {
       ok = o.dealt >= 8;
     } else {
@@ -143,6 +148,24 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
     return move(view, unit, post, 'ai.reason.toGarrison', {}, 2);
   }
 
+  // K5: a siege. With enough of our side's troops on this world, gather on the enemy base nearest
+  // our army and, once enough stand around it (data: theatre.siegeUnits, siegeRange), wear it down.
+  const siege = siegePlan(view, ruleset, memory);
+  if (siege) {
+    const reach = combatKind(ruleset, unit) === 'ranged' ? rangeOf(ruleset, unit) : 1;
+    const d = dist(view.map, unit.tile, siege.tile);
+    // Ready: any blow on the base or its ring of defenders, on the siege's terms (theatre.siege).
+    if (siege.ready && d <= reach + 1) {
+      const blow = bestAttack(world, view, ruleset, unit, memory.path ?? null, memory.stance ?? null, weightsOf(ruleset, 'theatre').siege ?? {});
+      if (blow) return { ...blow, reasonKey: 'ai.reason.siegeAttack' };
+    }
+    const close = siege.ready ? reach : weightsOf(ruleset, 'theatre').siegeRange ?? 2;
+    if (d > close) {
+      const spot = approach(world, view, ruleset, unit, siege.tile, close) ?? approach(world, view, ruleset, unit, siege.tile, close + 1);
+      if (spot !== null && spot !== unit.tile) return move(view, unit, spot, 'ai.reason.siege', {}, 1.5);
+    } else if (!siege.ready) return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 1, reasonKey: 'ai.reason.siegeWait', params: {} };
+  }
+
   // K5: a war across worlds is won by holding each world's key sites. Stand on ours; march on
   // the nearest one our side does not hold (within supply, unless already cut off).
   // (Only in a war across several worlds: the one-world Killzone front plays as it always has.)
@@ -195,6 +218,33 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
     }
   }
   return { cmd: { type: 'fortify', faction: me, unit: unit.id }, score: 0.5, reasonKey: 'ai.reason.hold', params: {} };
+}
+
+/**
+ * K5: the base our side besieges on this world this turn ({ tile, city, ready }), or null. Only
+ * in a war across worlds (view.world and a front), with theatre.siegeUnits of our own troops here.
+ */
+function siegePlan(view, ruleset, memory) {
+  if (!view.world || !view.frontline) return null;
+  const tw = weightsOf(ruleset, 'theatre');
+  if (!tw.siegeUnits) return null;
+  const key = `${view.world}:${view.turn}`;
+  if (memory.siegeKey === key) return memory.siegePlan;
+  memory.siegeKey = key;
+  memory.siegePlan = null;
+  const sideOfF = (fid) => ruleset.factions?.[view.factions.find((f) => f.id === fid)?.civ]?.frontSide;
+  const side = sideOfF(view.me);
+  const fighter = (u) => (ruleset.units[u.type]?.strength ?? 0) > 0;
+  const mine = view.units.filter((u) => u.faction === view.me && fighter(u));
+  const ours = view.units.filter((u) => sideOfF(u.faction) === side && fighter(u));
+  const bases = view.cities.filter((c) => side !== undefined && sideOfF(c.faction) === 1 - side);
+  // Our side's troops here count together (allies land together); we need at least one of our own.
+  if (!bases.length || !mine.length || ours.length < tw.siegeUnits) return null;
+  const cost = (c) => ours.reduce((n, u) => n + dist(view.map, u.tile, c.tile), 0);
+  const target = bases.slice().sort((a, b) => cost(a) - cost(b) || a.tile - b.tile)[0];
+  const near = ours.filter((u) => dist(view.map, u.tile, target.tile) <= (tw.siegeRange ?? 2)).length;
+  memory.siegePlan = { tile: target.tile, city: target.id, ready: near >= tw.siegeUnits };
+  return memory.siegePlan;
 }
 
 /**

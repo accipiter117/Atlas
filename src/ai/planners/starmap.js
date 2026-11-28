@@ -122,6 +122,15 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
   memory.carriersWanted = Boolean(target) && room === 0;
   const here = view.space.worlds.find((x) => x.id === view.world);
   const tried = (key) => { if (memory.done[key]) return true; memory.done[key] = true; return false; };
+  // A landing that did not happen (a hidden enemy on the hex): that hex is not tried again.
+  memory.badLanding ??= {};
+  const last = memory.lastLanding;
+  if (last && last.turn !== view.turn && last.world === view.world) {
+    const f0 = mine.find((x) => x.id === last.fleet);
+    if (f0 && (f0.cargo?.length ?? 0) >= last.groups) memory.badLanding[`${last.world}:${last.tile}`] = true;
+    memory.lastLanding = null;
+  }
+  const badHex = (tile) => memory.badLanding[`${view.world}:${tile}`] === true;
   const land = (id) => !ruleset.terrain[view.map.terrainIds[view.map.terrain[id]]]?.water && !ruleset.terrain[view.map.terrainIds[view.map.terrain[id]]]?.impassable && view.map.terrain[id] >= 0;
   const occupied = (id) => view.units.some((u) => u.tile === id) || view.cities.some((c) => c.tile === id);
   // A beachhead: our troops on this world with no base or supply work of the side's here to feed
@@ -145,27 +154,39 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
       const foes = enemiesHere(view, side, ruleset).filter((u) => !covered(view, ruleset, side, u.tile, dist));
       const ours = view.units.filter((u) => u.faction === view.me);
       foes.sort((a, b) => Math.min(...ours.map((o) => dist(o.tile, a.tile)), 99) - Math.min(...ours.map((o) => dist(o.tile, b.tile)), 99) || b.hp - a.hp || (a.id < b.id ? -1 : 1));
+      // An enemy base our side's troops are closing on comes first, when strikes can hit bases.
+      const sideUnits = view.units.filter((u) => u.faction === view.me || (u.faction in (view.war?.glory ?? {})));
+      const besieged = t.strikeCity ? view.cities.filter((c) => ruleset.factions?.[view.factions.find((x) => x.id === c.faction)?.civ]?.frontSide === 1 - side
+        && sideUnits.some((u) => dist(u.tile, c.tile) <= (w.strikeBaseRange ?? 3)) && !covered(view, ruleset, side, c.tile, dist)).sort((a, b) => a.tile - b.tile)[0] : null;
+      // Clear the ring of defenders round it first: a strike on them is worth more than on the walls.
+      const ring = besieged ? foes.filter((u) => u.tile !== besieged.tile && dist(u.tile, besieged.tile) <= 1) : [];
+      if (ring.length && !tried(`fl:${f.id}:strike`)) return { cmd: { type: 'orbitalStrike', faction: view.me, fleet: f.id, tile: ring.sort((a, b) => a.hp - b.hp || a.tile - b.tile)[0].tile }, score: 3, reasonKey: 'ai.reason.strike', params: {} };
+      if (besieged && !tried(`fl:${f.id}:strike`)) return { cmd: { type: 'orbitalStrike', faction: view.me, fleet: f.id, tile: besieged.tile }, score: 3, reasonKey: 'ai.reason.strikeBase', params: {} };
       if (foes[0] && !tried(`fl:${f.id}:strike`)) return { cmd: { type: 'orbitalStrike', faction: view.me, fleet: f.id, tile: foes[0].tile }, score: 3, reasonKey: 'ai.reason.strike', params: {} };
     }
     // Land on the target, or on any world on the way that our side does not hold (a neutral
     // relay, a contested or enemy world): troops aboard are worth more on the ground.
     // (On a world our side already holds, only when enemy troops are there to fight.)
     const landHere = here && (here.holder !== side ? (view.world === target || w.landOnTheWay !== false) : view.world === target && enemiesHere(view, side, ruleset).length > 0);
-    if (f.cargo?.length && orbit && landHere && !tried(`fl:${f.id}:land`)) {
+    // A group whose lead can stand here (no vehicles on a station: the world's theatre rules).
+    const th = ruleset.worlds?.[view.world]?.theatre;
+    const allowed = (g) => !th?.noVehicles || !(ruleset.units[g[0]?.type]?.tags ?? []).includes(th.vehicleTag ?? 'vehicle');
+    const groupIdx = (f.cargo ?? []).findIndex(allowed);
+    if (groupIdx >= 0 && orbit && landHere && !tried(`fl:${f.id}:land`)) {
       const friendly = view.cities.filter((c) => c.faction === view.me || (ruleset.factions?.[view.factions.find((x) => x.id === c.faction)?.civ]?.frontSide === side));
       const enemyBases = view.cities.filter((c) => !friendly.includes(c));
       const foes = enemiesHere(view, side, ruleset);
       // A friendly base with no one else standing in it (raiders or an enemy may have walked in).
       const stranger = (tile) => view.units.some((u) => u.tile === tile && u.faction !== view.me && !(u.faction in (view.war?.glory ?? {})));
-      let spot = friendly.find((c) => !stranger(c.tile))?.tile ?? null;
+      let spot = friendly.find((c) => !stranger(c.tile) && !badHex(c.tile))?.tile ?? null;
       // Away from a friendly base, land only troops we can keep supplied: an engineer aboard to
       // build the landing bay, or a ship that can drop supplies until it is built.
-      const engineer = (f.cargo[0] ?? []).some((u) => (ruleset.units[u.type]?.tags ?? []).includes('worker'));
+      const engineer = (f.cargo[groupIdx] ?? []).some((u) => (ruleset.units[u.type]?.tags ?? []).includes('worker'));
       const sustain = engineer || f.ships.some((s) => ruleset.units[s.type]?.space?.bombard);
       if (spot === null && sustain && f.ships.some((s) => ruleset.units[s.type]?.space?.lands) && !here.storm) {
         let bestT = null;
         for (let id = 0; id < view.map.terrain.length; id += 1) {
-          if (!land(id) || occupied(id) || covered(view, ruleset, side, id, dist)) continue;
+          if (!land(id) || occupied(id) || badHex(id) || covered(view, ruleset, side, id, dist)) continue;
           const nearFoe = Math.min(...foes.map((u) => dist(u.tile, id)), ...enemyBases.map((c) => dist(c.tile, id)), 99);
           if (nearFoe < (w.landMinDistance ?? 3)) continue;
           const score = -Math.abs(nearFoe - (w.landDistance ?? 4));
@@ -173,7 +194,10 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
         }
         spot = bestT?.id ?? null;
       }
-      if (spot !== null) return { cmd: { type: 'landArmy', faction: view.me, fleet: f.id, group: 0, tile: spot }, score: 4, reasonKey: 'ai.reason.land', params: {} };
+      if (spot !== null) {
+        memory.lastLanding = { fleet: f.id, tile: spot, world: view.world, turn: view.turn, groups: f.cargo.length };
+        return { cmd: { type: 'landArmy', faction: view.me, fleet: f.id, group: groupIdx, tile: spot }, score: 4, reasonKey: 'ai.reason.land', params: {} };
+      }
     }
     // Embark troops for the target from our bases here.
     let nobody = false;
@@ -191,7 +215,8 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
       // Not enough yet: ask our bases for troops (the economy planner reads memory.troopsWanted).
       // After waiting its turns, a fleet takes whatever troops it has.
       nobody = pick.length === 0;
-      const minGroup = (memory.fleetWait?.[f.id] ?? 0) >= (w.waitTurns ?? 6) ? 1 : w.minGroup ?? 2;
+      // Topping up a group already aboard takes even one more; a first group waits for minGroup.
+      const minGroup = (f.cargo?.length || (memory.fleetWait?.[f.id] ?? 0) >= (w.waitTurns ?? 6)) ? 1 : w.minGroup ?? 2;
       memory.troopsWanted = pick.length >= minGroup ? 0 : (t.groupSize ?? 4);
       // An empty transport fleet at one of the side's bases waits a few turns for its troops (data: waitTurns).
       memory.fleetWait ??= {};
@@ -231,7 +256,8 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
       if (depot) { dest = depot.id; why = 'ai.reason.ferry'; }
     }
     // No one at all to embark at this base: go where the side's armies are.
-    if (dest && !(f.cargo?.length) && room > 0 && here?.holder === side && here.bases > 0 && nobody) {
+    const aboardNow = (f.cargo ?? []).reduce((n, g) => n + g.length, 0);
+    if (dest && aboardNow < (w.minAssault ?? 3) && room > 0 && here?.holder === side && here.bases > 0 && nobody) {
       const { dist: d } = hops(view, view.world, heavy);
       const depot = view.space.worlds.filter((x) => x.holder === side && x.bases > 0 && x.armies > here.armies && d.has(x.id) && x.id !== view.world)
         .sort((a, b) => b.armies - a.armies || d.get(a.id) - d.get(b.id) || (a.id < b.id ? -1 : 1))[0];

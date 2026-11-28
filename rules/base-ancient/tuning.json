@@ -276,6 +276,7 @@
       "battleRounds": 3,
       "battleDamage": 35,
       "strikeStrength": 60,
+      "strikeCity": 0,
       "antiAirRange": 2,
       "landingMoves": 1,
       "loadRange": 1,

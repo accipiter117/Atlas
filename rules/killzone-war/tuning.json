@@ -18,6 +18,7 @@
     },
     "setup.maxAis": 5,
     "space.loadRange": 3,
+    "space.strikeCity": 40,
     "supply.siteRange": 3,
     "supply.attrition": 5,
     "supply.surrenderTurns": 5,

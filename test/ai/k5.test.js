@@ -182,3 +182,32 @@ test('a dead heat at the turn limit goes to the first seat\'s side, not to whoev
   assert.equal(s.winner.victory, 'war_time');
   assert.equal(sideOf(s, rs, s.winner.faction), sideOf(s, rs, s.seatOrder[0]));
 });
+
+const sideOfF = (s, id) => rs.factions[s.factions.find((f) => f.id === id).civ].frontSide;
+
+test('a cruiser\'s orbital strike can bombard an enemy base (space.strikeCity), and the base does not heal next turn', async () => {
+  const { orbitalStrike } = await import('../../src/sim/space.js');
+  assert.ok(rs.tuning.space.strikeCity > 0, 'on in Extrasolar War');
+  const s = createGame(rs, setup());
+  const fleet = Object.values(s.space.fleets).find((f) => f.ships.some((x) => rs.units[x.type]?.space?.bombard));
+  switchTo(s, fleet.at);
+  // Hand one of this world's bases to the other side for the test.
+  const base = Object.values(s.cities)[0];
+  const owner = base.faction;
+  base.faction = s.factions.find((f) => sideOfF(s, f.id) !== sideOfF(s, fleet.faction)).id;
+  const before = base.hp ?? 200;
+  const events = [];
+  orbitalStrike.apply(s, { type: 'orbitalStrike', faction: fleet.faction, fleet: fleet.id, tile: base.tile }, events, rs);
+  assert.ok(base.hp < before, 'the base took damage');
+  assert.equal(base.lastAttacked, s.turn);
+  assert.ok(events.some((e) => e.type === 'orbitalStrike' && e.city === base.id && e.cityDamage > 0));
+  base.faction = owner;
+});
+
+test('siege terms are data: a ready siege takes worse odds than the ordinary thresholds', () => {
+  const t = rs.aiWeights.theatre.weights;
+  assert.ok(t.siegeUnits >= 2 && t.siegeRange >= 1);
+  assert.ok(t.siege.attackMinWinChance < rs.aiWeights.thresholds.weights.attackMinWinChance);
+  assert.ok(t.siege.cityAttackMinWinChance < rs.aiWeights.thresholds.weights.cityAttackMinWinChance);
+  assert.ok(t.siege.cityMinDamageRatio > 0, 'but never a hopeless trade');
+});

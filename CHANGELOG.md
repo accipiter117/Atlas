@@ -1,5 +1,12 @@
 # Changelog
 
+## Killzone Extrasolar War K5: the computer besieges bases
+
+What you can notice (Killzone: Extrasolar War): computer fleets now ferry troops in waves instead of guarding one landing for thirty turns; allied troops land together and gather on an enemy base before assaulting it; a cruiser over a besieged base strikes the defenders around it and then the base itself (a strike on a base's hex now damages the base, and you can do this too); computer fleets no longer try to land vehicles on stations or keep landing on a hex an unseen enemy holds.
+
+- Result over 100 games: about 43 ground battles a game (was 4), 26 landings, side balance 41% / 59% (closest yet), 0 refused orders. Bases still do not fall: defenders refill faster than an invasion wears them down, so every war still ends on time. The options to change that are design choices, listed in `docs/AI_TUNING.md`.
+- Tests: orbital strikes on a base, and the siege terms as data.
+
 ## Killzone Extrasolar War K5: 100-game balance runs
 
 Eleven batches of 100 computer-only games each, recorded in `docs/AI_TUNING.md`.

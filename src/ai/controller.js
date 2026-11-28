@@ -292,7 +292,7 @@ export function createAi(ruleset, factionId, memory = {}) {
         const choice = combatKind(ruleset, u) !== 'none' ? decideUnit(world, view, ruleset, memory, u, ctx) : null;
         if (choice && choice.cmd.type === 'attack' && valid(world, choice.cmd)) return issue(view, world, choice);
         // K5: in a war across worlds a dug-in unit also rises to take a key site or to fall back.
-        if (choice && ['ai.reason.toKeySite', 'ai.reason.fallBack', 'ai.reason.toSupply'].includes(choice.reasonKey) && valid(world, choice.cmd)) return issue(view, world, choice);
+        if (choice && ['ai.reason.toKeySite', 'ai.reason.fallBack', 'ai.reason.toSupply', 'ai.reason.siege', 'ai.reason.siegeAttack'].includes(choice.reasonKey) && valid(world, choice.cmd)) return issue(view, world, choice);
         if (u.activity === 'fortify' || u.activity === 'sleep' || u.goto !== null) continue;
       }
       const choice = decideUnit(world, view, ruleset, memory, u, ctx);

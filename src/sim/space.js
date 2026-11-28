@@ -30,6 +30,7 @@ import { distance } from './borders.js';
 import { currentFactionId } from './queries.js';
 import { sideOf } from './frontline.js';
 import { antiAirWorksNear, strikeArmour, stormBlocksOrbit, stormNow, workAt } from './war.js';
+import { cityMaxHp } from './combat.js';
 
 const tun = (ruleset) => ruleset.tuning?.space ?? {};
 
@@ -348,6 +349,13 @@ export const landArmy = {
   },
 };
 
+/** An enemy base on `tile` that orbital strikes may hit (tuning space.strikeCity above 0), or null. */
+function strikeableBase(state, ruleset, faction, tile) {
+  if (!tun(ruleset).strikeCity) return null;
+  const c = Object.values(state.cities ?? {}).find((x) => x.tile === tile);
+  return c && atWar(state, faction, c.faction) ? c : null;
+}
+
 export const orbitalStrike = {
   validate(state, cmd, ruleset) {
     const { fleet, error } = ownFleet(state, cmd);
@@ -360,7 +368,7 @@ export const orbitalStrike = {
     const t = cmd.tile;
     if (!Number.isInteger(t) || t < 0 || t >= state.map.terrain.length) return err('badTile', 'Choose a hex on this world');
     if (antiAirNear(state, ruleset, cmd.faction, t)) return err('antiAir', 'Enemy anti-air covers that hex');
-    if (!unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction))) return err('noTarget', 'No enemy there to strike');
+    if (!unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction)) && !strikeableBase(state, ruleset, cmd.faction, t)) return err('noTarget', 'No enemy there to strike');
     return null;
   },
   apply(state, cmd, events, ruleset) {
@@ -380,7 +388,16 @@ export const orbitalStrike = {
       hits.push({ unit: u.id, damage: dmg, killed: u.hp <= 0 });
       if (u.hp <= 0) { delete state.units[u.id]; events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: cmd.tile }); }
     }
-    events.push({ type: 'orbitalStrike', fleet: fleet.id, faction: cmd.faction, world: fleet.at, tile: cmd.tile, hits, global: true });
+    // K5: a cruiser can also bombard an enemy base (tuning space.strikeCity; off at 0).
+    const base = strikeableBase(state, ruleset, cmd.faction, cmd.tile);
+    let baseDamage = 0;
+    if (base) {
+      const roll = (combat.randomMin ?? 0.8) + ((combat.randomMax ?? 1.2) - (combat.randomMin ?? 0.8)) * random(state);
+      baseDamage = Math.max(1, Math.round((tun(ruleset).strikeCity * roll * (100 - strikeArmour(state, ruleset, cmd.tile))) / 100));
+      base.hp = Math.max(0, (base.hp ?? cityMaxHp(ruleset, base)) - baseDamage);
+      base.lastAttacked = state.turn;
+    }
+    events.push({ type: 'orbitalStrike', fleet: fleet.id, faction: cmd.faction, world: fleet.at, tile: cmd.tile, hits, ...(base ? { city: base.id, cityDamage: baseDamage } : {}), global: true });
   },
 };
 
