@@ -1,5 +1,11 @@
 # Changelog
 
+## Killzone Extrasolar War K7: art for the war works
+
+What you can see (Killzone: Extrasolar War): every work engineers dig now has proper pixel art on the map, lit from the top left like the rest of it, each with a soft shadow: a zigzag trench line with duckboards, sandbags and spoil; crossed pickets with coils of wire; a sandbagged machine gun nest with its gunner; a concrete bunker with a firing slit; a gun in a horseshoe of sandbags with shells stacked; a twin-barrelled anti-air turret on its pad; the Helghast arc tower with its glowing crown; half-buried mines and a warning sign; an octagonal landing pad with its H, lights and chevrons; crates and fuel drums at a supply depot; a sandbagged command hut with a radio mast and flag; a field hospital tent with its red cross; and a lattice comms mast with a dish.
+
+- `src/render/art/worksArt.js` (original art in code), used by the map's improvement drawing; the K3 placeholders are gone. Screenshot in `docs/shots/K7/04-works.png`; `test/smoke/k7-works.spec.js` draws all thirteen on Halcyon.
+
 ## Killzone Extrasolar War K7: unit and ship sprites, and Helghan's storms
 
 What you can see (Killzone: Extrasolar War):

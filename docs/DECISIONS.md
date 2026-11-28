@@ -388,7 +388,8 @@ Design and build choices not spelt out in `docs/PLAN.md`, with the reason for ea
 - **K7: the new vehicles are original designs** drawn with the puppet renderer from Matthew's Killzone project (tools/gen/unit-art/vehicles.js, MIT), the same size and view as his tanks, so they belong beside them; the troopers and the tank are still his.
 - **K7: ships are drawn at run time** on the star map and in the fleet panel (small pixel ships in code, src/render/starmap.js), since ships never stand on a world's map and need no sprite sheet.
 - **K7: a storm is drawn in screen space** over the map (an ash-red wash and blowing streaks), moving only with ambient effects on and never with reduced motion.
-- **K7: not done.** New art for the war works (the K3 art stays), and a separate fleet panel screen (the star map's side panel already holds the fleet's ships, cargo, moves and orders).
+- **K7: the war works are drawn in code** (src/render/art/worksArt.js), like the map's other improvements, so they stay crisp at every zoom and need no downloads; they are not coloured by owner (the map already shows whose ground it is).
+- **K7: not done.** A separate fleet panel screen (the star map's side panel already holds the fleet's ships, cargo, moves and orders).
 - **G8: not done yet.** Diplomacy's relationship timeline and a click-across deal table (the deal table still uses number boxes), and playing a full Quick game in each ruleset through the browser as a polish check (the base game's full Quick game runs in the browser suite; the Witcher and Killzone are played in Node by the AI tests). Left for a follow-up.
 
 ## After the overhaul
