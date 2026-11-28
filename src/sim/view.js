@@ -11,6 +11,7 @@ import { multiWorld, lookAt, activeWorld } from './worlds.js';
 import { spaceView } from './space.js';
 import { hiddenFrom, suppliedTiles } from './war.js';
 import { sideOf } from './frontline.js';
+import { proposalOf } from './sides.js';
 
 const HIDDEN = -1;
 
@@ -52,6 +53,14 @@ export function view(state, factionId, ruleset = null, opts = {}) {
       council: state.council?.[side] ? { ...state.council[side] } : null, myProposal: state.council?.proposals?.[factionId] ?? null,
       nextCouncil: Math.ceil((state.turn + 1) / (ruleset.tuning?.warSupport?.councilEvery ?? 10)) * (ruleset.tuning?.warSupport?.councilEvery ?? 10),
       armsSales: state.arms?.sales ?? 0,
+      // K7: what each ally will put to the next council (its own pick, else its ambition's world)
+      // and whether that is its ambition, and the share of extra glory on the objective.
+      proposals: Object.fromEntries(state.factions.filter((f) => mates.includes(f.id)).map((f) => {
+        const world = state.council?.votes?.[f.id] ?? proposalOf(state, ruleset, f);
+        const ambition = (ruleset.factions?.[f.civ]?.ambition ?? []).some((a) => a.world === world);
+        return [f.id, { world, ambition, chosen: Boolean(state.council?.votes?.[f.id]) }];
+      })),
+      councilBonus: ruleset.tuning?.warSupport?.councilBonus ?? 20,
       // K5: the theatres you have handed to the computer, and the stance for each.
       delegation: { ...(state.delegation?.[factionId] ?? {}) },
     };

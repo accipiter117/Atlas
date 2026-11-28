@@ -232,3 +232,34 @@ export function drawResources(ctx, map, cam, view, atlas, classColour) {
     }
   }
 }
+
+/**
+ * K7: the landing planner's lens. Hexes where the waiting star map order can go are washed
+ * green; hexes under enemy anti-air are hatched red (drawn under everything that stands there).
+ */
+export function drawZones(ctx, map, cam, visible, zones) {
+  const corners = cornerOffsets(HEX_SCREEN * cam.zoom * 0.96);
+  const near = (t) => {
+    const p = tileCentre(map, t);
+    return p.x > visible.x - HEX_SCREEN * 2 && p.x < visible.x + visible.w + HEX_SCREEN * 2 && p.y > visible.y - HEX_SCREEN * 2 && p.y < visible.y + visible.h + HEX_SCREEN * 2 ? p : null;
+  };
+  ctx.save();
+  for (const t of zones.antiAir ?? []) {
+    const p = near(t);
+    if (!p) continue;
+    tracePath(ctx, (p.x - cam.x) * cam.zoom, (p.y - cam.y) * cam.zoom, corners);
+    ctx.fillStyle = 'rgba(200, 50, 40, 0.28)';
+    ctx.fill();
+  }
+  for (const t of zones.ok ?? []) {
+    const p = near(t);
+    if (!p) continue;
+    tracePath(ctx, (p.x - cam.x) * cam.zoom, (p.y - cam.y) * cam.zoom, corners);
+    ctx.fillStyle = 'rgba(80, 200, 110, 0.26)';
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, cam.zoom);
+    ctx.strokeStyle = 'rgba(120, 230, 150, 0.7)';
+    ctx.stroke();
+  }
+  ctx.restore();
+}

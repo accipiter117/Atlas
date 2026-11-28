@@ -9,7 +9,7 @@ import { loadIconAtlas, drawIcon } from './art/icons.js';
 import { pixelToHex } from '../core/hex.js';
 import { createTerrainLayer } from './layers/terrain.js';
 import { createUnitsLayer } from './layers/units.js';
-import { drawGrid, drawMarkers, drawPath, drawTileOutline, drawFront, drawResources } from './layers/overlays.js';
+import { drawGrid, drawMarkers, drawPath, drawTileOutline, drawFront, drawResources, drawZones } from './layers/overlays.js';
 import { createRegistry } from './art/registry.js';
 import { placeholderColour, shade } from './art/placeholders.js';
 import { fxRandom } from './fxRandom.js';
@@ -158,6 +158,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     drawBorders(ctx, view.map, cam, view.owner, (cityId) => cityById.get(cityId)?.faction ?? null, (f) => colours[f] ?? '#888', neighbourCache(view.map), view.atWar, visible);
     if (!strategic) drawResources(ctx, view.map, cam, visible, atlas, (id) => placeholderColour(registry, 'resource', ruleset.resources[id]?.class ?? id));
     drawCityWork(ctx, view.map, cam, view.cityOverlay);
+    if (view.zones) drawZones(ctx, view.map, cam, visible, view.zones);
     if (view.showGrid) drawGrid(ctx, view.map, cam, visible);
     if (view.hover !== null) drawTileOutline(ctx, view.map, cam, view.hover, 'rgba(255,255,255,0.5)');
     if (view.path) drawPath(ctx, view.map, cam, view.pathFrom, view.path);
@@ -502,6 +503,9 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     setMarkers(tiles) { view.markers = tiles; dirty = true; },
     /** The religion lens: { cityId: [{ colour, n }] } or null to hide it. */
     setReligionLens(lens) { view.religionLens = lens; dirty = true; },
+    /** K7: the landing planner's zones ({ ok, antiAir } tile lists), or null to clear. */
+    setZones(zones) { view.zones = zones; dirty = true; },
+    zonesForTest() { return view.zones ?? null; },
     /** The front line (phase 19): { control, sites, colours, letters }, or null. */
     setFront(front) { view.front = front; dirty = true; },
     redraw() { dirty = true; },

@@ -165,7 +165,7 @@ export function sidesRound(state, ruleset, events) {
 }
 
 /** A faction's proposal for the council: its own choice, else its ambition's first world. */
-function proposalOf(state, ruleset, f) {
+export function proposalOf(state, ruleset, f) {
   return state.council.proposals?.[f.id] ?? (ruleset.factions?.[f.civ]?.ambition ?? []).find((a) => a.world)?.world ?? null;
 }
 

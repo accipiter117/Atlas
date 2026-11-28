@@ -23,7 +23,7 @@
 import { nextId } from '../core/ids.js';
 import { random, createRng } from '../core/rng.js';
 import { atWar } from './diplomacy.js';
-import { activeWorld, multiWorld, worldData } from './worlds.js';
+import { activeWorld, multiWorld, worldData, lookAt } from './worlds.js';
 import { canStand, unitsAt } from './units.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
@@ -567,4 +567,24 @@ export function spaceView(state, ruleset, faction, sideOf) {
     : { id: f.id, faction: f.faction, at: f.at, transit: f.transit ? { ...f.transit } : null, ships: f.ships.map((s) => ({ id: s.id, type: s.type, hp: s.hp })), groups: f.cargo.length, blockade: f.blockade }));
   const lanes = Object.values(ruleset.lanes).map((l) => ({ id: l.id, from: l.from, to: l.to, turns: l.turns, heavyOnly: Boolean(l.heavyOnly) }));
   return { worlds, fleets, lanes };
+}
+
+/**
+ * K7: the landing planner. For a star map order that needs a hex (kind 'land', 'strike' or
+ * 'drop'), which hexes of the fleet's world take it ({ ok }) and which enemy anti-air covers
+ * ({ antiAir }), checked with the orders' own rules. Read only.
+ */
+export function orderZones(state, ruleset, kind, faction, fleetId, group = 0) {
+  const fleet = state.space?.fleets?.[fleetId];
+  if (!fleet || fleet.transit) return { ok: [], antiAir: [] };
+  const s = lookAt(state, fleet.at);
+  const order = { land: landArmy, strike: orbitalStrike, drop: supplyDrop }[kind];
+  const ok = [];
+  const antiAir = [];
+  for (let t = 0; t < s.map.terrain.length; t += 1) {
+    if (antiAirNear(s, ruleset, faction, t)) antiAir.push(t);
+    const cmd = { type: kind, faction, fleet: fleetId, tile: t, ...(kind === 'land' ? { group } : {}) };
+    if (order && !order.validate(s, cmd, ruleset)) ok.push(t);
+  }
+  return { ok, antiAir };
 }

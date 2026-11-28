@@ -46,6 +46,6 @@ export { activeVictories, victoryProgress, turnLimit, VICTORY_MODULES } from './
 export { damage, strengths } from '../battles/index.js';
 export { frontlineOn, sideOf, frontShares, buildPresetMap } from './frontline.js';
 // Killzone Extrasolar War: several worlds (K1) and the star map (K2).
-export { spaceOn, spaceOdds, holdsOrbit, laneBetween, lanesFrom } from './space.js';
+export { spaceOn, spaceOdds, holdsOrbit, laneBetween, lanesFrom, orderZones } from './space.js';
 export { distance as tileDistance } from './borders.js';
 export { armsPrice, STANCES } from './sides.js';

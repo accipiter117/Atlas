@@ -51,6 +51,7 @@ export function createStarMapScreen(g) {
         el(g.doc, 'h2', {}, tt('starmap.title')),
         el(g.doc, 'span', { class: 'muted small' }, tt('starmap.hint')),
         el(g.doc, 'span', { class: 'war-status small', dataset: { field: 'war-status' } }),
+        g.v.war ? el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'war-room' }, onclick: () => warRoom() }, tt('warroom.open')) : null,
         el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'close-starmap' }, onclick: close }, tt('help.close'))),
       el(g.doc, 'div', { class: 'starmap' },
         el(g.doc, 'div', { class: 'starmap-sky', dataset: { field: 'starmap-sky' } },
@@ -72,6 +73,54 @@ export function createStarMapScreen(g) {
     });
     render();
     body.querySelector('[data-action="close-starmap"]').focus({ preventScroll: true });
+  }
+
+  /**
+   * K7: the War room (docs/KILLZONE.md 7.3): both sides' war support over the war, your side's
+   * glory table, and the war council (the objective, what each ally will propose and why, and
+   * the glory bonus on offer). It replaces the star map until "Back to the star map".
+   */
+  function warRoom() {
+    const war = g.v.war;
+    const body = g.panel.querySelector('.starmap');
+    if (!war || !body) return;
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = (tag, attrs = {}, ...kids) => { const n = g.doc.createElementNS(svgNs, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v)); n.append(...kids); return n; };
+    // The chart: support 0 to 100 over the turns recorded.
+    const hist = g.warHistory ?? [];
+    const W = 560;
+    const H = 220;
+    const pad = 28;
+    const turns = hist.length ? [hist[0][0], Math.max(hist[0][0] + 1, hist.at(-1)[0])] : [0, 1];
+    const x = (t) => pad + ((t - turns[0]) / (turns[1] - turns[0])) * (W - pad * 2);
+    const y = (v) => H - pad - (v / 100) * (H - pad * 2);
+    const sideColour = (side) => g.colours[g.v.factions.find((f) => g.sideOf(f.id) === side)?.id] ?? 'currentColor';
+    const chart = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'war-chart', role: 'img', 'aria-label': tt('warroom.chartLabel') },
+      ...[0, 50, 100].map((v) => svg('g', {}, svg('line', { x1: pad, x2: W - pad, y1: y(v), y2: y(v), class: 'war-grid' }), svg('text', { x: 4, y: y(v) + 4, class: 'war-axis' }, String(v)))),
+      ...[0, 1].map((side) => svg('polyline', { points: hist.map(([t, a, b]) => `${x(t)},${y(side ? b : a)}`).join(' '), fill: 'none', stroke: sideColour(side), 'stroke-width': 3 })),
+      svg('text', { x: W - pad, y: H - 6, class: 'war-axis', 'text-anchor': 'end' }, tt('warroom.turn', { turn: turns[1] })));
+    const legend = el(g.doc, 'p', { class: 'small' }, ...[0, 1].map((side) => el(g.doc, 'span', { class: 'war-legend' }, el(g.doc, 'span', { class: 'swatch', style: `background:${sideColour(side)}` }), `${sideName(side)} ${war.support[side]}`)));
+    // Glory: your side, most first.
+    const ranked = Object.entries(war.glory).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+    const glory = el(g.doc, 'table', { class: 'war-table', dataset: { field: 'glory-table' } },
+      el(g.doc, 'tr', {}, el(g.doc, 'th', {}, tt('warroom.faction')), el(g.doc, 'th', {}, tt('warroom.glory'))),
+      ...ranked.map(([id, n], i) => el(g.doc, 'tr', { class: id === g.human ? 'me' : '' }, el(g.doc, 'td', {}, `${i + 1}. ${g.civName(id)}`), el(g.doc, 'td', {}, String(n)))));
+    // The council: the objective now, then each ally's proposal for the next meeting.
+    const proposals = Object.entries(war.proposals ?? {});
+    const council = el(g.doc, 'div', { class: 'war-council', dataset: { field: 'war-council' } },
+      el(g.doc, 'p', {}, war.council ? tt('warroom.objective', { world: worldName(war.council.world), proposer: war.council.proposer ? g.civName(war.council.proposer) : '', bonus: war.councilBonus }) : tt('warroom.noObjective')),
+      el(g.doc, 'p', { class: 'small muted' }, tt('warroom.nextMeeting', { turn: war.nextCouncil })),
+      el(g.doc, 'ul', { class: 'war-proposals' }, ...proposals.map(([id, p]) => el(g.doc, 'li', {},
+        el(g.doc, 'strong', {}, g.civName(id)), ' ',
+        p.world ? tt(p.chosen ? 'warroom.backs' : p.ambition ? 'warroom.ambition' : 'warroom.backs', { world: worldName(p.world) }) : tt('warroom.noProposal')))),
+      el(g.doc, 'p', { class: 'small muted' }, tt('warroom.howVotes')));
+    body.replaceChildren(el(g.doc, 'div', { class: 'war-room', dataset: { field: 'war-room' } },
+      el(g.doc, 'button', { type: 'button', class: 'btn small', dataset: { action: 'war-back' }, onclick: () => { close(); open(); } }, tt('warroom.back')),
+      el(g.doc, 'section', { class: 'war-card' }, el(g.doc, 'h3', {}, tt('warroom.support')), chart, legend,
+        hist.length < 2 ? el(g.doc, 'p', { class: 'small muted' }, tt('warroom.early')) : null),
+      el(g.doc, 'div', { class: 'war-column' },
+        el(g.doc, 'section', { class: 'war-card' }, el(g.doc, 'h3', {}, tt('warroom.gloryTitle')), glory),
+        el(g.doc, 'section', { class: 'war-card' }, el(g.doc, 'h3', {}, tt('warroom.council')), council))));
   }
 
   function close() {

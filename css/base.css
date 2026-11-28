@@ -943,3 +943,20 @@ input[type="range"], input[type="checkbox"] { accent-color: var(--accent); }
 .screen.game.space-target #game-map { cursor: crosshair; }
 .game-bar .bar-btn[hidden] { display: none; }
 .starmap-open .war-status { margin-left: auto; margin-right: 12px; font-weight: 600; }
+/* K7: the War room (star map): support chart, glory table, council. */
+.starmap > .war-room { grid-column: 1 / -1; }
+.war-room { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; align-content: start; }
+.war-room > .btn { grid-column: 1 / -1; justify-self: start; min-height: 44px; }
+.war-column { display: flex; flex-direction: column; gap: 12px; }
+.war-card { background: var(--paper-deep); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.war-card h3 { margin: 0 0 6px; }
+.war-chart { width: 100%; height: auto; background: var(--panel); border-radius: 6px; }
+.war-chart .war-grid { stroke: var(--line); stroke-width: 1; }
+.war-chart .war-axis { fill: var(--muted); font-size: 12px; }
+.war-legend { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; }
+.war-legend .swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.war-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.war-table th, .war-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.war-table td:last-child, .war-table th:last-child { text-align: right; }
+.war-table tr.me td { font-weight: 700; }
+.war-proposals { margin: 6px 0; padding-left: 18px; }

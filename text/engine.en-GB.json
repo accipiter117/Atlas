@@ -1067,6 +1067,24 @@
     "landing.lost": "Landing at {world} beaten back: {waves} waves went in ({shot} shot down by anti-air); the survivors are back aboard.",
     "landing.seen": "The enemy fought a landing at {world}: {result}.",
     "landing.seenWon": "they took the hex",
-    "landing.seenLost": "it was beaten back"
+    "landing.seenLost": "it was beaten back",
+    "starmap.zonesLegend": "Green hexes can take the order; red ones are under enemy anti-air.",
+    "warroom.open": "War room",
+    "warroom.back": "Back to the star map",
+    "warroom.support": "War support",
+    "warroom.chartLabel": "Both sides' war support over the war",
+    "warroom.turn": "Turn {turn}",
+    "warroom.early": "The chart fills in turn by turn.",
+    "warroom.gloryTitle": "Glory on your side",
+    "warroom.faction": "Faction",
+    "warroom.glory": "Glory",
+    "warroom.council": "War council",
+    "warroom.objective": "Objective: {world}, proposed by {proposer}. Deeds there earn {bonus}% more glory.",
+    "warroom.noObjective": "No objective yet.",
+    "warroom.nextMeeting": "The council meets next on turn {turn}. Each faction proposes one world:",
+    "warroom.ambition": "proposes {world} (its ambition)",
+    "warroom.backs": "backs {world}",
+    "warroom.noProposal": "has no world of its own to propose and will back another",
+    "warroom.howVotes": "The world with most votes wins; a tie goes to whichever proposer has least glory. Propose a world from its panel on the star map."
   }
 }

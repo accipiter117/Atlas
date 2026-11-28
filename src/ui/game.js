@@ -6,7 +6,7 @@
 // so the screen cannot show what your units and cities cannot see. Every
 // change goes through applyCommand.
 
-import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp, scoreOf, sideOf, tileDistance } from '../sim/index.js';
+import { createGame, applyCommand, view, findPath, currentFactionId, VISIBLE, UNEXPLORED, fingerprint, cityYields, itemCost, claimable, tilePrice, upkeepOf, atWar, buildSpec, attackProblem, combatKind, rangeOf, defenderAt, eraOf, cityHasWalls, cityMaxHp, scoreOf, sideOf, tileDistance, orderZones } from '../sim/index.js';
 import { estimateOdds } from './odds.js';
 
 import { el, knownWorld } from './hud/shared.js';
@@ -191,6 +191,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     setSpaceTarget: (t) => setSpaceTarget(t),
     get switchWorld() { return switchWorld; },
     get theatreReport() { return lastReport; },
+    get warHistory() { recordWar(); return warHistory; },
     get worldName() { return worldName; },
     get next() { return next; },
     get noProduction() { return noProduction; },
@@ -305,7 +306,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
   function setSpaceTarget(t) {
     spaceTarget = t;
     root.classList.toggle('space-target', Boolean(t));
-    if (t) toast(tt(`starmap.pickHex.${t.kind}`));
+    // K7: the landing planner: where this order can go, and where enemy anti-air covers.
+    mapView.setZones(t ? orderZones(state, ruleset, t.kind, human, t.fleet, t.group ?? 0) : null);
+    if (t) { toast(tt(`starmap.pickHex.${t.kind}`)); toast(tt('starmap.zonesLegend')); }
   }
   {
     const btn = $('[data-action="starmap"]');
@@ -688,14 +691,21 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     const civ = v.factions.find((f) => f.id === human)?.civ;
     const leader = ruleset.factions?.[civ]?.leaders?.[0];
     try {
-      return { faction: civName(human), leader: ruleset.text[ruleset.leaders?.[leader]?.nameKey] ?? '', portrait: sheets?.[`leader.${leader}`]?.src ?? null, colour: colours[human], thumb: mapThumb(v, ruleset, human), history: scoreHistory };
+      return { faction: civName(human), leader: ruleset.text[ruleset.leaders?.[leader]?.nameKey] ?? '', portrait: sheets?.[`leader.${leader}`]?.src ?? null, colour: colours[human], thumb: mapThumb(v, ruleset, human), history: scoreHistory, ...(warHistory.length ? { warHistory } : {}) };
     } catch { return null; }
   }
 
   // Scores over time for the Victory chart (graphics overhaul G8): each faction's score at the start of
   // every one of your turns, as [turn, score per faction in seat order]. Kept with the save; never part of the game.
   const scoreHistory = Array.isArray(resume?.meta?.history) ? resume.meta.history.slice() : [];
+  // K7: both sides' war support at each of your turns, [turn, side 0, side 1], for the War room chart.
+  const warHistory = Array.isArray(resume?.meta?.warHistory) ? resume.meta.warHistory.slice() : [];
+  function recordWar() {
+    if (!state.warSupport || (warHistory.length && warHistory.at(-1)[0] === state.turn)) return;
+    warHistory.push([state.turn, state.warSupport[0], state.warSupport[1]]);
+  }
   function recordScores() {
+    recordWar();
     if (scoreHistory.length && scoreHistory.at(-1)[0] === state.turn) return;
     try { scoreHistory.push([state.turn, ...state.factions.map((f) => Math.round(scoreOf(state, ruleset, f.id)))]); } catch { /* a chart is a nicety */ }
   }
