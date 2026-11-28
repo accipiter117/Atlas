@@ -365,6 +365,9 @@ not to cheap units, and not to troops that cannot reach it.
 | 4 | Cruisers clear the ring of defenders before bombarding the base | 40 / 57 / 3 | 41% | 26 | yes |
 | 5 | A hex where a landing failed (a hidden enemy) is not tried again | 40 / 58 / 2 | 41% | 26 | yes (refused orders 21 to 0) |
 
+| 6 | Base bombardment 80 (was 40) and the council's objective weighted 10 (was 4) | 46 / 21 / 33 | 69% | 17 | REVERTED |
+| 7 | Base bombardment 80 alone | 40 / 58 / 2 | 41% | 26 | REVERTED (identical to row 5: base strikes are too rare to matter) |
+
 Final (row 5): side balance 41% / 59% (closest yet; target 45 to 55%), 2 stalemates, about
 43 ground battles a game (was 4), 26 landings a game, 0 refused orders; length 120. Still
 every game is decided on time: in 16 traced games there were 18 attacks on bases and 3
