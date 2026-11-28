@@ -1,5 +1,17 @@
 # Changelog
 
+## Killzone Extrasolar War K6: battles over fortifications, landings under fire, stations
+
+What you can try (Killzone: Extrasolar War; to fight battles yourself, set Battles to "Ask" in New game's Advanced tab):
+- **Platoon battles over war works.** Attack a hex the enemy has dug into: its defenders start dug in (trench lines, wire and bunkers), machine-gun nests, bunkers, arc towers and minefields give them extra order points, and an artillery battery beside the hex brings artillery support for whichever side built it. A friendly command post beside the hex gives you an extra order point. The battle screen says what is dug in on the hex and what stands beside it.
+- **Station battles** (Bastion, Ardent, Midway) are fought on the built-up map, its walls standing in for corridors.
+- **Landing battles.** A fleet with a dropship can now land on a hex held by enemy troops (not a base): the army group comes down in waves, one unit at a time, each fighting the defender; anti-air batteries just beyond the range where they forbid landings fire on every wave first. Win, and the rest of the group lands on the hex; lose, and the survivors stay aboard with their wounds. A message reports each one, and both sides' war support and glory count every wave as a battle. The computer storms a weakly held hex when it has nowhere open to land.
+- Vehicles in an attack bring the tank into the platoon battle; Stahl and the Helghast Navy now fight from the Helghast side of the platoon battle (they were on the ISA's).
+
+- Engine: the battle description carries each hex's war work and the world's kind; `landArmy` fights a landing battle when the hex is held (tuning space.landingBattles, landingFlak, landingFlakReach, landingPenalty; off outside this war). Adapter: works, station maps and tanks are all data in tuning battle.killzone (works, worldMaps, vehicleTank), empty for Killzone: The Front, which plays as before.
+- Not done: true waves inside the platoon battle and corridor maps with breaching points and a reactor need changes to the battle sim itself, which lives in the Killzone repo (not attached to this session); and platoon battles still do not follow strength as auto-resolve does (see docs/DECISIONS.md).
+- Tests: `test/sim/landing.test.js` (won and failed landings, the switch, flak), K6 cases in `test/battles/killzone.test.js`, and `test/smoke/k6-battle.spec.js` (a platoon battle over a trench line). Screenshot in `docs/shots/K6/`.
+
 ## Killzone Extrasolar War K5: the computer besieges bases
 
 What you can notice (Killzone: Extrasolar War): computer fleets now ferry troops in waves instead of guarding one landing for thirty turns; allied troops land together and gather on an enemy base before assaulting it; a cruiser over a besieged base strikes the defenders around it and then the base itself (a strike on a base's hex now damages the base, and you can do this too); computer fleets no longer try to land vehicles on stations or keep landing on a hex an unseen enemy holds.

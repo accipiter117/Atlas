@@ -636,6 +636,9 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
       if (e.type === 'governmentAdopted' && e.faction === human) toast(tt('game.youGovernment', { government: ruleset.text[ruleset.governments?.[e.government]?.nameKey] ?? '' }));
       if (e.type === 'unitKilled' && e.faction === human) toast(tt('battle.lost', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'cityCaptured' && e.from === human) toast(tt('battle.cityLost', { city: e.name, faction: civName(e.faction) }));
+      // K6: landing battles (auto-resolved): yours, and the enemy's on your side's ground.
+      if (e.type === 'landingBattle' && e.faction === human) toast(tt(e.won ? 'landing.won' : 'landing.lost', { world: worldName(e.world), waves: e.waves, shot: e.shotDown }));
+      else if (e.type === 'landingBattle' && sideOf(state, ruleset, e.faction) !== sideOf(state, ruleset, human)) toast(tt('landing.seen', { world: worldName(e.world), result: tt(e.won ? 'landing.seenWon' : 'landing.seenLost') }));
       if (e.type === 'campCleared' && e.faction === human) toast(tt('battle.campCleared', { gold: e.gold }));
       if (e.type === 'unitCaptured' && e.faction === human) toast(tt('battle.civilianCaptured', { unit: unitName({ type: e.unitType }) }));
       if (e.type === 'wonderBuilt') {

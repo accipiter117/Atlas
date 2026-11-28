@@ -34,10 +34,41 @@ export function attackerSideOf(spec) {
   return (killzoneTuning(spec).secondSide ?? ['helghast']).includes(spec.attacker.civ) ? 1 : 0;
 }
 
+/**
+ * K6: what the war works on and around the hex add to the battle (tuning killzone.works, by
+ * work id): the defender's works on the hex and beside it, and either side's support works
+ * (artillery) beside it. Returns { side0, side1, dug } with each side's extras.
+ */
+export function worksOf(spec) {
+  const t = killzoneTuning(spec).works ?? {};
+  const aSide = attackerSideOf(spec);
+  const extras = [{ opBonus: 0, artillery: false, fortified: false }, { opBonus: 0, artillery: false, fortified: false }];
+  const apply = (w, onHex) => {
+    const e = w?.id ? t[w.id] : null;
+    if (!e) return;
+    const side = w.side === 0 || w.side === 1 ? w.side : 1 - aSide;
+    const x = extras[side];
+    // Fortifications count only on the hex itself, for its defenders; support reaches from beside it.
+    if (onHex && side === 1 - aSide) {
+      if (e.fortified) x.fortified = true;
+      x.opBonus += e.opBonus ?? 0;
+    }
+    if (e.artillery) x.artillery = true;
+    if (!onHex && e.supportOpBonus) x.opBonus += e.supportOpBonus;
+  };
+  apply(spec.ground?.centre?.work, true);
+  for (const r of spec.ground?.ring ?? []) apply(r.work, false);
+  return { side0: extras[0], side1: extras[1], dug: extras[1 - aSide].fortified };
+}
+
 /** The map the battle is fought on. */
 export function mapTypeOf(spec) {
+  // K6: a station's battles are fought in its built-up corridors (tuning killzone.worldMaps by world kind).
+  const byWorld = killzoneTuning(spec).worldMaps?.[spec.ground?.worldKind];
+  if (byWorld) return byWorld;
   if (spec.defender.city) return 'city';
-  const dug = (spec.modifiers?.defender ?? []).some((m) => DUG_IN.has(m.source));
+  const w = worksOf(spec);
+  const dug = (spec.modifiers?.defender ?? []).some((m) => DUG_IN.has(m.source)) || w.dug;
   return dug || spec.ground?.centre?.hills ? 'trenches' : 'industrial';
 }
 
@@ -59,10 +90,15 @@ export function forcesFor(spec) {
   const defenders = spec.defender.units.map((u, i) => platoonFor(t, u, u.strength + sum(spec.modifiers?.defender), i));
   // A city with no garrison is held by its militia (not a unit on the map).
   if (spec.defender.city && !defenders.length) defenders.push({ ...platoonFor(t, { class: 'militia', hp: spec.defender.city.hp * 100 / Math.max(1, spec.defender.city.hpMax ?? spec.defender.city.hp), type: 'militia' }, spec.defender.city.strength + sum(spec.modifiers?.defender), 0), ref: '__militia' });
-  const dug = mapTypeOf(spec) !== 'industrial';
+  const type = mapTypeOf(spec);
+  const dug = type !== 'industrial';
+  const w = worksOf(spec);
+  const ex = (side) => (side === 0 ? w.side0 : w.side1);
+  // K6: vehicles in the attack bring the tank (tuning killzone.vehicleTank).
+  const vehicle = Boolean(t.vehicleTank) && spec.attacker.units.some((u) => (u.tags ?? []).includes('vehicle'));
   const sides = [null, null];
-  sides[aSide] = { platoons: attacker, tank: false, artillery: false, opBonus: 0, fortified: false };
-  sides[1 - aSide] = { platoons: defenders, tank: false, artillery: Boolean(spec.defender.city), opBonus: 0, fortified: dug };
+  sides[aSide] = { platoons: attacker, tank: vehicle, artillery: ex(aSide).artillery, opBonus: ex(aSide).opBonus, fortified: false };
+  sides[1 - aSide] = { platoons: defenders, tank: false, artillery: Boolean(spec.defender.city) || ex(1 - aSide).artillery, opBonus: ex(1 - aSide).opBonus, fortified: dug || ex(1 - aSide).fortified };
   return { forces: sides, aSide };
 }
 

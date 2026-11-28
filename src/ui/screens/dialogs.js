@@ -98,6 +98,8 @@ export function createDialogs(g) {
       colours: { attacker: g.colours[p.spec.attacker.faction], defender: g.colours[p.spec.defender.faction] },
       names: { attacker: sideName(p.spec.attacker.faction), defender: sideName(p.spec.defender.faction) },
       unitName: (type) => g.unitName({ type }),
+      // K6: names of war works (trenches, nests) for the battle screen's ground line.
+      workName: (id) => g.ruleset.text[g.ruleset.improvements?.[id]?.nameKey] ?? id,
       // Graphics overhaul G8: each side's units drawn with their own sprite sheets (optional for a module).
       sprite: (type, side) => g.mapView.sheetFor(type, side === 'attacker' ? p.spec.attacker.faction : p.spec.defender.faction),
       oddsText: g.tt('tactical.odds', { verdict: g.tt(verdictKey(o)), win: Math.round(o.win * 100), lose: Math.round(o.lose * 100) }),

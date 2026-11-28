@@ -19,6 +19,44 @@
     "setup.maxAis": 5,
     "space.loadRange": 3,
     "space.strikeCity": 40,
+    "space.landingBattles": true,
+    "battle.killzone.secondSide": [
+      "helghast",
+      "stahl",
+      "helghast_navy"
+    ],
+    "battle.killzone.vehicleTank": true,
+    "battle.killzone.worldMaps": {
+      "station": "city"
+    },
+    "battle.killzone.works": {
+      "trench": {
+        "fortified": true
+      },
+      "bunker": {
+        "fortified": true,
+        "opBonus": 1
+      },
+      "wire": {
+        "fortified": true,
+        "opBonus": 1
+      },
+      "mg_nest": {
+        "opBonus": 1
+      },
+      "arc_tower": {
+        "opBonus": 1
+      },
+      "minefield": {
+        "opBonus": 1
+      },
+      "artillery_battery": {
+        "artillery": true
+      },
+      "command_post": {
+        "supportOpBonus": 1
+      }
+    },
     "supply.siteRange": 3,
     "supply.attrition": 5,
     "supply.surrenderTurns": 5,

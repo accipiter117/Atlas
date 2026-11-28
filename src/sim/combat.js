@@ -14,7 +14,7 @@
 //   both: -woundedPenaltyPer10Hp per 10 HP missing; combatBonus abilities
 //   and promotions (with vs and when filters)
 
-import { supplyModifiers } from './war.js';
+import { supplyModifiers, workAt } from './war.js';
 import { sideOf } from './frontline.js';
 import { neighbourCache } from './map.js';
 import { distance } from './borders.js';
@@ -127,11 +127,18 @@ function unitEntry(ruleset, u) {
 
 function groundOf(state, ruleset, tile) {
   const map = state.map;
+  // K6: war works on the ground (which work, whose side), so a battle module can build them.
+  const work = (t) => {
+    const w = map.works ? workAt(state, ruleset, t) : null;
+    return w ? { work: { id: w.id, side: w.faction ? sideOf(state, ruleset, w.faction) : null } } : {};
+  };
   const describe = (t) => ({
     terrain: map.terrainIds[map.terrain[t]], hills: Boolean(map.hills[t]),
-    feature: map.feature[t] >= 0 ? map.featureIds[map.feature[t]] : null, river: map.river[t] !== 0,
+    feature: map.feature[t] >= 0 ? map.featureIds[map.feature[t]] : null, river: map.river[t] !== 0, ...work(t),
   });
-  return { centre: describe(tile), ring: neighbourCache(map)[tile].filter((j) => j >= 0).map(describe) };
+  // K6: on a world of a war across worlds, the world and its kind (a station fights in corridors).
+  const world = state.world ? { world: state.world, worldKind: ruleset.worlds?.[state.world]?.kind ?? null } : {};
+  return { centre: describe(tile), ring: neighbourCache(map)[tile].filter((j) => j >= 0).map(describe), ...world };
 }
 
 /**

@@ -18,3 +18,4 @@ Each folder holds the same set of screenshots (G8 and G9 also have a page showin
 | K3 | [K3](K3/) | Killzone: Extrasolar War: war infrastructure round Vekta Landing (placeholder art), a unit cut off from supply, and the star map. |
 | K4 | [K4](K4/) | Killzone: Extrasolar War: six factions in setup, the Home Guard on Vekta, the war's research tree, a base's build list, the scenarios, and the star map with war support and the council. |
 | K5 | [K5](K5/) | Killzone: Extrasolar War: Theatre command on the star map (Vekta on Advance and marked delegated), the turn report after ending a turn, and the same report kept on the world's star map panel. |
+| K6 | [K6](K6/) | Killzone: Extrasolar War: a platoon battle fought over a Helghast trench line on Vekta, the battle screen naming the works on the hex. |

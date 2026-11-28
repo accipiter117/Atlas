@@ -30,6 +30,13 @@ function el(doc, tag, props = {}, ...children) {
   return node;
 }
 
+/** K6: the war works this battle is fought over, by name: on the hex, and support beside it. */
+export function worksLine(spec, workName = (id) => id) {
+  const on = spec.ground?.centre?.work ? [workName(spec.ground.centre.work.id)] : [];
+  const beside = [...new Set((spec.ground?.ring ?? []).filter((r) => r.work).map((r) => workName(r.work.id)))];
+  return { on, beside };
+}
+
 export function mountKillzone(spec, host) {
   const doc = host.element.ownerDocument;
   const win = doc.defaultView;
@@ -53,6 +60,15 @@ export function mountKillzone(spec, host) {
   let raf = null;
   let done = false;
 
+  const groundLine = () => {
+    const { on, beside } = worksLine(spec, host.workName);
+    if (!on.length && !beside.length && !spec.ground?.worldKind) return null;
+    const parts = [];
+    if (spec.ground?.worldKind === 'station') parts.push(tt('killzone.station'));
+    if (on.length) parts.push(tt('killzone.worksOn', { list: on.join(', ') }));
+    if (beside.length) parts.push(tt('killzone.worksBeside', { list: beside.join(', ') }));
+    return parts.length ? el(doc, 'p', { class: 'small', dataset: { field: 'kz-ground' } }, parts.join(' ')) : null;
+  };
   const canvas = el(doc, 'canvas', { class: 'tactical-field', width: String(ground.width), height: String(ground.height), 'aria-label': tt('killzone.fieldLabel'), tabindex: '0', dataset: { field: 'kz-canvas' } });
   const g = canvas.getContext('2d');
   const list = el(doc, 'div', { class: 'tactical-card', dataset: { field: 'kz-platoons' } });
@@ -84,7 +100,7 @@ export function mountKillzone(spec, host) {
     })));
 
   host.element.replaceChildren(el(doc, 'div', { class: 'tactical' },
-    el(doc, 'div', { class: 'tactical-head' }, el(doc, 'h2', {}, tt('tactical.title', { attacker: host.names.attacker, defender: host.names.defender })), el(doc, 'p', { class: 'small' }, tt('killzone.intro')), el(doc, 'p', { class: 'small muted' }, host.oddsText ?? '')),
+    el(doc, 'div', { class: 'tactical-head' }, el(doc, 'h2', {}, tt('tactical.title', { attacker: host.names.attacker, defender: host.names.defender })), el(doc, 'p', { class: 'small' }, tt('killzone.intro')), groundLine(), el(doc, 'p', { class: 'small muted' }, host.oddsText ?? '')),
     el(doc, 'div', { class: 'tactical-body' }, el(doc, 'div', { class: 'tactical-canvas-wrap' }, canvas), el(doc, 'div', { class: 'tactical-side' }, list, controls, status, endPanel))));
 
   function setRunning(on) {

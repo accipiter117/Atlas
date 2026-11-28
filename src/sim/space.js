@@ -21,7 +21,7 @@
 // Everything here is rules only: deterministic, from the game's own dice (state.rng).
 
 import { nextId } from '../core/ids.js';
-import { random } from '../core/rng.js';
+import { random, createRng } from '../core/rng.js';
 import { atWar } from './diplomacy.js';
 import { activeWorld, multiWorld, worldData } from './worlds.js';
 import { canStand, unitsAt } from './units.js';
@@ -30,7 +30,8 @@ import { distance } from './borders.js';
 import { currentFactionId } from './queries.js';
 import { sideOf } from './frontline.js';
 import { antiAirWorksNear, strikeArmour, stormBlocksOrbit, stormNow, workAt } from './war.js';
-import { cityMaxHp } from './combat.js';
+import { cityMaxHp, buildSpec, seedBattle } from './combat.js';
+import { autoModule } from '../battles/index.js';
 
 const tun = (ruleset) => ruleset.tuning?.space ?? {};
 
@@ -307,6 +308,73 @@ export const loadArmy = {
   },
 };
 
+/**
+ * K6: a landing battle on a defended hex (docs/KILLZONE.md 6.2). The group comes down in waves,
+ * one unit at a time, each fighting the hex's defender with the auto battle; enemy anti-air just
+ * beyond its blocking range (tuning space.landingFlakReach) hits each wave first
+ * (landingFlak), and every wave fights at landingPenalty. Wounds stay with the units aboard.
+ * Returns true when the hex is cleared (the rest of the group then lands as usual).
+ */
+function landingBattle(state, ruleset, fleet, cmd, events) {
+  const t = tun(ruleset);
+  const group = fleet.cargo[cmd.group];
+  // Defenders who can fight; anyone else on the hex (engineers) is overrun if the landing wins.
+  const enemyHere = () => unitsAt(state, cmd.tile).filter((u) => atWar(state, cmd.faction, u.faction) && (ruleset.units[u.type]?.strength ?? 0) > 0);
+  // Batteries a little beyond their blocking range still fire on the dropships.
+  let flak = 0;
+  for (const k of Object.keys(state.map.works ?? {})) {
+    const w = workAt(state, ruleset, Number(k));
+    if (!w?.war.antiAir || !w.faction || !atWar(state, cmd.faction, w.faction)) continue;
+    const d = distance(state.map, Number(k), cmd.tile);
+    if (d <= w.war.antiAir + (t.landingFlakReach ?? 2)) flak += 1;
+  }
+  let waves = 0;
+  let shotDown = 0;
+  for (const u of group.slice()) {
+    if (!enemyHere().length) break;
+    if (!((ruleset.units[u.type]?.strength ?? 0) > 0)) continue;
+    waves += 1;
+    if (flak) {
+      u.hp -= flak * (t.landingFlak ?? 15);
+      if (u.hp <= 0) {
+        group.splice(group.indexOf(u), 1);
+        shotDown += 1;
+        events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: cmd.tile, by: 'antiAir' });
+        continue;
+      }
+    }
+    const spec = buildSpec(state, ruleset, { ...u, tile: cmd.tile, moves: 1 }, cmd.tile);
+    spec.kind = 'landing';
+    spec.modifiers.attacker.push({ source: 'landing', amount: t.landingPenalty ?? -3 });
+    seedBattle(state, spec);
+    const result = autoModule().resolve({ ...spec, kind: 'field' }, createRng(spec.seed).next);
+    const mine = result.units.find((x) => x.ref === u.id);
+    const theirs = result.units.find((x) => x.ref !== u.id);
+    u.hp = mine?.hp ?? u.hp;
+    const foe = state.units[theirs?.ref];
+    if (foe) {
+      foe.hp = theirs.hp;
+      if (foe.hp <= 0) { delete state.units[foe.id]; events.push({ type: 'unitKilled', unit: foe.id, unitType: foe.type, faction: foe.faction, tile: cmd.tile, by: u.faction }); }
+    }
+    events.push({ type: 'battle', battleId: spec.battleId, kind: 'landing', attacker: u.id, attackerFaction: u.faction, attackerType: u.type, defenderType: foe?.type ?? null,
+      defenderFaction: spec.defender.faction, target: cmd.tile, from: null, winner: result.winner, margin: result.margin, damage: result.damage ?? null, city: null, world: fleet.at });
+    if (u.hp <= 0) {
+      group.splice(group.indexOf(u), 1);
+      events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: cmd.tile, by: spec.defender.faction });
+    }
+  }
+  const won = enemyHere().length === 0 && group.length > 0;
+  if (won) {
+    for (const u of unitsAt(state, cmd.tile).filter((x) => atWar(state, cmd.faction, x.faction))) {
+      delete state.units[u.id];
+      events.push({ type: 'unitKilled', unit: u.id, unitType: u.type, faction: u.faction, tile: cmd.tile, by: cmd.faction });
+    }
+  }
+  if (!group.length) fleet.cargo.splice(cmd.group, 1);
+  events.push({ type: 'landingBattle', fleet: fleet.id, faction: cmd.faction, world: fleet.at, tile: cmd.tile, waves, shotDown, won, global: true });
+  return won;
+}
+
 export const landArmy = {
   validate(state, cmd, ruleset) {
     const { fleet, error } = ownFleet(state, cmd);
@@ -321,8 +389,13 @@ export const landArmy = {
     // An ally's base takes your army groups like your own (K4: a side shares its landing grounds).
     const base = Object.values(state.cities ?? {}).find((c) => c.tile === t);
     if (base && atWar(state, cmd.faction, base.faction)) return err('enemyBase', 'You cannot land in an enemy base');
-    if (unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction))) return err('occupied', 'The enemy holds that hex');
-    if (!canStand(state, ruleset, group[0].type, cmd.faction, t) && !base) return err('badTile', 'Troops cannot land there');
+    // K6: with landing battles on (tuning space.landingBattles) dropships may land on a defended hex and fight for it.
+    const defended = unitsAt(state, t).some((u) => atWar(state, cmd.faction, u.faction));
+    if (defended) {
+      if (!tun(ruleset).landingBattles) return err('occupied', 'The enemy holds that hex');
+      if (!fleet.ships.some((s) => shipDef(ruleset, s)?.space?.lands)) return err('noDropships', 'A landing under fire needs dropships');
+      if (!group.some((u) => (ruleset.units[u.type]?.strength ?? 0) > 0)) return err('noFighters', 'That army group has no one to fight with');
+    } else if (!canStand(state, ruleset, group[0].type, cmd.faction, t) && !base) return err('badTile', 'Troops cannot land there');
     // K3: your landing bays take army groups from orbit like your bases do.
     const bay = bayTiles(state, ruleset, cmd.faction).includes(t);
     if (!base && !bay) {
@@ -334,7 +407,10 @@ export const landArmy = {
   },
   apply(state, cmd, events, ruleset) {
     const fleet = state.space.fleets[cmd.fleet];
+    // K6: a landing battle first, when the hex is held; troops land only if it is won.
+    if (unitsAt(state, cmd.tile).some((u) => atWar(state, cmd.faction, u.faction)) && !landingBattle(state, ruleset, fleet, cmd, events)) return;
     const group = fleet.cargo[cmd.group];
+    if (!group) return;
     const spots = [cmd.tile, ...neighbourCache(state.map)[cmd.tile].filter((j) => j >= 0)];
     const landed = [];
     const left = [];

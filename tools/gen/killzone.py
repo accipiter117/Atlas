@@ -123,7 +123,9 @@ tuning = OD([('contentType', 'tuning'), ('set', OD([
         ('timeLoss', {'narrow': 0.1, 'clear': 0.2, 'crushing': 0.35}),
         ('roles', {'melee': ['rifle', 'assault', 'rifle', 'heavy'], 'anti_cavalry': ['heavy', 'rifle', 'engineer', 'heavy'], 'ranged': ['heavy', 'rifle', 'recon', 'heavy'],
                    'cavalry': ['assault', 'rifle', 'assault', 'engineer'], 'recon': ['recon', 'rifle', 'infiltrator', 'rifle'], 'siege': ['heavy', 'engineer', 'heavy', 'rifle'],
-                   'militia': ['rifle', 'heavy', 'rifle', 'engineer'], 'default': ['rifle', 'heavy', 'engineer', 'rifle']})])),
+                   'militia': ['rifle', 'heavy', 'rifle', 'engineer'], 'default': ['rifle', 'heavy', 'engineer', 'rifle']}),
+        # K6 (Extrasolar War fills these): tanks for vehicles, maps by world kind, works.
+        ('vehicleTank', False), ('worldMaps', {}), ('works', {})])),
 ]))])
 open(K + 'tuning.json', 'w').write(json.dumps(tuning, indent=2, ensure_ascii=False) + '\n')
 # Unit art entries are written by tools/gen/lpc-units.mjs (graphics overhaul G4): keep them.

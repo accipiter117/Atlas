@@ -194,6 +194,12 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
         }
         spot = bestT?.id ?? null;
       }
+      // K6: no open drop zone: storm the weakest defended hex instead (a landing battle), when allowed.
+      if (spot === null && t.landingBattles && f.ships.some((s) => ruleset.units[s.type]?.space?.lands) && !here.storm && (f.cargo[groupIdx] ?? []).length >= (w.minAssault ?? 3)) {
+        const weakest = foes.filter((u) => !view.cities.some((c) => c.tile === u.tile) && !badHex(u.tile) && !covered(view, ruleset, side, u.tile, dist))
+          .sort((a, b) => a.hp - b.hp || a.tile - b.tile)[0];
+        if (weakest && weakest.hp <= (w.stormHp ?? 60)) spot = weakest.tile;
+      }
       if (spot !== null) {
         memory.lastLanding = { fleet: f.id, tile: spot, world: view.world, turn: view.turn, groups: f.cargo.length };
         return { cmd: { type: 'landArmy', faction: view.me, fleet: f.id, group: groupIdx, tile: spot }, score: 4, reasonKey: 'ai.reason.land', params: {} };

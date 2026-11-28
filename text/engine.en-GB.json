@@ -1059,6 +1059,14 @@
     "delegate.status": "Your generals command here: {stance}.",
     "delegate.report": "{world} ({stance}): {orders} orders, {won} battles won, {lost} lost, {killed} enemy units destroyed, {fallen} of ours lost, {works} works built.",
     "starmap.delegated": "delegated",
-    "delegate.why": "Mostly: {why}"
+    "delegate.why": "Mostly: {why}",
+    "killzone.station": "A station: the fight is in its corridors.",
+    "killzone.worksOn": "Dug in on this hex: {list}.",
+    "killzone.worksBeside": "Beside it: {list}.",
+    "landing.won": "Landing at {world}: {waves} waves went in and took the hex ({shot} shot down by anti-air).",
+    "landing.lost": "Landing at {world} beaten back: {waves} waves went in ({shot} shot down by anti-air); the survivors are back aboard.",
+    "landing.seen": "The enemy fought a landing at {world}: {result}.",
+    "landing.seenWon": "they took the hex",
+    "landing.seenLost": "it was beaten back"
   }
 }

@@ -75,7 +75,10 @@
           "engineer",
           "rifle"
         ]
-      }
+      },
+      "vehicleTank": false,
+      "worldMaps": {},
+      "works": {}
     }
   }
 }

@@ -145,7 +145,10 @@ test('drop zones need dropships and no enemy anti-air; enemy orbit, bases and he
   const open = s.map.terrain.findIndex((_, i) => !rs.terrain[s.map.terrainIds[s.map.terrain[i]]].water && rs.terrain[s.map.terrainIds[s.map.terrain[i]]].id !== 'mountain' && !Object.values(s.units).some((x) => x.tile === i) && !Object.values(s.cities).some((c) => c.tile === i) && Math.abs((i % s.map.width) - (enemyBase.tile % s.map.width)) > 4);
   assert.equal(code(send(s, { type: 'landArmy', faction: 'f0', fleet: fl.id, group: 0, tile: enemyBase.tile })), 'enemyBase');
   const guard = Object.values(s.units).find((x) => x.faction === 'f1');
-  assert.equal(code(send(s, { type: 'landArmy', faction: 'f0', fleet: fl.id, group: 0, tile: guard.tile })), 'occupied');
+  // K6: a guarded hex is a landing battle in this war (dropships aboard); with the switch off it refuses.
+  const off = { ...rs, tuning: { ...rs.tuning, space: { ...rs.tuning.space, landingBattles: false } } };
+  assert.equal(applyCommand(cloneState(s), { type: 'landArmy', faction: 'f0', fleet: fl.id, group: 0, tile: guard.tile }, off).error?.code, 'occupied');
+  assert.notEqual(code(send(s, { type: 'landArmy', faction: 'f0', fleet: fl.id, group: 0, tile: guard.tile })), 'occupied');
   // Without dropships, only bases.
   const noDrop = cloneState(s);
   noDrop.space.fleets[fl.id].ships = noDrop.space.fleets[fl.id].ships.filter((x) => !rs.units[x.type].space.lands);
