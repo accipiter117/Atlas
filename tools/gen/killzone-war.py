@@ -325,7 +325,7 @@ def main():
     write('improvements.json', 'improvements', improvement_entries)
     write('sites.json', 'sites', [{'id': 'reactor', 'nameKey': 'site.reactor.name', 'descriptionKey': 'site.reactor.text', 'icon': 'site.power_plant', 'effects': [{'effect': 'yieldBonus', 'yield': 'production', 'amount': 1}]}])
     with open(os.path.join(ROOT, 'tuning.json'), 'w') as f:
-        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'warSupport.enabled': True, 'warSupport.gloryBattle': 3, 'warSupport.gloryCity': 10, 'warSupport.gloryCapital': 25, 'warSupport.gloryWorld': 15, 'warSupport.propagandaPer': 40, 'warSupport.propagandaMax': 1, 'victory.turnLimits': {'online': 80, 'quick': 80, 'standard': 120, 'epic': 200, 'marathon': 200}, 'setup.maxAis': 5, 'space.loadRange': 3,
+        f.write(json.dumps({'contentType': 'tuning', 'set': {'supply.enabled': True, 'warSupport.enabled': True, 'warSupport.gloryBattle': 3, 'warSupport.gloryCity': 10, 'warSupport.gloryCapital': 25, 'warSupport.gloryWorld': 15, 'warSupport.propagandaPer': 40, 'warSupport.propagandaMax': 1, 'victory.turnLimits': {'online': 80, 'quick': 80, 'standard': 120, 'epic': 200, 'marathon': 200}, 'setup.maxAis': 5, 'space.loadRange': 3, 'supply.siteRange': 3, 'warSupport.sharedSight': True,
                                                              'raiders.units': [{'fromTurn': 0, 'unit': 'scout_sniper'}]}}, indent=2) + '\n')
     write('scenarios.json', 'scenarios', [
         {'id': 'balanced_war', 'nameKey': 'scenario.balanced_war.name', 'descriptionKey': 'scenario.balanced_war.text', 'default': True, 'presets': {}},

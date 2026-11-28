@@ -162,6 +162,8 @@ export function suppliedTiles(state, ruleset, faction) {
     const w = workAt(state, ruleset, Number(k));
     if (w?.war.supply && friend(w.faction)) sources.push([Number(k), w.war.supply]);
   }
+  // K5: a key site your side holds supplies the ground around it (tuning supply.siteRange; off at 0).
+  if (t.siteRange) for (const s of Object.values(state.frontline?.sites ?? {})) if (s.owner === side) sources.push([s.tile, t.siteRange]);
   for (const d of state.space?.drops ?? []) {
     if (d.world === activeWorld(state) && friend(d.faction) && d.turn >= state.turn - 1) sources.push([d.tile, t.dropRadius ?? 2]);
   }

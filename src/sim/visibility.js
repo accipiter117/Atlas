@@ -56,6 +56,14 @@ export function tilesInSight(state, ruleset, from, radius) {
 }
 
 /** Recompute what a faction sees now; everything it has ever seen stays explored. Working copy only. */
+/** The factions on this one's side of a side war, when the war shares sight (else an empty set). */
+function sharedSightAllies(state, ruleset, factionId) {
+  if (!state.warSupport || !ruleset.tuning?.warSupport?.sharedSight) return new Set();
+  const sideOfCiv = (id) => ruleset.factions?.[state.factions.find((f) => f.id === id)?.civ]?.frontSide;
+  const mine = sideOfCiv(factionId);
+  return new Set(state.factions.filter((f) => f.id !== factionId && f.alive !== false && mine !== undefined && sideOfCiv(f.id) === mine).map((f) => f.id));
+}
+
 export function updateVisibility(state, ruleset, factionId) {
   const n = state.map.width * state.map.height;
   // Only real players have fog; raiders see everything near them.
@@ -73,10 +81,15 @@ export function updateVisibility(state, ruleset, factionId) {
   for (const u of units) {
     for (const t of tilesInSight(state, ruleset, u.tile, sightRange(state, ruleset, u, effects))) fog[t] = VISIBLE;
   }
+  // K5: in a side war with shared sight (tuning warSupport.sharedSight), allies see what each other's units see.
+  const allies = sharedSightAllies(state, ruleset, factionId);
+  for (const u of allies.size ? Object.values(state.units ?? {}).filter((x) => allies.has(x.faction)) : []) {
+    for (const t of tilesInSight(state, ruleset, u.tile, sightRange(state, ruleset, u))) fog[t] = VISIBLE;
+  }
   // Cities see around themselves, and a faction always sees its own land.
   const cityRange = ruleset.tuning?.sight?.city ?? 2;
   for (const c of Object.values(state.cities ?? {})) {
-    if (c.faction !== factionId) continue;
+    if (c.faction !== factionId && !allies.has(c.faction)) continue;
     for (const t of tilesInSight(state, ruleset, c.tile, cityRange)) fog[t] = VISIBLE;
   }
   if (state.owner) {

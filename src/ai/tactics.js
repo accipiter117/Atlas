@@ -162,6 +162,13 @@ export function decideUnit(world, view, ruleset, memory, unit, ctx) {
     }
   }
 
+  // K5: cut off on another world, head for the nearest supplied hex (a held key site, a base, a drop).
+  if (view.world && view.supply?.length && !view.supply.includes(unit.tile)) {
+    const near = view.supply.filter((t) => !view.units.some((u) => u.tile === t && u.id !== unit.id)).sort((a, b) => dist(view.map, a, unit.tile) - dist(view.map, b, unit.tile) || a - b);
+    const to = near.find((t) => pathTo(world, view, ruleset, unit, t));
+    if (to !== undefined) return move(view, unit, to, 'ai.reason.toSupply', {}, 1.5);
+  }
+
   // Scouts explore.
   if (def.class === 'recon' || ctx.exploring(unit)) {
     const frontier = ctx.frontierFor(unit);

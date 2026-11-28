@@ -327,6 +327,7 @@
     "ai.reason.sail": "The fleet sails for {world}.",
     "ai.reason.toKeySite": "A unit moves to take a key site.",
     "ai.reason.holdSite": "A unit holds a key site.",
+    "ai.reason.toSupply": "A unit cut off from supply heads back to it.",
     "ai.reason.ferry": "An empty transport goes back to {world} for more troops.",
     "ai.reason.blockade": "A blockade of an enemy world.",
     "ai.reason.dugIn": "Outnumbered: holding our fortifications.",

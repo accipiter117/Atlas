@@ -164,7 +164,7 @@ ERA_COST = {'ancient': 25, 'classical': 65, 'medieval': 130}
 # Which K3 works each tech unlocks (the works' own requires are set to match).
 WORK_TECH = {
     'trench': None, 'wire': None, 'minefield': 'combat_engineering', 'mg_nest': 'prefab_fortifications', 'bunker': 'prefab_fortifications',
-    'comms_relay': 'encrypted_comms', 'field_hospital': 'field_logistics', 'artillery_battery': 'fire_control', 'landing_bay': 'orbital_drop',
+    'comms_relay': 'encrypted_comms', 'field_hospital': 'field_logistics', 'artillery_battery': 'fire_control',
     'supply_depot': 'logistics_networks', 'command_post': 'logistics_networks', 'anti_air_battery': 'anti_air_systems', 'arc_tower': 'arc_weaponry',
     'extractor': 'deep_core_extraction',
 }
@@ -399,17 +399,18 @@ def k4(base, sprites_isa, names):
     # K5: the AI's numbers for this war (star map, theatres, fewer engineers).
     files['ai/weights.json'] = ('aiWeights', [
         {'id': 'starmap', 'planner': 'starmap', 'weights': {'enemy': 3, 'contested': 4, 'neutral': 2.5, 'own': 0, 'ambition': 3, 'council': 4, 'distance': 1.2,
-                                                              'enemyFleet': 2, 'homeThreat': 14, 'minScore': 0, 'landMinDistance': 3, 'landDistance': 4, 'keepHome': 0, 'minGroup': 2, 'dareRatio': 0.9, 'dareGrowth': 0.1, 'holdTurns': 6, 'dareMax': 1.6, 'homeDare': 1.5, 'waitTurns': 6, 'shipValue': 10, 'gunValue': 8, 'carrierValue': 9}},
+                                                              'enemyFleet': 2, 'homeThreat': 14, 'minScore': 0, 'landMinDistance': 3, 'landDistance': 4, 'keepHome': 0, 'minGroup': 2, 'dareRatio': 0.9, 'dareGrowth': 0.1, 'holdTurns': 30, 'minAssault': 3, 'dareMax': 1.6, 'homeDare': 1.5, 'waitTurns': 6, 'shipValue': 10, 'gunValue': 8, 'carrierValue': 9}},
         {'id': 'theatre', 'planner': 'theatre', 'weights': {'works': {'trench': 3, 'wire': 2, 'mg_nest': 2.5, 'bunker': 1.5, 'anti_air_battery': 1, 'supply_depot': 1.2},
                                                              'frontBand': 2, 'beachhead': 3, 'outnumbered': 1.5, 'lookRange': 2, 'refugeRange': 3,
                                                              'stances': {'hold': {'attackMinWinChance': 0.8, 'attackMinDamageRatio': 2.5},
                                                                          'advance': {},
                                                                          'allout': {'attackMinWinChance': 0.45, 'attackMinDamageRatio': 1.0, 'attackMinHpAfter': 20}}}},
         {'op': 'change', 'id': 'economy', 'set': {'weights.maxBuilders': 2}},
+        {'op': 'change', 'id': 'military', 'set': {'weights.armyPerCityAtWar': 4}},
     ])
     for k, v in {'ai.reason.supplyDrop': 'Supplies dropped to troops cut off from supply.', 'ai.reason.strike': 'An orbital strike on the enemy beside our troops.',
                  'ai.reason.land': 'An army group lands on the target world.', 'ai.reason.embark': 'Troops embark for the target world.',
-                 'ai.reason.sail': 'The fleet sails for {world}.', 'ai.reason.toKeySite': 'A unit moves to take a key site.', 'ai.reason.holdSite': 'A unit holds a key site.', 'ai.reason.ferry': 'An empty transport goes back to {world} for more troops.', 'ai.reason.blockade': 'A blockade of an enemy world.',
+                 'ai.reason.sail': 'The fleet sails for {world}.', 'ai.reason.toKeySite': 'A unit moves to take a key site.', 'ai.reason.holdSite': 'A unit holds a key site.', 'ai.reason.toSupply': 'A unit cut off from supply heads back to it.', 'ai.reason.ferry': 'An empty transport goes back to {world} for more troops.', 'ai.reason.blockade': 'A blockade of an enemy world.',
                  'ai.reason.dugIn': 'Outnumbered: holding our fortifications.', 'ai.reason.fallBack': 'Outnumbered: falling back to our fortifications.',
                  'ai.reason.supplyLine': 'Holding here: further on is out of supply.', 'ai.reason.warship': 'Warships to take back our home\'s orbit.', 'ai.reason.carrier': 'Transports to carry an army to the target world.'}.items():
         names[k] = v

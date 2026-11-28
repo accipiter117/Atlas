@@ -18,6 +18,8 @@
     },
     "setup.maxAis": 5,
     "space.loadRange": 3,
+    "supply.siteRange": 3,
+    "warSupport.sharedSight": true,
     "raiders.units": [
       {
         "fromTurn": 0,

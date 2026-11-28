@@ -8,7 +8,12 @@ import { createGame, applyCommand, view, currentFactionId, fingerprint } from '.
 import { createSeatRunner } from '../../src/ai/index.js';
 import { theatreReport } from '../../src/ai/seats.js';
 import { createAi } from '../../src/ai/controller.js';
-import { worldData } from '../../src/sim/worlds.js';
+import { worldData, switchTo } from '../../src/sim/worlds.js';
+import { cloneState } from '../../src/sim/commands.js';
+import { createUnit } from '../../src/sim/units.js';
+import { neighbourCache } from '../../src/sim/map.js';
+import { builderJobs } from '../../src/ai/tactics.js';
+import { worldFromView } from '../../src/sim/view.js';
 
 const rs = (await loadReal(['base-ancient', 'killzone', 'killzone-war'])).ruleset;
 const CIVS = ['isa', 'home_guard', 'isa_fleet', 'helghast', 'stahl', 'helghast_navy'];
@@ -44,10 +49,14 @@ test('the star map AI embarks troops, sails, lands them and blockades', () => {
   for (const t of ['loadArmy', 'moveFleet', 'landArmy', 'setBlockade']) assert.ok(types.has(t), `no ${t} in 40 rounds`);
 });
 
-test('the theatre AI fortifies the front with engineers', () => {
-  const works = new Set(Object.keys(rs.improvements).filter((k) => rs.improvements[k].war));
-  assert.ok(works.size > 0);
-  assert.ok(played.events.some((e) => e.type === 'improvementBuilt' && works.has(e.improvement)), 'no trench, wire or nest dug in 40 rounds');
+test('on a live front, the best job for an engineer is a front-line work', () => {
+  // The invasion of Vekta: the Helghast are on Vekta, so there is a front there.
+  const s = createGame(rs, setup(null, { scenario: 'invasion_of_vekta' }));
+  const me = fid(s, 'isa');
+  const v = view(s, me, rs, { world: 'vekta' });
+  const jobs = builderJobs(worldFromView(v, rs), v, rs);
+  assert.ok(jobs.length > 0);
+  assert.ok(rs.improvements[jobs[0].improvement].war, `top job is ${jobs[0].improvement}`);
 });
 
 test('a game replays exactly from its seed and the AI\'s commands', () => {
@@ -105,7 +114,13 @@ test('a delegated theatre is played as your faction, on that world only, with a 
 });
 
 test('Hold the line digs in; All-out assault attacks on odds Hold would refuse', () => {
-  const { s, me } = myGame({ scenario: 'invasion_of_vekta' });
+  const { s: start, me } = myGame({ scenario: 'invasion_of_vekta' });
+  // A rifle squad of our own beside our base on Vekta (allied fleets may have carried the rest off).
+  const s = cloneState(start);
+  switchTo(s, 'vekta');
+  const base = Object.values(s.cities).find((c) => c.faction === me);
+  const spot = neighbourCache(s.map)[base.tile].find((t) => t >= 0 && !Object.values(s.units).some((u) => u.tile === t) && !rs.terrain[s.map.terrainIds[s.map.terrain[t]]]?.water);
+  createUnit(s, rs, 'rifle_squad', me, spot);
   const v = view(s, me, rs, { world: 'vekta' });
   const hold = createAi(rs, me, { theatreOnly: true, stance: 'hold' });
   const cmds = [];

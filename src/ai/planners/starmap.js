@@ -101,9 +101,13 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
     // No fleet of our own: still want warships and guns when the enemy holds our home's orbit.
     const s = sideOfView(view, ruleset);
     const homeW = view.space.worlds.find((x) => ruleset.worlds?.[x.id]?.homeOf === s);
-    memory.shipsWanted = Boolean(homeW?.orbit && !homeW.orbit.mine && homeW.orbit.factions.length) || homeW?.blockaded === true;
+    memory.shipsWanted = Boolean(homeW?.orbit && !homeW.orbit.mine && homeW.orbit.factions.length) || homeW?.blockaded === true
+      // A fleet faction that has lost its fleet builds a new one: warships and transports.
+      || Boolean(memory.hadFleet);
+    memory.carriersWanted = Boolean(memory.hadFleet);
     return null;
   }
+  memory.hadFleet = true;
   const w = weightsOf(ruleset, 'starmap');
   const t = ruleset.tuning?.space ?? {};
   const side = sideOfView(view, ruleset);
@@ -145,7 +149,8 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
     }
     // Land on the target, or on any world on the way that our side does not hold (a neutral
     // relay, a contested or enemy world): troops aboard are worth more on the ground.
-    const landHere = view.world === target || (w.landOnTheWay !== false && here && here.holder !== side);
+    // (On a world our side already holds, only when enemy troops are there to fight.)
+    const landHere = here && (here.holder !== side ? (view.world === target || w.landOnTheWay !== false) : view.world === target && enemiesHere(view, side, ruleset).length > 0);
     if (f.cargo?.length && orbit && landHere && !tried(`fl:${f.id}:land`)) {
       const friendly = view.cities.filter((c) => c.faction === view.me || (ruleset.factions?.[view.factions.find((x) => x.id === c.faction)?.civ]?.frontSide === side));
       const enemyBases = view.cities.filter((c) => !friendly.includes(c));
@@ -171,25 +176,27 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
       if (spot !== null) return { cmd: { type: 'landArmy', faction: view.me, fleet: f.id, group: 0, tile: spot }, score: 4, reasonKey: 'ai.reason.land', params: {} };
     }
     // Embark troops for the target from our bases here.
+    let nobody = false;
     const room = f.ships.reduce((n, s) => n + (ruleset.units[s.type]?.space?.capacity ?? 0), 0) - (f.cargo?.length ?? 0);
-    if (room > 0 && target && target !== view.world && !f.moved && !tried(`fl:${f.id}:embark`)) {
+    if (room > 0 && orbit && target && target !== view.world && !f.moved && !tried(`fl:${f.id}:embark`)) {
       // Our own troops and our allies' (a side shares its transport), standing at or beside the side's bases, not in them.
       const ally = (fid) => fid === view.me || (fid in (view.war?.glory ?? {}));
-      const worker = (u) => ((ruleset.units[u.type]?.tags ?? []).includes('worker') ? 1 : 0);
       const bases = view.cities.filter((c) => ally(c.faction));
-      const units = view.units.filter((u) => ally(u.faction) && ((ruleset.units[u.type]?.strength ?? 0) > 0 || (worker(u) && u.faction === view.me)) && !bases.some((c) => c.tile === u.tile) && !u.cut
+      const units = view.units.filter((u) => ally(u.faction) && (ruleset.units[u.type]?.strength ?? 0) > 0 && !bases.some((c) => c.tile === u.tile) && !u.cut
         && bases.some((c) => dist(c.tile, u.tile) <= (t.loadRange ?? 1)))
-        // Our own first, and an engineer in every group to build the beachhead's landing bay.
-        .sort((a, b) => (a.faction === view.me ? 0 : 1) - (b.faction === view.me ? 0 : 1) || worker(b) - worker(a) || (a.id < b.id ? -1 : 1));
+        // Our own first (engineers stay home to fortify the front: a held key site supplies a beachhead).
+        .sort((a, b) => (a.faction === view.me ? 0 : 1) - (b.faction === view.me ? 0 : 1) || (a.id < b.id ? -1 : 1));
       const keep = w.keepHome ?? 1;
       const pick = units.slice(0, Math.max(0, Math.min(t.groupSize ?? 4, units.length - keep)));
       // Not enough yet: ask our bases for troops (the economy planner reads memory.troopsWanted).
       // After waiting its turns, a fleet takes whatever troops it has.
+      nobody = pick.length === 0;
       const minGroup = (memory.fleetWait?.[f.id] ?? 0) >= (w.waitTurns ?? 6) ? 1 : w.minGroup ?? 2;
       memory.troopsWanted = pick.length >= minGroup ? 0 : (t.groupSize ?? 4);
       // An empty transport fleet at one of the side's bases waits a few turns for its troops (data: waitTurns).
       memory.fleetWait ??= {};
-      if (pick.length < minGroup && bases.length && !(f.cargo?.length)) {
+      // (With no one here at all there is nothing to wait for: it fetches troops instead, below.)
+      if (pick.length < minGroup && !nobody && bases.length && !(f.cargo?.length)) {
         const waited = memory.fleetWait[f.id] ?? 0;
         if (waited < (w.waitTurns ?? 6)) {
           if (memory.fleetWaitTurn?.[f.id] !== view.turn) { memory.fleetWait[f.id] = waited + 1; memory.fleetWaitTurn = { ...(memory.fleetWaitTurn ?? {}), [f.id]: view.turn }; }
@@ -223,6 +230,22 @@ export function nextFleetOrder(view, ruleset, memory, dist) {
         .sort((a, b) => d.get(a.id) - d.get(b.id) || (a.id < b.id ? -1 : 1))[0];
       if (depot) { dest = depot.id; why = 'ai.reason.ferry'; }
     }
+    // No one at all to embark at this base: go where the side's armies are.
+    if (dest && !(f.cargo?.length) && room > 0 && here?.holder === side && here.bases > 0 && nobody) {
+      const { dist: d } = hops(view, view.world, heavy);
+      const depot = view.space.worlds.filter((x) => x.holder === side && x.bases > 0 && x.armies > here.armies && d.has(x.id) && x.id !== view.world)
+        .sort((a, b) => b.armies - a.armies || d.get(a.id) - d.get(b.id) || (a.id < b.id ? -1 : 1))[0];
+      if (depot) { dest = depot.id; why = 'ai.reason.ferry'; memory.fleetWait[f.id] = 0; }
+    }
+    // A transport makes for an enemy or contested world only with an assault group aboard (data:
+    // minAssault); with fewer it waits at the side's base for more troops, rather than sailing
+    // empty or throwing a lone squad at a defended world. Defending home is the exception.
+    const aboard = (f.cargo ?? []).reduce((n, g) => n + g.length, 0);
+    const targetW = view.space.worlds.find((x) => x.id === target);
+    const homeId = view.space.worlds.find((x) => ruleset.worlds?.[x.id]?.homeOf === side)?.id;
+    const defended = targetW && (targetW.holder === 1 - side || targetW.holder === 'contested');
+    if (dest === target && why !== 'ai.reason.ferry' && room > 0 && target !== homeId && aboard < (w.minAssault ?? 3) && (defended || aboard === 0)
+      && here?.holder === side && here.bases > 0) dest = null;
     if (dest && dest !== view.world && !f.moved && !tried(`fl:${f.id}:move`)) {
       const { prev } = hops(view, view.world, heavy);
       const to = nextHop(prev, view.world, dest);
