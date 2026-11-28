@@ -62,15 +62,18 @@ function rgbOf(doc, colour) {
 const hexOf = ([r, g, b]) => `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 const mixRgb = (a, b, k) => a.map((v, n) => Math.round(v + (b[n] - v) * k));
 
-export function createTerrainLayer(doc, initialMap, ruleset, registry) {
+export function createTerrainLayer(doc, initialMap, ruleset, registry, art = null) {
   let map = initialMap;
   const chunksX = Math.ceil(map.width / CHUNK);
   const chunksY = Math.ceil(map.height / CHUNK);
   const cache = new Map();
   const colourOf = (group, id) => placeholderColour(registry, group, id);
-  const terrainColour = map.terrainIds.map((id) => hexOf(rgbOf(doc, colourOf('terrain', id))));
+  // K7: a world's own look (worlds.art): its land and water blended towards a tint.
+  const tint = art?.tint ? rgbOf(doc, art.tint) : null;
+  const tinted = (id, rgb) => (tint ? mixRgb(rgb, tint, ruleset.terrain[id]?.water ? art.water ?? 0 : art.land ?? 0.5) : rgb);
+  const terrainColour = map.terrainIds.map((id) => hexOf(tinted(id, rgbOf(doc, colourOf('terrain', id)))));
   const terrainRgb = terrainColour.map((c) => rgbOf(doc, c));
-  const featureColour = map.featureIds.map((id) => colourOf('feature', id));
+  const featureColour = map.featureIds.map((id) => (tint ? hexOf(mixRgb(rgbOf(doc, colourOf('feature', id)), tint, art.land ?? 0.5)) : colourOf('feature', id)));
   const roles = map.terrainIds.map((id) => ruleset.terrain[id]?.mapgen?.role ?? (ruleset.terrain[id]?.water ? 'ocean' : 'land'));
   const water = map.terrainIds.map((id) => ruleset.terrain[id]?.water === true);
   const mountain = roles.map((r) => r === 'mountain');

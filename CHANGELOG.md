@@ -1,5 +1,17 @@
 # Changelog
 
+## Killzone Extrasolar War K7: screens and each world's look
+
+What you can try (Killzone: Extrasolar War):
+- **The landing planner.** Choose Land, Strike or Supply drop on the star map: the world's map now washes in green every hex the order can take and shades red every hex under enemy anti-air. Esc cancels.
+- **The War room** (a button at the top of the star map): both sides' war support over the war as a chart, your side's glory table, and the war council: the objective and who proposed it, the extra glory on offer there, when the council next meets, and what each ally will propose and why.
+- **Every world looks like itself.** Helghan is rust and ash, Halcyon and Morrow grey moons, the stations steel decks, the Kerberos Belt brown rock; Vekta keeps its greens. Each world's look is data (worlds.json art: a tint and how strongly land and water take it).
+- **Fewer wrong hints.** The advice line no longer suggests choosing a pantheon in this war, where there is no religion.
+- `npm run shots` now plays the war to turn 60 and adds the star map, the War room and every world (docs/shots/K7).
+
+- Not done: new pixel sprites for every unit, ship and work (units still use the Killzone troopers and tanks by side, works use the K3 art), and storm effects on Helghan's map. They are art jobs of their own.
+- Tests: `test/smoke/k7-screens.spec.js` (the landing planner and the War room), `test/smoke/k7-worlds.spec.js` (each world shown).
+
 ## Killzone Extrasolar War K6: battles over fortifications, landings under fire, stations
 
 What you can try (Killzone: Extrasolar War; to fight battles yourself, set Battles to "Ask" in New game's Advanced tab):

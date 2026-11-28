@@ -2,7 +2,7 @@
 // Their systems arrive in phases 9 to 16; the schemas exist now so mods can be
 // checked against them from day one.
 
-import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields, refs, ref } from './fields.js';
+import { entryType, req, int, num, bool, oneOf, effects, key, str, obj, list, any, yields, refs, ref, colour } from './fields.js';
 
 export const trade = entryType('trade', {
   kind: req(oneOf(['domestic', 'foreign'])),
@@ -101,6 +101,9 @@ export const worlds = entryType('worlds', {
   fleets: list(obj({ side: req(int(0, 1)), faction: ref('factions'), ships: req(list(ref('units'), { min: 1 })) })),
   // K4b: whose home world it is (the enemy landing here costs that side war support).
   homeOf: int(0, 1),
+  // K7: how its ground looks: every land (and water) colour blended towards a tint by a share
+  // (0 to 1), so Helghan reads rust and ash, the moons grey and a station a metal deck.
+  art: obj({ tint: req(colour()), land: num(0, 1), water: num(0, 1) }),
   // K2: where the world sits on the star map, in percent of its width and height.
   pos: obj({ x: req(int(0, 100)), y: req(int(0, 100)) }),
   // K3: the world's own theatre rules (src/sim/war.js).

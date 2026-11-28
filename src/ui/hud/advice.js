@@ -36,6 +36,7 @@ export function createAdvice(g) {
 
   /** The advice line: the highest-priority piece of advice whose condition holds (rules/<mod>/ui/advice.json). */
   function currentAdvice() {
+    const hasBeliefs = () => Object.keys(g.ruleset.beliefs ?? {}).length > 0;
     const checks = {
       eventPending: () => g.v.pendingEvent && { city: g.v.cities.find((c) => c.id === g.v.pendingEvent.city)?.name ?? '' },
       noCities: () => g.myCities().length === 0 && g.myUnits().some(g.isFounder) && {},
@@ -45,10 +46,11 @@ export function createAdvice(g) {
       noCivic: () => g.ruleset.civics && !g.v.civicResearch?.current && !(g.v.civicResearch?.queue ?? []).length && civicSuggestion() && { civic: g.civicName(civicSuggestion()) },
       governmentReady: () => readyGovernment() && { government: g.ruleset.text[g.ruleset.governments[readyGovernment()].nameKey] },
       emptyPolicySlot: () => emptySlot() && {},
-      pantheonReady: () => g.ruleset.beliefs && !pantheonOf(knownWorld(g.v), g.human) && (g.v.stocks?.faith ?? 0) >= pantheonFaith(knownWorld(g.v), g.ruleset) && {},
+      // A ruleset with religion removed keeps an empty beliefs list (Extrasolar War): no faith advice then.
+      pantheonReady: () => hasBeliefs() && !pantheonOf(knownWorld(g.v), g.human) && (g.v.stocks?.faith ?? 0) >= pantheonFaith(knownWorld(g.v), g.ruleset) && {},
       religionReady: () => {
         const w = knownWorld(g.v);
-        return g.ruleset.beliefs && pantheonOf(w, g.human) && !foundedBy(w, g.human) && (g.v.stocks?.faith ?? 0) >= foundFaith(w, g.ruleset)
+        return hasBeliefs() && pantheonOf(w, g.human) && !foundedBy(w, g.human) && (g.v.stocks?.faith ?? 0) >= foundFaith(w, g.ruleset)
           && holyCityOptions(w, g.ruleset, g.human).length && Object.keys(g.v.religion?.religions ?? {}).length < religionLimit(w, g.ruleset) && {};
       },
       goldRunningOut: () => g.goldTurnsLeft() <= (g.ruleset.tuning?.economy?.bankruptcyWarningTurns ?? 2) && { n: g.goldTurnsLeft() },

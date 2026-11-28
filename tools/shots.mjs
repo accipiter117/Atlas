@@ -39,8 +39,12 @@ export const SHOT_GAMES = [
   { id: 'base', mods: ['base-ancient'], seed: 3, players: 6, map: { size: 'standard', type: 'continents' } },
   { id: 'witcher', mods: ['base-ancient', 'witcher'], seed: 5, players: 6, map: { size: 'standard', type: 'continents' } },
   { id: 'killzone', mods: ['base-ancient', 'killzone'], seed: 7, players: 2, map: { preset: 'corinth_front' } },
+  // K7: Killzone Extrasolar War, six factions, at turn 60 (its campaign ends at 120). Adds the star
+  // map, the War room and every world.
+  { id: 'killzone-war', mods: ['base-ancient', 'killzone', 'killzone-war'], seed: 9, factions: ['isa', 'home_guard', 'isa_fleet', 'helghast', 'stahl', 'helghast_navy'], map: { preset: 'kw_vekta' }, turns: 60, war: true },
 ];
 const TURNS = 120;
+const turnsOf = (game) => game.turns ?? TURNS;
 
 /** Play one fixture game to turn 120 with the computer on every seat, and return its Import code. */
 export async function buildSave(game) {
@@ -50,7 +54,9 @@ export async function buildSave(game) {
   const setup = {
     seed: game.seed,
     mods: game.mods.map((id) => `${id}@${version(id)}`),
-    players: [{ kind: 'human', name: 'You' }, ...Array.from({ length: game.players - 1 }, (_, i) => ({ kind: 'ai', name: `Rival ${i + 1}` }))],
+    players: game.factions
+      ? game.factions.map((faction, i) => (i ? { kind: 'ai', name: `Rival ${i}`, faction } : { kind: 'human', name: 'You', faction }))
+      : [{ kind: 'human', name: 'You' }, ...Array.from({ length: game.players - 1 }, (_, i) => ({ kind: 'ai', name: `Rival ${i + 1}` }))],
     map: game.map, speed: 'standard', raiders: 'on', events: 'occasional', disasters: 'off', fog: 'on', recordAI: 'off', autosave: 'off',
     battleMode: 'auto', battleModule: 'auto', difficulty: 'prince', turnLimit: null,
   };
@@ -58,7 +64,7 @@ export async function buildSave(game) {
   const ids = state.factions.map((f) => f.id);
   const runner = createSeatRunner(ruleset, ids, { recordOff: true });
   const log = [];
-  while (state.turn < TURNS && !state.winner) {
+  while (state.turn < turnsOf(game) && !state.winner) {
     const r = runner.play(state, { maxSeats: ids.length });
     state = r.state;
     log.push(...r.commands);
@@ -156,6 +162,27 @@ async function capture(browser, game, code, [w, h]) {
   await openAndShoot('diplomacy', '09-diplomacy', '[data-action="close-diplomacy"]');
   await openAndShoot('victory', '10-victory', '[data-action="close-victory"]');
   await openAndShoot('game-menu', '11-menu', '[data-action="close-menu"], [data-action="resume"]');
+  if (game.war) {
+    // The star map, the War room, then every world on its own map, centred on a base there.
+    await page.locator('[data-action="starmap"]').click();
+    await page.waitForTimeout(300);
+    await shot('12-star-map');
+    await page.locator('[data-action="war-room"]').click();
+    await page.waitForTimeout(200);
+    await shot('13-war-room');
+    await page.locator('[data-action="close-starmap"]').click();
+    const worlds = await page.evaluate(() => window.__atlasGame.state.worldOrder);
+    for (const [i, w] of worlds.entries()) {
+      await page.evaluate((id) => {
+        const g = window.__atlasGame;
+        g.switchWorld(id);
+        const c = g.view.cities[0] ?? null;
+        if (c) g.mapView.centreOnTile(c.tile);
+      }, w);
+      await page.waitForTimeout(300);
+      await shot(`${String(14 + i).padStart(2, '0')}-world-${w}`);
+    }
+  }
   await ctx.close();
 }
 
@@ -166,7 +193,7 @@ async function main() {
   const games = SHOT_GAMES.filter((g) => !only || g.id === only);
   await mkdir(SAVES, { recursive: true });
   for (const game of games) {
-    const file = join(SAVES, `${game.id}-turn${TURNS}.txt`);
+    const file = join(SAVES, `${game.id}-turn${turnsOf(game)}.txt`);
     let exists = true;
     try { await readFile(file); } catch { exists = false; }
     if (args.includes('--build-saves') || !exists) {
@@ -181,7 +208,7 @@ async function main() {
   try {
     await rm(OUT, { recursive: true, force: true });
     for (const game of games) {
-      const code = (await readFile(join(SAVES, `${game.id}-turn${TURNS}.txt`), 'utf8')).trim();
+      const code = (await readFile(join(SAVES, `${game.id}-turn${turnsOf(game)}.txt`), 'utf8')).trim();
       for (const size of SIZES) await capture(browser, game, code, size);
       console.log(`shots: ${game.id} captured`);
     }

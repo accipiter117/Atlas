@@ -227,6 +227,12 @@ def main():
             e['fleets'] = fleets
         if wid in THEATRE:
             e['theatre'] = THEATRE[wid]
+        # K7: each world's own look (Vekta keeps the base greens).
+        ART = {'helghan': {'tint': '#7a3b22', 'land': 0.55, 'water': 0.45}, 'halcyon': {'tint': '#a3a5a8', 'land': 0.85, 'water': 0.6},
+               'morrow': {'tint': '#8c8780', 'land': 0.85, 'water': 0.6}, 'kerberos': {'tint': '#6e5d4c', 'land': 0.7, 'water': 0.6},
+               'bastion': {'tint': '#5f6b78', 'land': 0.8, 'water': 0.7}, 'ardent': {'tint': '#6d5f5a', 'land': 0.8, 'water': 0.7}, 'midway': {'tint': '#626a6f', 'land': 0.8, 'water': 0.7}}
+        if wid in ART:
+            e['art'] = ART[wid]
         if wid == 'vekta':
             e['homeOf'] = 0
         if wid == 'helghan':

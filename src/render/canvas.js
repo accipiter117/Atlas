@@ -19,7 +19,7 @@ import { drawBorders, drawCities, drawCityWork, drawCamps } from './layers/citie
 import { neighbourCache } from '../sim/index.js';
 import { createSpriteSheet } from './art/spriteSheet.js';
 
-export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, civs = {}, sheets: descriptors = {} }) {
+export function createMapView(host, { map, ruleset, fog = null, units = [], colours = {}, civs = {}, sheets: descriptors = {}, world: firstWorld = null }) {
   const doc = host.ownerDocument;
   const win = doc.defaultView;
   const canvas = doc.createElement('canvas');
@@ -58,7 +58,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
     hover: null,
     path: null,
     pathFrom: null,
-    terrain: createTerrainLayer(doc, map, ruleset, registry),
+    terrain: createTerrainLayer(doc, map, ruleset, registry, ruleset.worlds?.[firstWorld]?.art ?? null),
     atWar: new Set(),
     cityExtras: {},
     ambient: true,
@@ -465,7 +465,7 @@ export function createMapView(host, { map, ruleset, fog = null, units = [], colo
       const kept = terrainByWorld.get(key);
       view.map = newMap;
       world = worldSize(newMap);
-      view.terrain = kept?.terrain ?? createTerrainLayer(doc, newMap, ruleset, registry);
+      view.terrain = kept?.terrain ?? createTerrainLayer(doc, newMap, ruleset, registry, ruleset.worlds?.[key]?.art ?? null);
       if (kept) {
         // Redraw what was explored, built or paved there while you were away.
         const changed = [];

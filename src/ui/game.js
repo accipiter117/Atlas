@@ -315,7 +315,7 @@ export function createGameScreen(doc, root, { ruleset, text, sheets, seed, toast
     if (btn) { btn.hidden = !v.space; btn.onclick = () => starMap.open(); }
   }
 
-  const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, civs: Object.fromEntries(v.factions.map((f) => [f.id, f.civ])), sheets });
+  const mapView = createMapView($('#game-map'), { map: v.map, ruleset, fog: v.fog, units: v.units, colours, civs: Object.fromEntries(v.factions.map((f) => [f.id, f.civ])), sheets, world: viewWorld });
   const { refreshMinimap, updateInsets, toggleYields, toggleGrid, hexHover, hexLeave, hexContent, openHelp } = createMapHud(g);
   const playback = createPlayback(g);
   doc.defaultView.addEventListener('resize', () => updateInsets());
