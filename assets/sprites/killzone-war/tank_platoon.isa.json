@@ -1,0 +1,59 @@
+{
+  "id": "unit.tank_platoon.isa",
+  "src": "assets/sprites/killzone-war/tank_platoon.isa.png",
+  "frame": {
+    "w": 210,
+    "h": 130
+  },
+  "anchor": {
+    "x": 104,
+    "y": 120
+  },
+  "layout": "grid",
+  "mapScale": 0.3,
+  "fps": 6,
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "walk": {
+      "row": 2,
+      "frames": 4,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "attack": {
+      "row": 4,
+      "frames": 4,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "hurt": {
+      "row": 6,
+      "frames": 2
+    },
+    "die": {
+      "row": 6,
+      "frames": 3
+    }
+  },
+  "portrait": {
+    "row": 0,
+    "col": 0,
+    "x": 60,
+    "y": 30,
+    "w": 96,
+    "h": 96
+  },
+  "credits": "Original pixel art drawn in code in the Killzone: Front Line project (github.com/accipiter117/Killzone, src/render/pixel-troopers.js and tanks.js, commit 21dcd10), by the owner of Atlas.",
+  "layers": []
+}

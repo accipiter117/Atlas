@@ -12,6 +12,7 @@
 
 import { getPixelTrooper, PT_W, PT_H } from './killzone/pixel-troopers.js';
 import { getTank, TANK_W, TANK_H } from './killzone/tanks.js';
+import { getVehicle } from './vehicles.js';
 
 export const FRAME = 64;
 export const ROWS = { thrust: 4, walk: 8, slash: 12, shoot: 16, hurt: 20 };
@@ -426,13 +427,15 @@ export async function composeCode(spec, riderUrl = null) {
  * attack (right, left), hurt. spec: { side: 'isa' | 'hgh', role, tank }.
  */
 export function composeKillzone(spec) {
-  const fw = spec.tank ? TANK_W : PT_W;
-  const fh = spec.tank ? TANK_H : PT_H;
-  const get = (frame, facing) => (spec.tank ? getTank(spec.side, frame, facing) : getPixelTrooper(spec.side, frame, facing, spec.role));
-  const walk = spec.tank ? ['move1', 'move2', 'move3', 'move4'] : ['walk1', 'walk2', 'walk3', 'walk4'];
-  const idle = spec.tank ? 'idle' : 'stand';
-  const attack = spec.tank ? ['idle', 'fire', 'fire', 'idle'] : ['stand', 'fire', 'fire', 'stand'];
-  const hurt = spec.tank ? ['idle', 'wreck', 'wreck'] : ['fall1', 'fall2', 'dead'];
+  const fw = spec.tank || spec.vehicle ? TANK_W : PT_W;
+  const fh = spec.tank || spec.vehicle ? TANK_H : PT_H;
+  // K7: spec.vehicle draws one of the Extrasolar War's vehicles (vehicles.js), framed like a tank.
+  const machine = spec.tank || spec.vehicle;
+  const get = (frame, facing) => (spec.vehicle ? getVehicle(spec.vehicle, spec.side, frame, facing) : spec.tank ? getTank(spec.side, frame, facing) : getPixelTrooper(spec.side, frame, facing, spec.role));
+  const walk = machine ? ['move1', 'move2', 'move3', 'move4'] : ['walk1', 'walk2', 'walk3', 'walk4'];
+  const idle = machine ? 'idle' : 'stand';
+  const attack = machine ? ['idle', 'fire', 'fire', 'idle'] : ['stand', 'fire', 'fire', 'stand'];
+  const hurt = machine ? ['idle', 'wreck', 'wreck'] : ['fall1', 'fall2', 'dead'];
   const rows = [[idle], [idle], walk, walk, attack, attack, hurt];
   const facings = [1, -1, 1, -1, 1, -1, 1];
   const [c, g] = canvas(fw * 4, fh * rows.length);

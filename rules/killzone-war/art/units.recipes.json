@@ -1,0 +1,78 @@
+{
+  "contentType": "unitArtRecipes",
+  "note": "Read by tools/gen/lpc-units.mjs --only killzone-war (K7), never by the game. Troopers and tanks are drawn by Matthew's Killzone code (tools/gen/unit-art/killzone/), the other vehicles by tools/gen/unit-art/vehicles.js. One sheet per side; tools/gen/killzone_war_k4.py points every faction at its side's sheet.",
+  "skin": "killzone-war",
+  "skinFromGenerator": true,
+  "sides": {
+    "isa": "isa",
+    "helghast": "hgh"
+  },
+  "killzone": {
+    "rifle_squad": {
+      "role": "rifle"
+    },
+    "assault_trooper": {
+      "role": "assault"
+    },
+    "support_gunners": {
+      "role": "heavy"
+    },
+    "helghast_heavy": {
+      "role": "heavy"
+    },
+    "rocket_team": {
+      "role": "heavy"
+    },
+    "arc_trooper": {
+      "role": "assault"
+    },
+    "recon_team": {
+      "role": "recon"
+    },
+    "scout_sniper": {
+      "role": "recon"
+    },
+    "isa_sniper": {
+      "role": "recon"
+    },
+    "combat_engineers": {
+      "role": "engineer"
+    },
+    "pioneer_squad": {
+      "role": "engineer"
+    },
+    "jetpack_trooper": {
+      "role": "jump"
+    },
+    "shadow_marshals": {
+      "role": "infiltrator"
+    },
+    "intelligence_cell": {
+      "role": "infiltrator"
+    },
+    "home_guard_militia": {
+      "role": "rifle"
+    },
+    "conscripts": {
+      "role": "rifle"
+    },
+    "apc": {
+      "vehicle": "apc"
+    },
+    "armoured_walker": {
+      "vehicle": "walker"
+    },
+    "tank_platoon": {
+      "tank": true
+    },
+    "stahl_battle_suit": {
+      "vehicle": "suit"
+    },
+    "field_artillery": {
+      "vehicle": "field_gun"
+    },
+    "arc_artillery": {
+      "vehicle": "arc_artillery"
+    }
+  }
+}

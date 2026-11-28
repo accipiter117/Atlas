@@ -1,0 +1,59 @@
+{
+  "id": "unit.helghast_heavy.helghast",
+  "src": "assets/sprites/killzone-war/helghast_heavy.helghast.png",
+  "frame": {
+    "w": 112,
+    "h": 90
+  },
+  "anchor": {
+    "x": 40,
+    "y": 84
+  },
+  "layout": "grid",
+  "mapScale": 0.5,
+  "fps": 6,
+  "anims": {
+    "idle": {
+      "row": 0,
+      "frames": 1,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "walk": {
+      "row": 2,
+      "frames": 4,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "attack": {
+      "row": 4,
+      "frames": 4,
+      "dirs": [
+        "e",
+        "w"
+      ]
+    },
+    "hurt": {
+      "row": 6,
+      "frames": 2
+    },
+    "die": {
+      "row": 6,
+      "frames": 3
+    }
+  },
+  "portrait": {
+    "row": 0,
+    "col": 0,
+    "x": 18,
+    "y": 4,
+    "w": 40,
+    "h": 40
+  },
+  "credits": "Original pixel art drawn in code in the Killzone: Front Line project (github.com/accipiter117/Killzone, src/render/pixel-troopers.js and tanks.js, commit 21dcd10), by the owner of Atlas.",
+  "layers": []
+}

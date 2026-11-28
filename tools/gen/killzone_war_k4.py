@@ -1,3 +1,4 @@
+import os
 """Killzone: Extrasolar War, phase K4a content (docs/KILLZONE.md sections 4 and 5).
 
 Imported by tools/gen/killzone-war.py. Clears the ancient world out of the war (every base
@@ -365,7 +366,10 @@ def k4(base, sprites_isa, names):
         # Sprites: every faction of a side wears that side's sheet of the base figure.
         for c in side_civs[ISA] + side_civs[HEL]:
             look = 'isa' if c in side_civs[ISA] else 'helghast'
-            art[f'unit.{u}.{c}'] = {'sheet': f'assets/sprites/killzone/{sprite}.{look}.json'}
+            # K7: the war's own sheet for this unit when drawn (tools/gen/lpc-units.mjs --only killzone-war),
+            # else the Killzone figure it was mapped to before.
+            own = f'assets/sprites/killzone-war/{u}.{look}.json'
+            art[f'unit.{u}.{c}'] = {'sheet': own if os.path.exists(os.path.join(os.path.dirname(__file__), '..', '..', own)) else f'assets/sprites/killzone/{sprite}.{look}.json'}
     for ship, (tech, res_) in SHIP_REQUIRES.items():
         req = {}
         if tech:

@@ -32,7 +32,9 @@ const LPC_REPO = 'https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet
 const LPC_COMMIT = '86a3719ee4a7e2e9fb27c7c152e29a741d3e930a';
 const CACHE = join(ROOT, '.cache', 'lpc');
 const PORT = 4191;
-const MODS = ['base-ancient', 'witcher', 'killzone'];
+// --only <mod>: just that mod's sheets (no LPC fetch when it needs none; its own contact sheet).
+const ONLY = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
+const MODS = ['base-ancient', 'witcher', 'killzone', 'killzone-war'].filter((m) => !ONLY || m === ONLY);
 // Licences in the order we prefer to use them (the most permissive first).
 const LICENCE_ORDER = ['CC0', 'OGA-BY 3.0', 'OGA-BY 4.0', 'CC-BY 4.0', 'CC-BY 3.0', 'CC-BY-SA 4.0', 'CC-BY-SA 3.0', 'GPL 3.0', 'GPL 2.0'];
 const ANIMS = ['walk', 'hurt', 'thrust', 'slash', 'shoot'];
@@ -137,7 +139,7 @@ async function main() {
     const path = join(ROOT, 'rules', mod, 'art', 'units.recipes.json');
     if (existsSync(path)) recipes.push({ mod, ...(await readJson(path)) });
   }
-  if (!existsSync(join(CACHE, 'sheet_definitions'))) ensureLpc([]);
+  if (!existsSync(join(CACHE, 'sheet_definitions')) && !(ONLY && recipes.every((r) => !r.units && !r.leaders))) ensureLpc([]);
   const lpcUnits = [];
   const paths = new Set();
   for (const r of recipes) {
@@ -153,7 +155,7 @@ async function main() {
       lpcUnits.push({ mod: r.mod, skin: r.skin, id, kind, attack: u.attack ?? 'thrust', layers });
     }
   }
-  ensureLpc(paths);
+  if (paths.size || !ONLY) ensureLpc(paths);
 
   // ---- Composite in Chromium ----
   const server = await serve();
@@ -230,7 +232,7 @@ async function main() {
         for (const [civ, side] of Object.entries(r.sides)) {
           const out = await page.evaluate((s) => window.unitArt.composeKillzone(s), { ...spec, side });
           const fw = out.frame.w;
-          const tank = Boolean(spec.tank);
+          const tank = Boolean(spec.tank || spec.vehicle);
           const desc = {
             id: `unit.${id}.${civ}`, src: `assets/sprites/${r.skin}/${id}.${civ}.png`, frame: out.frame,
             anchor: tank ? { x: 104, y: 120 } : { x: 40, y: 84 }, layout: 'grid', mapScale: tank ? 0.3 : 0.5, fps: 6,
@@ -249,7 +251,8 @@ async function main() {
     // ---- The contact sheet ----
     const sheetUrl = await page.evaluate((entries) => window.unitArt.contactSheet(entries), contact);
     await mkdir(join(ROOT, 'docs', 'shots', 'G4'), { recursive: true });
-    await writeFile(join(ROOT, 'docs', 'shots', 'G4', 'contact-sheet.png'), dataToPng(sheetUrl));
+    await mkdir(join(ROOT, 'docs', 'shots', ONLY ? 'K7' : 'G4'), { recursive: true });
+    await writeFile(join(ROOT, 'docs', 'shots', ONLY ? 'K7' : 'G4', ONLY ? `units-${ONLY}.png` : 'contact-sheet.png'), dataToPng(sheetUrl));
   } finally {
     await browser.close();
     server.kill();
@@ -257,13 +260,15 @@ async function main() {
 
   // ---- Point each mod's skin at its sheets (other art entries are kept) ----
   for (const [mod, entries] of Object.entries(art)) {
+    // A mod whose generator writes its skin (Extrasolar War maps every faction to its side's sheet) is left alone.
+    if (recipes.find((r) => r.mod === mod)?.skinFromGenerator) continue;
     const path = join(ROOT, 'rules', mod, 'skin', 'skin.json');
     const skin = await readJson(path);
     const kept = Object.fromEntries(Object.entries(skin.values.art ?? {}).filter(([id]) => !id.startsWith('unit.') && !id.startsWith('leader.')));
     skin.values.art = { ...kept, ...Object.fromEntries(Object.entries(entries).sort(([a], [b]) => a.localeCompare(b))) };
     await writeFile(path, `${JSON.stringify(skin, null, 2)}\n`);
   }
-  console.log(`lpc-units: ${contact.length} sheets written; contact sheet in docs/shots/G4/contact-sheet.png`);
+  console.log(`lpc-units: ${contact.length} sheets written; contact sheet in docs/shots/${ONLY ? `K7/units-${ONLY}` : 'G4/contact-sheet'}.png`);
 }
 
 main().catch((e) => { console.error(`lpc-units: ${e.message}`); process.exit(1); });
