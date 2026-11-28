@@ -3,8 +3,8 @@
 //   capitals   every enemy faction's original capital is held by your side
 //   support    the enemy side's war support has fallen to 0
 //   territory  your side has held params.worlds worlds for params.turns rounds in a row
-//   time       at the turn limit, the side with more war support (then more worlds) wins; a
-//              dead heat goes to the first seat's side
+//   time       at the turn limit, the side with more war support by params.margin or more (then
+//              more worlds) wins; a dead heat goes to the first seat's side
 // The winner recorded is the faction with most glory on the winning side (then the earlier
 // seat): its decisive victory, the others' a shared one.
 
@@ -25,7 +25,8 @@ function winningSide(state, ruleset, params, limit) {
   }
   if (params.kind === 'time' && limit && state.turn >= limit) {
     const w = state.warSupport;
-    if (w[0] !== w[1]) return w[0] > w[1] ? 0 : 1;
+    // A narrow lead (under params.margin points; 1 when left out) is a stalemate, settled below.
+    if (Math.abs(w[0] - w[1]) >= (params.margin ?? 1)) return w[0] > w[1] ? 0 : 1;
     const held = (s) => Object.values(state.holders ?? {}).filter((h) => h === s).length;
     if (held(0) !== held(1)) return held(0) > held(1) ? 0 : 1;
     // A dead heat: the side of the first seat in the (shuffled) seat order, a fair coin toss.

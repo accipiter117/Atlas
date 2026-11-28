@@ -1,5 +1,14 @@
 # Changelog
 
+## Killzone Extrasolar War K5: 100-game balance runs
+
+Eleven batches of 100 computer-only games each, recorded in `docs/AI_TUNING.md`.
+
+What you can notice (Killzone: Extrasolar War): you now see what your allies' units and bases see; the computer's fleets carry real army groups, including your allies' troops, instead of single squads, rebuild a lost fleet, and keep a cruiser over a landing; troops cut off on another world head back to supply; holding a world's key site supplies the ground around it, so a captured station keeps its garrison; being cut off is gentler (5 health a turn, surrender after 5 turns, drops cover 3 hexes); landing bays need no research; computer factions keep bigger armies; glory comes more from battles and landings than from sitting on ground; and when the campaign's time runs out a side needs a lead of 5 war support to win outright, otherwise the side holding more worlds wins.
+
+- Result: ground battles went from about 1 in 16 games to about 4 a game, refused orders stayed at 0 and game length stays on target, but the computer still never takes a defended base, so every game is decided on time and the side balance swings with small changes (85% for the ISA in the final batch, with 22 stalemates). Taking bases is the next piece of AI work.
+- A trace fix in passing: fleets no longer try to embark troops while the enemy contests the orbit.
+
 ## Killzone Extrasolar War K5: the computer plays the war, and you can delegate a theatre
 
 The computer now fights across the whole star system, and you can hand any world to your generals.

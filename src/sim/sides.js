@@ -94,10 +94,10 @@ export function noteWarEvents(state, ruleset, events) {
     } else if (e.type === 'armyLanded') {
       const home = homeOf(ruleset, e.world);
       const side = sideOf(state, ruleset, e.faction);
-      if (home !== null && home !== side) {
-        support(state, home, -(t.homeLanding ?? 10), extra, 'homeLanding');
-        glory(state, ruleset, e.faction, ambitions(ruleset, civOf(state, e.faction), 'landOn').filter((a) => a.world === e.world).reduce((n, a) => n + (a.amount ?? 0), 0), e.world, extra, 'landing');
-      }
+      if (home !== null && home !== side) support(state, home, -(t.homeLanding ?? 10), extra, 'homeLanding');
+      // An ambition's landing glory pays on the world it names, home world or not, when the
+      // landing is on ground the side does not hold.
+      if (state.holders?.[e.world] !== side) glory(state, ruleset, e.faction, ambitions(ruleset, civOf(state, e.faction), 'landOn').filter((a) => a.world === e.world).reduce((n, a) => n + (a.amount ?? 0), 0), e.world, extra, 'landing');
     } else if (e.type === 'cityCaptured') {
       const city = allCities(state)[e.city];
       glory(state, ruleset, e.faction, t.gloryCity ?? 5, world, extra, 'base');

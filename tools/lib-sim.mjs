@@ -108,7 +108,8 @@ function warSummary(state, ruleset, ids, version, extra) {
   const sideVersion = winSide === null ? null : version(ids.findIndex((id) => sideOf(state, ruleset, id) === winSide));
   // A dead heat: the time ran out with support and worlds level (settled by seat order).
   const held = (s) => Object.values(state.holders ?? {}).filter((h) => h === s).length;
-  const deadHeat = state.winner?.victory === 'war_time' && state.warSupport[0] === state.warSupport[1] && held(0) === held(1);
+  const margin = Object.values(ruleset.victories ?? {}).find((v) => v.params?.kind === 'time')?.params?.margin ?? 1;
+  const deadHeat = state.winner?.victory === 'war_time' && Math.abs(state.warSupport[0] - state.warSupport[1]) < margin && held(0) === held(1);
   return { winSide, sideVersion, deadHeat, topGlory: state.factions.find((f) => f.id === top)?.civ ?? null, support: { ...state.warSupport }, ...extra };
 }
 

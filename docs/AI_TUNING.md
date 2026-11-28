@@ -303,15 +303,61 @@ Latest batch, 8 games, seeds 1000 to 1007, standard speed:
 - Why the rest are dead heats: once the neutral worlds fall in the first ten turns, neither side
   takes another world, so war support only moves with propaganda, equally for both.
 
+### 2026-11-28: Killzone Extrasolar War, 100-game balance runs (approved by Matthew)
+
+Every batch: `node tools/sim.mjs --war --games 100 --speed standard`, seeds 1000 to 1099, six
+computer factions on kw_vekta, 120-turn campaign. Between batches, 12 to 16 game traces
+(aggregated support, glory, landings, surrenders and battles) found the cause of each problem.
+
+| # | Change | Sides (ISA / Helghast / dead heats) | ISA share of decided | Home invaded | Decisive wins | Kept? |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | Baseline (end of K5) | 14 / 49 / 37 | 22% | 22 | 0 | |
+| 1 | Transports wait for an assault group of 3 | 99 / 0 / 1 | 100% | 0 | 0 | kept with 2 to 4 (the war froze; it needed troops to carry) |
+| 2 | Landing bays need no research; 30-turn beachhead guard; held key sites supply 3 hexes; troops cut off head for supply; no landings on held worlds; armies of 4 a base; fleets with nobody to embark go where the armies are; shared sight between allies; lost fleets rebuilt | 31 / 60 / 9 | 34% | 3 | 3 | yes |
+| 3 | Embark only while holding the orbit (fixed 821 refused orders) | 37 / 60 / 3 | 38% | 3 | 3 | yes (committed as round 1) |
+| 4 | Engineers stay home instead of joining landings | 37 / 60 / 3 | 38% | 3 | 3 | yes (no change to balance; home fronts keep their engineers) |
+| 5 | Supply gentler in this war: 5 health a turn, surrender after 5 turns, drops cover 3 hexes | 55 / 39 / 6 | 59% | 4 | 0 | yes |
+| 6 | Assault group of 6 | 98 / 2 / 0 | 98% | 0 | 0 | REVERTED |
+| 7 | Glory: held ambitions every 10 rounds, battles 5, landing glory for the fleets' own targets (Ardent; Halcyon, Bastion) | 90 / 10 / 0 | 90% | 3 | 0 | yes, for glory: 4 factions top it at least 8% (was 2) |
+| 8 | Propaganda costs 30 (was 40) | 94 / 6 / 0 | 94% | 5 | 0 | REVERTED |
+| 9 | Time victory needs a lead of 5 support; closer is settled by worlds held, then a coin toss | 66 / 12 / 22 | 85% | 3 | 0 | yes: honest about stalemates |
+| 10 | Without the new landing ambitions | 42 / 11 / 47 | 79% | 3 | 0 | REVERTED |
+
+Final (row 9, re-run after rebuilding the content: identical):
+
+| Target (docs/KILLZONE.md 7.1) | Baseline | Final | Met? |
+| --- | --- | --- | --- |
+| Each side wins 45 to 55% | 22% / 78% | 85% / 15% (22 stalemates) | **no** |
+| Each victory type 10% or more | all by time | all by time | **no** |
+| Average length 90 to 140 | 120 | 120 | yes |
+| A home world invaded in 30 to 60% | 22% | 3% | **no** |
+| Every faction tops glory 8% or more | 2 of 6 | 4 of 6 (Fleet 50, Stahl 21, Navy 14, Home Guard 12; Army 3, Strategic Command 0) | **no** (closer) |
+| Refused orders, NaN, crashes | 0 | 0 | |
+
+What the traces show, in gameplay terms:
+- **The war on the ground now happens** (about 4 battles a game, was 1 in 16 games; about 9
+  landings a game; surrenders down by more than half), but no one ever takes a defended base.
+  Armies of 3 to 4 landed troops cannot beat a base (200 health, strength 27, often walled by
+  trenches), so no world held by the enemy changes hands, capitals never fall, and the war
+  support and territory victories never trigger.
+- **So every game is decided on time**, by a few points of war support. The ISA side's lead
+  comes from propaganda (about 1.7 points a game more: its AIs pick the State Broadcasts card,
+  +1 propaganda a base, more often) and from taking Midway slightly more often than the
+  Helghast take Kerberos. Small AI changes swing which side edges it (rows 5, 7 and 8 show
+  59%, 90% and 94% from changes that do not touch the fighting), which is why tuning numbers
+  alone cannot meet the side target.
+- **Home invasions fell** (22% to 3%) because the old ones were lone squads dropped on Vekta
+  that surrendered; now fleets only sail with a group, and the Navy rarely gathers one for Vekta.
+
 ## Open problems
 
 - **Conquest wins 0%.** Every other range is met. Since ai-v12 conquest AIs take cities and
   knock rivals out, but holding all four original capitals by turn 220 at Quick speed has not
   happened yet. Ideas for later phases: a later turn limit at Quick, or conquest-minded AIs
   making peace with distant rivals to focus on one neighbour at a time.
-- **Killzone Extrasolar War is not yet balanced (K5).** Of the section 7.1 targets only length
-  and home invasions are met in small batches. Next steps, each to be measured: invasions that
-  wait for a full army group of four with an engineer, fleets that split so a cruiser can guard a
-  beachhead while transports ferry, and the ISA's path to Helghan. Measuring the targets properly
-  needs about 100 games a batch, which needs Matthew's go-ahead (CLAUDE.md allows 20, or 40 when
-  close).
+- **Killzone Extrasolar War is not yet balanced (K5).** After the 100-game runs only the
+  length target is met. The blocker is that the computer cannot take a defended base: until it
+  can, every war is decided on time by a few points of support. Next: invasions that gather
+  two or three army groups and siege a base (artillery and orbital strikes first, as the plan's
+  theatre AI describes), and the war council pointing both allies' fleets at one world at once.
+  Once bases fall, re-run these batches; the side and victory targets depend on it.

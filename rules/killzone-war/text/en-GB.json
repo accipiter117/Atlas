@@ -319,7 +319,7 @@
     "victory.war_territory.name": "Hold the system",
     "victory.war_territory.text": "Hold 6 of the 8 worlds for 10 turns in a row.",
     "victory.war_time.name": "Last side standing",
-    "victory.war_time.text": "When the campaign's time runs out, the side with more war support wins.",
+    "victory.war_time.text": "When the campaign's time runs out, the side ahead on war support by 5 or more wins; closer than that, the side holding more worlds.",
     "ai.reason.supplyDrop": "Supplies dropped to troops cut off from supply.",
     "ai.reason.strike": "An orbital strike on the enemy beside our troops.",
     "ai.reason.land": "An army group lands on the target world.",

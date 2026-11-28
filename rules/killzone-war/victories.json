@@ -6,6 +6,6 @@
     {"id": "war_capitals", "nameKey": "victory.war_capitals.name", "descriptionKey": "victory.war_capitals.text", "module": "sides", "enabled": true, "params": {"kind": "capitals"}},
     {"id": "war_support", "nameKey": "victory.war_support.name", "descriptionKey": "victory.war_support.text", "module": "sides", "enabled": true, "params": {"kind": "support"}},
     {"id": "war_territory", "nameKey": "victory.war_territory.name", "descriptionKey": "victory.war_territory.text", "module": "sides", "enabled": true, "params": {"kind": "territory", "worlds": 6, "turns": 10}},
-    {"id": "war_time", "nameKey": "victory.war_time.name", "descriptionKey": "victory.war_time.text", "module": "sides", "enabled": true, "params": {"kind": "time"}}
+    {"id": "war_time", "nameKey": "victory.war_time.name", "descriptionKey": "victory.war_time.text", "module": "sides", "enabled": true, "params": {"kind": "time", "margin": 5}}
   ]
 }

@@ -47,12 +47,12 @@ FACTIONS = [
 
 # What earns each faction glory beyond battles and conquest (docs/KILLZONE.md section 4), as data.
 AMBITION = {
-    'isa': [{'when': 'battleWon', 'amount': 2}],
-    'home_guard': [{'when': 'holdWorld', 'world': 'vekta', 'perTurn': 1, 'every': 5}, {'when': 'captureWorld', 'world': 'vekta', 'amount': 20}],
-    'isa_fleet': [{'when': 'captureWorld', 'world': 'ardent', 'amount': 25}, {'when': 'holdOrbit', 'world': 'helghan', 'perTurn': 2}, {'when': 'landOn', 'world': 'helghan', 'amount': 15}],
-    'helghast': [{'when': 'holdCapital', 'perTurn': 1, 'every': 5}, {'when': 'captureWorld', 'amount': 10}],
-    'stahl': [{'when': 'resourceWorked', 'resource': 'petrusite', 'perTurn': 1, 'every': 4}, {'when': 'holdWorld', 'world': 'kerberos', 'perTurn': 2, 'every': 5}],
-    'helghast_navy': [{'when': 'landOn', 'world': 'vekta', 'amount': 20}, {'when': 'captureCapital', 'amount': 25}],
+    'isa': [{'when': 'battleWon', 'amount': 3}],
+    'home_guard': [{'when': 'holdWorld', 'world': 'vekta', 'perTurn': 1, 'every': 10}, {'when': 'captureWorld', 'world': 'vekta', 'amount': 20}],
+    'isa_fleet': [{'when': 'captureWorld', 'world': 'ardent', 'amount': 25}, {'when': 'holdOrbit', 'world': 'helghan', 'perTurn': 2}, {'when': 'landOn', 'world': 'helghan', 'amount': 15}, {'when': 'landOn', 'world': 'ardent', 'amount': 8}],
+    'helghast': [{'when': 'holdCapital', 'perTurn': 1, 'every': 10}, {'when': 'captureWorld', 'amount': 10}],
+    'stahl': [{'when': 'resourceWorked', 'resource': 'petrusite', 'perTurn': 1, 'every': 10}, {'when': 'holdWorld', 'world': 'kerberos', 'perTurn': 2, 'every': 10}],
+    'helghast_navy': [{'when': 'landOn', 'world': 'vekta', 'amount': 20}, {'when': 'captureCapital', 'amount': 25}, {'when': 'landOn', 'world': 'halcyon', 'amount': 8}, {'when': 'landOn', 'world': 'bastion', 'amount': 8}],
 }
 
 CITY_NAMES = {
@@ -389,7 +389,7 @@ def k4(base, sprites_isa, names):
         ('capitals', 'Capture the capitals', 'Hold every enemy faction\'s capital on their home world.', {}),
         ('support', 'Break their will', 'Drive the enemy side\'s war support to nothing.', {}),
         ('territory', 'Hold the system', 'Hold 6 of the 8 worlds for 10 turns in a row.', {'worlds': 6, 'turns': 10}),
-        ('time', 'Last side standing', 'When the campaign\'s time runs out, the side with more war support wins.', {}),
+        ('time', 'Last side standing', 'When the campaign\'s time runs out, the side ahead on war support by 5 or more wins; closer than that, the side holding more worlds.', {'margin': 5}),
     ]:
         vid = f'war_{kind}'
         vic.append({'id': vid, 'nameKey': f'victory.{vid}.name', 'descriptionKey': f'victory.{vid}.text', 'module': 'sides', 'enabled': True, 'params': {'kind': kind, **params}})
